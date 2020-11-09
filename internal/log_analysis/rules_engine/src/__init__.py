@@ -33,8 +33,15 @@ class EngineResult:
     error_message: Optional[str] = None
     rule_tags: List[str] = field(default_factory=list)
     rule_reports: Dict[str, List[str]] = field(default_factory=dict)
-    title: Optional[str] = None
     alert_context: Optional[str] = None
+    # custom fields
+    title: Optional[str] = None
+    description: Optional[str] = None
+    reference: Optional[str] = None
+    severity: Optional[str] = None
+    runbook: Optional[str] = None
+    destination_override: Optional[str] = None
+    summary_attributes: Optional[List[str]] = None
 
 
 @dataclass

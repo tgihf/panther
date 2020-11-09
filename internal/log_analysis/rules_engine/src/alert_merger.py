@@ -18,7 +18,7 @@ import hashlib
 import os
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from . import AlertInfo
 from .aws_clients import DDB_CLIENT
@@ -35,8 +35,14 @@ _ALERT_UPDATE_TIME_ATTR_NAME = 'alertUpdateTime'
 _ALERT_COUNT_ATTR_NAME = 'alertCount'
 _ALERT_EVENT_COUNT = 'eventCount'
 _ALERT_LOG_TYPES = 'logTypes'
-_ALERT_TITLE = 'title'
 _ALERT_CONTEXT = 'context'
+_ALERT_TITLE = 'title'
+_ALERT_DESCRIPTION = 'description'
+_ALERT_REFERENCE = 'reference'
+_ALERT_SEVERITY = 'severity'
+_ALERT_RUNBOOK = 'runbook'
+_ALERT_DESTINATION_OVERRIDE = 'destinationOverride'
+_ALERT_SUMMARY_ATTRIBUTES = 'summaryAttributes'
 # The attribute defining the type of the error
 _ALERT_TYPE = 'type'
 
@@ -52,9 +58,16 @@ class MatchingGroupInfo:
     dedup_period_mins: int
     num_matches: int
     processing_time: datetime
-    title: Optional[str]
     alert_context: Optional[str]
     is_rule_error: bool = False
+    # custom fields
+    title: Optional[str] = None
+    description: Optional[str] = None
+    reference: Optional[str] = None
+    severity: Optional[str] = None
+    runbook: Optional[str] = None
+    destination_override: Optional[str] = None
+    summary_attributes: Optional[List[str]] = None
 
 
 def _generate_dedup_key(rule_id: str, dedup: str, is_rule_error: bool) -> str:
@@ -90,13 +103,7 @@ def _update_get_conditional(group_info: MatchingGroupInfo) -> AlertInfo:
     condition_expression = '(#1 < :1) OR (attribute_not_exists(#2))'
     update_expression = 'ADD #3 :3\nSET #4=:4, #5=:5, #6=:6, #7=:7, #8=:8, #9=:9, #10=:10, #11=:11'
 
-    if group_info.alert_context:
-        update_expression += ', #12=:12'
-
-    if group_info.title:
-        update_expression += ', #13=:13'
-
-    expresion_attribute_names = {
+    expression_attribute_names = {
         '#1': _ALERT_CREATION_TIME_ATTR_NAME,
         '#2': _PARTITION_KEY_NAME,
         '#3': _ALERT_COUNT_ATTR_NAME,
@@ -109,12 +116,6 @@ def _update_get_conditional(group_info: MatchingGroupInfo) -> AlertInfo:
         '#10': _RULE_VERSION_ATTR_NAME,
         '#11': _ALERT_TYPE
     }
-
-    if group_info.alert_context:
-        expresion_attribute_names['#12'] = _ALERT_CONTEXT
-
-    if group_info.title:
-        expresion_attribute_names['#13'] = _ALERT_TITLE
 
     if group_info.is_rule_error:
         alert_type = "RULE_ERROR"
@@ -157,10 +158,44 @@ def _update_get_conditional(group_info: MatchingGroupInfo) -> AlertInfo:
     }
 
     if group_info.alert_context:
+        update_expression += ', #12=:12'
+        expression_attribute_names['#12'] = _ALERT_CONTEXT
         expression_attribute_values[':12'] = {'S': group_info.alert_context}
 
     if group_info.title:
+        update_expression += ', #13=:13'
+        expression_attribute_names['#13'] = _ALERT_TITLE
         expression_attribute_values[':13'] = {'S': group_info.title}
+
+    if group_info.description:
+        update_expression += ', #14=:14'
+        expression_attribute_names['#14'] = _ALERT_DESCRIPTION
+        expression_attribute_values[':14'] = {'S': group_info.description}
+
+    if group_info.reference:
+        update_expression += ', #15=:15'
+        expression_attribute_names['#15'] = _ALERT_REFERENCE
+        expression_attribute_values[':15'] = {'S': group_info.reference}
+
+    if group_info.severity:
+        update_expression += ', #16=:16'
+        expression_attribute_names['#16'] = _ALERT_SEVERITY
+        expression_attribute_values[':16'] = {'S': group_info.severity}
+
+    if group_info.runbook:
+        update_expression += ', #17=:17'
+        expression_attribute_names['#17'] = _ALERT_RUNBOOK
+        expression_attribute_values[':17'] = {'S': group_info.runbook}
+
+    if group_info.destination_override:
+        update_expression += ', #18=:18'
+        expression_attribute_names['#18'] = _ALERT_DESTINATION_OVERRIDE
+        expression_attribute_values[':18'] = {'S': group_info.destination_override}
+
+    if group_info.summary_attributes:
+        update_expression += ', #19=:19'
+        expression_attribute_names['#19'] = _ALERT_SUMMARY_ATTRIBUTES
+        expression_attribute_values[':19'] = {'S': group_info.summary_attributes}
 
     response = DDB_CLIENT.update_item(
         TableName=_DDB_TABLE_NAME,
@@ -170,7 +205,7 @@ def _update_get_conditional(group_info: MatchingGroupInfo) -> AlertInfo:
         # Setting proper values for alertCreationTime, alertUpdateTime,
         UpdateExpression=update_expression,
         ConditionExpression=condition_expression,
-        ExpressionAttributeNames=expresion_attribute_names,
+        ExpressionAttributeNames=expression_attribute_names,
         ExpressionAttributeValues=expression_attribute_values,
         ReturnValues='ALL_NEW'
     )

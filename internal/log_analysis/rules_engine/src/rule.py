@@ -22,7 +22,7 @@ import traceback
 from dataclasses import dataclass
 from importlib import util as import_util
 from pathlib import Path
-from typing import Any, Dict, Optional, Callable
+from typing import Any, Dict, Optional, Callable, List
 
 from .logging import get_logger
 
@@ -32,7 +32,11 @@ _RULE_FOLDER = os.path.join(tempfile.gettempdir(), 'rules')
 MAX_DEDUP_STRING_SIZE = 1000
 
 # Maximum size for a title
-MAX_TITLE_SIZE = 1000
+MAX_CUSTOM_FIELD_SIZE = 1000
+
+# Maximum number of Summary Attributes
+MAX_SUMMARY_ATTRIBUTES_SIZE = 10
+
 # The limit for DDB is 400kb per item (we store this one in DDB) and the limit for SQS/SNS is 256KB.
 # The limit of 200kb is an approximation - the other fields included in the request will be less than the remaining 56kb
 MAX_ALERT_CONTEXT_SIZE = 200 * 1024  # 200kb
@@ -58,6 +62,24 @@ class RuleResult:
     title_output: Optional[str] = None
     title_exception: Optional[Exception] = None
 
+    description_output: Optional[str] = None
+    description_exception: Optional[Exception] = None
+
+    reference_output: Optional[str] = None
+    reference_exception: Optional[Exception] = None
+
+    severity_output: Optional[str] = None
+    severity_exception: Optional[Exception] = None
+
+    runbook_output: Optional[str] = None
+    runbook_exception: Optional[Exception] = None
+
+    destination_override_output: Optional[str] = None
+    destination_override_exception: Optional[Exception] = None
+
+    summary_attributes_output: Optional[List[str]] = None
+    summary_attributes_exception: Optional[Exception] = None
+
     alert_context: Optional[str] = None
     alert_context_exception: Optional[Exception] = None
 
@@ -75,7 +97,11 @@ class RuleResult:
     @property
     def errored(self) -> bool:
         """Returns whether any of the rule functions raised an error"""
-        return bool(self.rule_exception or self.title_exception or self.dedup_exception or self.alert_context_exception)
+        return bool(
+            self.rule_exception or self.title_exception or self.dedup_exception or self.alert_context_exception or
+            self.description_exception or self.reference_exception or self.severity_exception or
+            self.runbook_exception or self.destination_override_exception or self.summary_attributes_exception
+        )
 
 
 # pylint: disable=too-many-instance-attributes
@@ -137,6 +163,36 @@ class Rule:
         else:
             self._has_title = False
 
+        if hasattr(self._module, 'description'):
+            self._has_description = True
+        else:
+            self._has_description = False
+
+        if hasattr(self._module, 'reference'):
+            self._has_reference = True
+        else:
+            self._has_reference = False
+
+        if hasattr(self._module, 'severity'):
+            self._has_severity = True
+        else:
+            self._has_severity = False
+
+        if hasattr(self._module, 'runbook'):
+            self._has_runbook = True
+        else:
+            self._has_runbook = False
+
+        if hasattr(self._module, 'destination_override'):
+            self._has_destination_override = True
+        else:
+            self._has_destination_override = False
+
+        if hasattr(self._module, 'summary_attributes'):
+            self._has_summary_attributes = True
+        else:
+            self._has_summary_attributes = False
+
         if hasattr(self._module, 'dedup'):
             self._has_dedup = True
         else:
@@ -169,12 +225,65 @@ class Rule:
             return rule_result
 
         try:
-            rule_result.title_output = self._get_title(event, use_default_on_exception=batch_mode)
+            rule_result.title_output = self._get_custom_field(
+                event,
+                'title',
+                use_default_on_exception=batch_mode
+            )
         except Exception as err:  # pylint: disable=broad-except
             rule_result.title_exception = err
 
         try:
-            rule_result.dedup_output = self._get_dedup(event, rule_result.title_output, use_default_on_exception=batch_mode)
+            rule_result.description_output = self._get_custom_field(
+                event,
+                'description',
+                use_default_on_exception=batch_mode)
+        except Exception as err:  # pylint: disable=broad-except
+            rule_result.description_exception = err
+
+        try:
+            rule_result.reference_output = self._get_custom_field(
+                event,
+                'reference',
+                use_default_on_exception=batch_mode
+            )
+        except Exception as err:  # pylint: disable=broad-except
+            rule_result.reference_exception = err
+
+        try:
+            rule_result.severity_output = self._get_custom_field(event, 'severity', use_default_on_exception=batch_mode)
+        except Exception as err:  # pylint: disable=broad-except
+            rule_result.severity_exception = err
+
+        try:
+            rule_result.runbook_output = self._get_custom_field(event, 'runbook', use_default_on_exception=batch_mode)
+        except Exception as err:  # pylint: disable=broad-except
+            rule_result.runbook_exception = err
+
+        try:
+            rule_result.destination_override_output = self._get_custom_field(
+                event,
+                'destination_override',
+                use_default_on_exception=batch_mode
+            )
+        except Exception as err:  # pylint: disable=broad-except
+            rule_result.destination_override_exception = err
+
+        try:
+            rule_result.summary_attributes_output = self._get_custom_field(
+                event,
+                'summary_attributes',
+                use_default_on_exception=batch_mode
+            )
+        except Exception as err:  # pylint: disable=broad-except
+            rule_result.summary_attributes_exception = err
+
+        try:
+            rule_result.dedup_output = self._get_dedup(
+                event,
+                rule_result.title_output,
+                use_default_on_exception=batch_mode
+            )
         except Exception as err:  # pylint: disable=broad-except
             rule_result.dedup_exception = err
 
@@ -219,28 +328,49 @@ class Rule:
 
         return dedup_string
 
-    def _get_title(self, event: Dict[str, Any], use_default_on_exception: bool = True) -> Optional[str]:
-        if not self._has_title:
+    def _get_custom_fields_mapper(self, field: str) -> (bool, Callable):
+        _custom_field_map = {
+            'title': (self._has_title, self._module.title),
+            'description': (self._has_description, self._module.description),
+            'reference': (self._has_reference, self._module.reference),
+            'severity': (self._has_severity, self._module.severity),
+            'runbook': (self._has_runbook, self._module.runbook),
+            'destination_override': (self._has_destination_override, self._module.destination_override),
+            'summary_attributes': (self._has_summary_attributes, self._module.summary_attributes),
+        }
+        if field not in _custom_field_map:
+            self.logger.warning('attempted to access field [%s], this should only access custom fields. ', field)
+            return None, None
+        else:
+            return _custom_field_map[field]
+
+    def _get_custom_field(self, event: Dict[str, Any], target_field: str, use_default_on_exception: bool = True) -> Optional[str]:
+        has_field, command = self._get_custom_fields_mapper(target_field)
+        if has_field:
+            if target_field == "summary_attributes":
+                expected_return_type = List[str]
+            else:
+                expected_return_type = str
+
+            try:
+                custom_field = self._run_command(command, event, expected_return_type)
+            except Exception as err:  # pylint: disable=broad-except
+                if use_default_on_exception:
+                    self.logger.warning('%s method raised exception. Using default. Exception: %s', target_field, err)
+                    return None
+                raise
+
+            if len(custom_field) > MAX_CUSTOM_FIELD_SIZE:
+                # If custom field exceeds max size, truncate it
+                self.logger.warning(
+                    'maximum title string size is [%d] characters. Title for rule with ID '
+                    '[%s] is [%d] characters. Truncating.', MAX_CUSTOM_FIELD_SIZE, self.rule_id, len(custom_field)
+                )
+                num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
+                return custom_field[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
+            return custom_field
+        else:
             return None
-
-        try:
-            title_string = self._run_command(self._module.title, event, str)
-        except Exception as err:  # pylint: disable=broad-except
-            if use_default_on_exception:
-                self.logger.warning('title method raised exception. Using default. Exception: %s', err)
-                return None
-            raise
-
-        if len(title_string) > MAX_TITLE_SIZE:
-            # If title exceeds max size, truncate it
-            self.logger.warning(
-                'maximum title string size is [%d] characters. Title for rule with ID '
-                '[%s] is [%d] characters. Truncating.', MAX_TITLE_SIZE, self.rule_id, len(title_string)
-            )
-            num_characters_to_keep = MAX_TITLE_SIZE - len(TRUNCATED_STRING_SUFFIX)
-            return title_string[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
-
-        return title_string
 
     def _get_alert_context(self, event: Dict[str, Any], use_default_on_exception: bool = True) -> Optional[str]:
         if not self._has_alert_context:
@@ -308,3 +438,29 @@ def _rule_id_to_path(rule_id: str) -> str:
 def _allowed_char(char: str) -> bool:
     """Return true if the character is part of a valid rule ID."""
     return char.isalnum() or char in {' ', '-', '.'}
+
+
+'''
+    def _get_title(self, event: Dict[str, Any], use_default_on_exception: bool = True) -> Optional[str]:
+        if not self._has_title:
+            return None
+
+        try:
+            title_string = self._run_command(self._module.title, event, str)
+        except Exception as err:  # pylint: disable=broad-except
+            if use_default_on_exception:
+                self.logger.warning('title method raised exception. Using default. Exception: %s', err)
+                return None
+            raise
+
+        if len(title_string) > MAX_CUSTOM_FIELD_SIZE:
+            # If title exceeds max size, truncate it
+            self.logger.warning(
+                'maximum title string size is [%d] characters. Title for rule with ID '
+                '[%s] is [%d] characters. Truncating.', MAX_CUSTOM_FIELD_SIZE, self.rule_id, len(title_string)
+            )
+            num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
+            return title_string[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
+
+        return title_string
+'''

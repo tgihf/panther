@@ -17,7 +17,7 @@
 from unittest import TestCase
 import json
 
-from ..src.rule import MAX_DEDUP_STRING_SIZE, MAX_TITLE_SIZE, Rule, RuleResult, TRUNCATED_STRING_SUFFIX
+from ..src.rule import MAX_DEDUP_STRING_SIZE, MAX_CUSTOM_FIELD_SIZE, Rule, RuleResult, TRUNCATED_STRING_SUFFIX
 
 
 class TestRule(TestCase):  # pylint: disable=too-many-public-methods
@@ -124,10 +124,10 @@ class TestRule(TestCase):  # pylint: disable=too-many-public-methods
         rule_body = 'def rule(event):\n\treturn True\n' \
                     'def dedup(event):\n\treturn "test"\n' \
                     'def title(event):\n\treturn "".join("a" for i in range({}))'. \
-            format(MAX_TITLE_SIZE + 1)
+            format(MAX_CUSTOM_FIELD_SIZE + 1)
         rule = Rule({'id': 'test_restrict_title_size', 'body': rule_body, 'versionId': 'versionId'})
 
-        expected_title_string_prefix = ''.join('a' for _ in range(MAX_TITLE_SIZE - len(TRUNCATED_STRING_SUFFIX)))
+        expected_title_string_prefix = ''.join('a' for _ in range(MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)))
         expected_rule = RuleResult(matched=True, dedup_output='test', title_output=expected_title_string_prefix + TRUNCATED_STRING_SUFFIX)
         self.assertEqual(expected_rule, rule.run({}))
 

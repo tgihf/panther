@@ -75,7 +75,13 @@ class Engine:
                     dedup_period_mins=rule.rule_dedup_period_mins,
                     event=event,
                     title=result.title_output,
-                    alert_context=result.alert_context
+                    alert_context=result.alert_context,
+                    description=result.description,
+                    reference=result.reference,
+                    severity=result.severity,
+                    runbook=result.runbook,
+                    destination_override=result.destination_override,
+                    summary_attributes=result.summary_attributes
                 )
                 engine_results.append(match)
 

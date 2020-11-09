@@ -135,10 +135,16 @@ def _write_to_s3(time: datetime, key: OutputGroupingKey, events: List[EngineResu
         dedup=key.dedup,
         dedup_period_mins=events[0].dedup_period_mins,
         num_matches=len(events),
-        title=events[0].title,
         processing_time=time,
-        is_rule_error=key.is_rule_error,
         alert_context=events[0].alert_context,
+        is_rule_error=key.is_rule_error,
+        title=events[0].title,
+        description=events[0].description,
+        reference=events[0].reference,
+        severity=events[0].severity,
+        runbook=events[0].runbook,
+        destination_override=events[0].destination_override,
+        summary_attributes=events[0].summary_attributes
     )
     alert_info = update_get_alert_info(group_info)
     data_stream = BytesIO()

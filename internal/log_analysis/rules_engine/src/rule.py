@@ -251,12 +251,20 @@ class Rule:
             rule_result.reference_exception = err
 
         try:
-            rule_result.severity_output = self._get_custom_field(event, 'severity', use_default_on_exception=batch_mode)
+            rule_result.severity_output = self._get_custom_field(
+                event,
+                'severity',
+                use_default_on_exception=batch_mode
+            )
         except Exception as err:  # pylint: disable=broad-except
             rule_result.severity_exception = err
 
         try:
-            rule_result.runbook_output = self._get_custom_field(event, 'runbook', use_default_on_exception=batch_mode)
+            rule_result.runbook_output = self._get_custom_field(
+                event,
+                'runbook',
+                use_default_on_exception=batch_mode
+            )
         except Exception as err:  # pylint: disable=broad-except
             rule_result.runbook_exception = err
 
@@ -309,7 +317,10 @@ class Rule:
             dedup_string = self._run_command(self._module.dedup, event, str)
         except Exception as err:  # pylint: disable=broad-except
             if use_default_on_exception:
-                self.logger.warning('dedup method raised exception. Defaulting dedup string to "%s". Exception: %s', self.rule_id, err)
+                self.logger.warning(
+                    'dedup method raised exception. Defaulting dedup string to "%s". Exception: %s',
+                    self.rule_id, err
+                )
                 return self._default_dedup_string
             raise
 
@@ -349,8 +360,10 @@ class Rule:
         if has_field:
             if target_field == "summary_attributes":
                 expected_return_type = List[str]
+                max_custom_field_size = MAX_SUMMARY_ATTRIBUTES_SIZE
             else:
                 expected_return_type = str
+                max_custom_field_size = MAX_CUSTOM_FIELD_SIZE
 
             try:
                 custom_field = self._run_command(command, event, expected_return_type)
@@ -360,14 +373,18 @@ class Rule:
                     return None
                 raise
 
-            if len(custom_field) > MAX_CUSTOM_FIELD_SIZE:
+            if len(custom_field) > max_custom_field_size:
                 # If custom field exceeds max size, truncate it
                 self.logger.warning(
-                    'maximum title string size is [%d] characters. Title for rule with ID '
-                    '[%s] is [%d] characters. Truncating.', MAX_CUSTOM_FIELD_SIZE, self.rule_id, len(custom_field)
+                    'maximum field [%s] length is [%d]. [%s]] for rule with ID '
+                    '[%s] is [%d] characters. Truncating.',
+                    target_field, max_custom_field_size, target_field, self.rule_id, len(custom_field)
                 )
-                num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
-                return custom_field[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
+                if target_field == "summary_attributes":
+                    return custom_field[:max_custom_field_size]
+                else:
+                    num_characters_to_keep = max_custom_field_size - len(TRUNCATED_STRING_SUFFIX)
+                    return custom_field[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
             return custom_field
         else:
             return None

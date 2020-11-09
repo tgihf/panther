@@ -304,7 +304,10 @@ class Rule:
             dedup_string = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
             if use_default_on_exception:
-                self.logger.warning('dedup method raised exception. Defaulting dedup string to "%s". Exception: %s', self.rule_id, err)
+                self.logger.warning(
+                    'dedup method raised exception. Defaulting dedup string to "%s". Exception: %s',
+                    self.rule_id, err
+                )
                 return self._default_dedup_string
             raise
 

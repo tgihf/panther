@@ -455,29 +455,3 @@ def _rule_id_to_path(rule_id: str) -> str:
 def _allowed_char(char: str) -> bool:
     """Return true if the character is part of a valid rule ID."""
     return char.isalnum() or char in {' ', '-', '.'}
-
-
-'''
-    def _get_title(self, event: Dict[str, Any], use_default_on_exception: bool = True) -> Optional[str]:
-        if not self._has_title:
-            return None
-
-        try:
-            title_string = self._run_command(self._module.title, event, str)
-        except Exception as err:  # pylint: disable=broad-except
-            if use_default_on_exception:
-                self.logger.warning('title method raised exception. Using default. Exception: %s', err)
-                return None
-            raise
-
-        if len(title_string) > MAX_CUSTOM_FIELD_SIZE:
-            # If title exceeds max size, truncate it
-            self.logger.warning(
-                'maximum title string size is [%d] characters. Title for rule with ID '
-                '[%s] is [%d] characters. Truncating.', MAX_CUSTOM_FIELD_SIZE, self.rule_id, len(title_string)
-            )
-            num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
-            return title_string[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
-
-        return title_string
-'''

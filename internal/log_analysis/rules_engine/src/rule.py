@@ -21,7 +21,7 @@ import tempfile
 from collections.abc import Mapping
 import traceback
 from dataclasses import dataclass
-from typing import Any, Optional, Callable, List
+from typing import Any, Dict, Optional, Callable, List
 
 from .logging import get_logger
 from .util import id_to_path, import_file_as_module, store_modules

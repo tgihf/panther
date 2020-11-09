@@ -523,3 +523,15 @@ class Rule:
                                                                                     type(result).__name__)
                 )
         return result
+
+
+def _rule_id_to_path(rule_id: str) -> str:
+    """Method returns the file path where the rule will be stored"""
+    safe_id = ''.join(x if _allowed_char(x) else '_' for x in rule_id)
+    path = os.path.join(_RULE_FOLDER, safe_id + '.py')
+    return path
+
+
+def _allowed_char(char: str) -> bool:
+    """Return true if the character is part of a valid rule ID."""
+    return char.isalnum() or char in {' ', '-', '.'}

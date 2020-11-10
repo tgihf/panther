@@ -195,7 +195,7 @@ def _update_get_conditional(group_info: MatchingGroupInfo) -> AlertInfo:
     if group_info.summary_attributes:
         update_expression += ', #19=:19'
         expression_attribute_names['#19'] = _ALERT_SUMMARY_ATTRIBUTES
-        expression_attribute_values[':19'] = {'S': group_info.summary_attributes}
+        expression_attribute_values[':19'] = {'SS': group_info.summary_attributes}
 
     response = DDB_CLIENT.update_item(
         TableName=_DDB_TABLE_NAME,

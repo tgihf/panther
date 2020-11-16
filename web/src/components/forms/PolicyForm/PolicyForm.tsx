@@ -119,12 +119,12 @@ const PolicyForm: React.FC<PolicyFormProps> = ({ initialValues, onSubmit }) => {
 
                 <BorderTabDivider />
                 <TabPanels>
-                  <TabPanel data-testid="policy-settings-tabpanel">
+                  <TabPanel data-testid="policy-settings-tabpanel" lazy>
                     <ErrorBoundary>
                       <BaseRuleFormCoreSection type="policy" />
                     </ErrorBoundary>
                   </TabPanel>
-                  <TabPanel data-testid="policy-functions-tabpanel">
+                  <TabPanel data-testid="policy-functions-tabpanel" lazy>
                     <ErrorBoundary>
                       <BaseRuleFormEditorSection type="policy" />
                     </ErrorBoundary>
@@ -132,7 +132,7 @@ const PolicyForm: React.FC<PolicyFormProps> = ({ initialValues, onSubmit }) => {
                       <PolicyFormTestSection />
                     </ErrorBoundary>
                   </TabPanel>
-                  <TabPanel data-testid="policy-auto-remediation">
+                  <TabPanel data-testid="policy-auto-remediation" lazy>
                     <ErrorBoundary>
                       <PolicyFormAutoRemediationSection />
                     </ErrorBoundary>

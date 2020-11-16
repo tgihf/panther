@@ -19,7 +19,16 @@
 import React from 'react';
 import { FastField, useFormikContext, Field } from 'formik';
 import FormikTextInput from 'Components/fields/TextInput';
-import { Flex, Box, SimpleGrid, FormHelperText, Link, FormError, useSnackbar } from 'pouncejs';
+import {
+  Text,
+  Flex,
+  Box,
+  SimpleGrid,
+  FormHelperText,
+  Link,
+  FormError,
+  useSnackbar,
+} from 'pouncejs';
 import { SeverityEnum } from 'Generated/schema';
 import { capitalize, minutesToString } from 'Helpers/utils';
 import FormikTextArea from 'Components/fields/TextArea';
@@ -30,7 +39,6 @@ import FormikMultiCombobox from 'Components/fields/MultiComboBox';
 import { RESOURCE_TYPES } from 'Source/constants';
 import { RuleFormValues } from 'Components/forms/RuleForm';
 import { PolicyFormValues } from 'Components/forms/PolicyForm';
-import Panel from 'Components/Panel';
 import urls from 'Source/urls';
 import { Link as RRLink } from 'react-router-dom';
 import { useListAvailableLogTypes } from 'Source/graphql/queries';
@@ -110,11 +118,17 @@ const BaseRuleFormCoreSection: React.FC<BaseRuleFormCoreSectionProps> = ({ type 
   ]);
 
   return (
-    <Panel
-      title={isPolicy ? 'Policy Settings' : 'Rule Settings'}
-      actions={
-        <Flex align="center" spacing={6}>
-          <FastField as={FormikSwitch} name="enabled" label="Status" />
+    <Box p={6}>
+      <Flex spacing={5} mb={5} align="center">
+        <Box>
+          <Text color="navyblue-100">Basic Information</Text>
+        </Box>
+        <Flex spacing={6} ml="auto" mr={0} align="center" alignSelf="flex-end">
+          <FastField
+            as={FormikSwitch}
+            name="enabled"
+            label={isPolicy ? 'Policy Enabled' : 'Rule Enabled'}
+          />
           <FastField
             as={FormikCombobox}
             name="severity"
@@ -123,22 +137,22 @@ const BaseRuleFormCoreSection: React.FC<BaseRuleFormCoreSectionProps> = ({ type 
             label="* Severity"
           />
         </Flex>
-      }
-    >
+      </Flex>
+
       <SimpleGrid columns={2} spacing={5} mb={5}>
-        <FastField
-          as={FormikTextInput}
-          label="* ID"
-          placeholder={`The unique ID of this ${type}`}
-          name="id"
-          disabled={!!initialValues.id}
-          required
-        />
         <FastField
           as={FormikTextInput}
           label="Display Name"
           placeholder={`A human-friendly name for this ${type}`}
           name="displayName"
+        />
+        <FastField
+          as={FormikTextInput}
+          label={`* ${isPolicy ? 'Policy ID' : 'Rule ID'}`}
+          placeholder={`The unique ID of this ${type}`}
+          name="id"
+          disabled={!!initialValues.id}
+          required
         />
       </SimpleGrid>
       <SimpleGrid columns={1} spacing={5} mb={5}>
@@ -178,33 +192,25 @@ const BaseRuleFormCoreSection: React.FC<BaseRuleFormCoreSectionProps> = ({ type 
           )}
         </Flex>
       </SimpleGrid>
-      <SimpleGrid columns={4} spacing={5}>
+      <Box mb={5} mt={8}>
+        <Text color="navyblue-100">Additional Information</Text>
+      </Box>
+      <SimpleGrid columns={2} spacing={5}>
         {isPolicy && (
-          <React.Fragment>
-            <Box>
-              <FastField
-                as={FormikMultiCombobox}
-                searchable
-                label="Resource Types"
-                name="resourceTypes"
-                items={RESOURCE_TYPES}
-                placeholder="Where should the policy apply?"
-                aria-describedby="resourceTypes-description"
-              />
-              <FormHelperText id="resourceTypes-description" mt={2}>
-                Leave empty to apply to all resources
-              </FormHelperText>
-            </Box>
+          <Box>
             <FastField
               as={FormikMultiCombobox}
               searchable
-              name="suppressions"
-              label="Resource Ignore Patterns"
-              items={(values as PolicyFormValues).suppressions}
-              allowAdditions
-              placeholder="i.e. aws::s3::* (separate with <Enter>)"
+              label="Resource Types"
+              name="resourceTypes"
+              items={RESOURCE_TYPES}
+              placeholder="Where should the policy apply?"
+              aria-describedby="resourceTypes-description"
             />
-          </React.Fragment>
+            <FormHelperText id="resourceTypes-description" mt={2}>
+              Leave empty to apply to all resources
+            </FormHelperText>
+          </Box>
         )}
         <FastField
           as={FormikMultiCombobox}
@@ -216,13 +222,24 @@ const BaseRuleFormCoreSection: React.FC<BaseRuleFormCoreSectionProps> = ({ type 
           validateAddition={tagAdditionValidation}
           placeholder="i.e. HIPAA (separate with <Enter>)"
         />
+        {isPolicy && (
+          <FastField
+            as={FormikMultiCombobox}
+            searchable
+            name="suppressions"
+            label="Ignore Patterns"
+            items={(values as PolicyFormValues).suppressions}
+            allowAdditions
+            placeholder="i.e. aws::s3::* (separate with <Enter>)"
+          />
+        )}
         <Box as="fieldset">
           {/* FIXME: We have an issue with FastField here. We shouldn't be setting props like that on FastField or Field elements */}
           <Field
             as={FormikMultiCombobox}
             disabled={disableDestinationField}
             searchable
-            label="Destination Overrides"
+            label="Alert Destination Overrides"
             name="outputIds"
             value={listValidOutputIds}
             items={availableOutputIds}
@@ -252,7 +269,7 @@ const BaseRuleFormCoreSection: React.FC<BaseRuleFormCoreSectionProps> = ({ type 
           </React.Fragment>
         )}
       </SimpleGrid>
-    </Panel>
+    </Box>
   );
 };
 

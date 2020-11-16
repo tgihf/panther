@@ -19,19 +19,26 @@
 import React from 'react';
 import queryString from 'query-string';
 import {
-  render,
-  buildRuleDetails,
-  waitMs,
   buildAlertSummary,
   buildListAlertsResponse,
+  buildRuleDetails,
+  fireClickAndMouseEvents,
+  fireEvent,
+  render,
   waitFor,
   waitForElementToBeRemoved,
-  fireEvent,
+  waitMs,
 } from 'test-utils';
 import { DEFAULT_LARGE_PAGE_SIZE, DEFAULT_SMALL_PAGE_SIZE } from 'Source/constants';
-import { AlertTypesEnum, ListAlertsSortFieldsEnum, SortDirEnum } from 'Generated/schema';
+import {
+  AlertStatusesEnum,
+  AlertTypesEnum,
+  ListAlertsSortFieldsEnum,
+  SortDirEnum,
+} from 'Generated/schema';
 import { Route } from 'react-router-dom';
 import urls from 'Source/urls';
+import { mockUpdateAlertStatus } from 'Source/graphql/queries';
 import RuleDetails from './RuleDetails';
 import { mockRuleDetails } from './graphql/ruleDetails.generated';
 import { mockListAlertsForRule } from './graphql/listAlertsForRule.generated';
@@ -260,7 +267,7 @@ describe('RuleDetails', () => {
       }),
     ];
 
-    const { getByText, getByTestId, getByAriaLabel } = render(
+    const { getByText, getByTestId, getByAriaLabel, getAllByText } = render(
       <Route exact path={urls.logAnalysis.rules.details(':id')}>
         <RuleDetails />
       </Route>,
@@ -282,8 +289,7 @@ describe('RuleDetails', () => {
 
     expect(getByText('Alert Type')).toBeInTheDocument();
     expect(getByText('Rule Match')).toBeInTheDocument();
-
-    expect(getByText('Destinations')).toBeInTheDocument();
+    expect(getAllByText('Destinations').length).toEqual(2);
     expect(getByText('Log Types')).toBeInTheDocument();
     expect(getByText('Events')).toBeInTheDocument();
     expect(getByAriaLabel('Change Alert Status')).toBeInTheDocument();
@@ -329,7 +335,7 @@ describe('RuleDetails', () => {
       }),
     ];
 
-    const { getByText, getByTestId, getByAriaLabel } = render(
+    const { getByText, getByTestId, getByAriaLabel, getAllByText } = render(
       <Route exact path={urls.logAnalysis.rules.details(':id')}>
         <RuleDetails />
       </Route>,
@@ -352,13 +358,13 @@ describe('RuleDetails', () => {
     expect(getByText('Alert Type')).toBeInTheDocument();
     expect(getByText('Rule Error')).toBeInTheDocument();
 
-    expect(getByText('Destinations')).toBeInTheDocument();
+    expect(getAllByText('Destinations').length).toEqual(2);
     expect(getByText('Log Types')).toBeInTheDocument();
     expect(getByText('Events')).toBeInTheDocument();
     expect(getByAriaLabel('Change Alert Status')).toBeInTheDocument();
   });
 
-  it('fetches the alerts matching the rule, shows an empty fallback and the filters available', async () => {
+  it('fetches the alerts matching the rule & shows an empty fallback if no alerts exist', async () => {
     const rule = buildRuleDetails({
       id: '123',
       displayName: 'This is an amazing rule',
@@ -370,27 +376,28 @@ describe('RuleDetails', () => {
         data: { rule },
         variables: {
           input: {
-            ruleId: '123',
+            ruleId: rule.id,
           },
         },
       }),
       mockListAlertsForRule({
         data: {
-          alerts: {
+          alerts: buildListAlertsResponse({
             alertSummaries: [],
-          },
+            lastEvaluatedKey: null,
+          }),
         },
         variables: {
           input: {
-            ruleId: '123',
             type: AlertTypesEnum.Rule,
+            ruleId: rule.id,
             pageSize: DEFAULT_LARGE_PAGE_SIZE,
           },
         },
       }),
     ];
 
-    const { getByText, getByTestId, getByLabelText, getByAriaLabel } = render(
+    const { getByText, getByAltText, getAllByAriaLabel } = render(
       <Route exact path={urls.logAnalysis.rules.details(':id')}>
         <RuleDetails />
       </Route>,
@@ -399,34 +406,82 @@ describe('RuleDetails', () => {
         initialRoute: `${urls.logAnalysis.rules.details(rule.id)}`,
       }
     );
-    const loadingInterfaceElement = getByTestId('rule-details-loading');
+    const loadingInterfaceElement = getAllByAriaLabel('Loading interface...');
     expect(loadingInterfaceElement).toBeTruthy();
 
     await waitForElementToBeRemoved(loadingInterfaceElement);
     fireEvent.click(getByText('Rule Matches'));
 
-    const loadingListingInterfaceElement = getByTestId('rule-alerts-listing-loading');
+    const loadingListingInterfaceElement = getAllByAriaLabel('Loading interface...');
     expect(loadingListingInterfaceElement).toBeTruthy();
     await waitForElementToBeRemoved(loadingListingInterfaceElement);
 
-    const emptyFallback = getByTestId('list-alerts-empty-fallback');
+    const emptyFallback = getByAltText('Empty Box Illustration');
     expect(emptyFallback).toBeTruthy();
+  });
 
-    expect(getByLabelText('Filter Alerts by text')).toBeInTheDocument();
-    expect(getByAriaLabel('Additional Filters')).toBeInTheDocument();
-    expect(getByTestId('list-alert-sorting')).toBeInTheDocument();
+  it('shows an empty illustration if filtering returns no results', async () => {
+    const rule = buildRuleDetails();
+    const alert = buildAlertSummary();
 
-    // expand the dropdown filters
-    fireEvent.mouseDown(getByAriaLabel('Additional Filters'));
-    await waitFor(() => expect(getByTestId('dropdown-alert-listing-filters')).toBeInTheDocument());
+    const mocks = [
+      mockRuleDetails({
+        data: { rule },
+        variables: {
+          input: {
+            ruleId: rule.id,
+          },
+        },
+      }),
+      mockListAlertsForRule({
+        data: {
+          alerts: buildListAlertsResponse({
+            alertSummaries: [alert],
+            lastEvaluatedKey: null,
+          }),
+        },
+        variables: {
+          input: {
+            type: AlertTypesEnum.Rule,
+            ruleId: rule.id,
+            pageSize: DEFAULT_LARGE_PAGE_SIZE,
+          },
+        },
+      }),
+      mockListAlertsForRule({
+        data: {
+          alerts: buildListAlertsResponse({
+            alertSummaries: [],
+            lastEvaluatedKey: null,
+          }),
+        },
+        variables: {
+          input: {
+            nameContains: 'test',
+            type: AlertTypesEnum.Rule,
+            ruleId: rule.id,
+            pageSize: DEFAULT_LARGE_PAGE_SIZE,
+          },
+        },
+      }),
+    ];
 
-    expect(getByTestId('alert-listing-status-filtering')).toBeInTheDocument();
-    expect(getByTestId('alert-listing-severity-filtering')).toBeInTheDocument();
-    expect(getByTestId('alert-listing-max-event')).toBeInTheDocument();
-    expect(getByTestId('alert-listing-min-event')).toBeInTheDocument();
+    const { findByText, findByAltText, getByLabelText } = render(
+      <Route exact path={urls.logAnalysis.rules.details(':id')}>
+        <RuleDetails />
+      </Route>,
+      {
+        mocks,
+        initialRoute: `${urls.logAnalysis.rules.details(rule.id)}?section=matches`,
+      }
+    );
 
-    expect(getByText('Apply Filters')).toBeInTheDocument();
-    expect(getByText('Clear Filters')).toBeInTheDocument();
+    await findByText(alert.title);
+
+    fireEvent.change(getByLabelText('Filter Alerts by text'), { target: { value: 'test' } });
+
+    expect(await findByAltText('Document and magnifying glass')).toBeInTheDocument();
+    expect(await findByText('No Results')).toBeInTheDocument();
   });
 
   it('allows conditionally filtering the alerts matching the rule rule', async () => {
@@ -542,5 +597,317 @@ describe('RuleDetails', () => {
       sortBy: ListAlertsSortFieldsEnum.CreatedAt,
       sortDir: SortDirEnum.Ascending,
     });
+  });
+
+  it('can select and bulk update status for rule matches', async () => {
+    const rule = buildRuleDetails({
+      id: '123',
+      displayName: 'This is an amazing rule',
+      description: 'This is an amazing description',
+      runbook: 'Panther labs runbook',
+    });
+    const alertSummaries = [
+      buildAlertSummary({
+        ruleId: '123',
+        title: `Alert 1`,
+        alertId: `alert_1`,
+        type: AlertTypesEnum.Rule,
+      }),
+      buildAlertSummary({
+        ruleId: '123',
+        title: `Alert 2`,
+        alertId: `alert_2`,
+        type: AlertTypesEnum.Rule,
+      }),
+    ];
+    const mocks = [
+      mockRuleDetails({
+        data: { rule },
+        variables: {
+          input: {
+            ruleId: '123',
+          },
+        },
+      }),
+      mockListAlertsForRule({
+        data: {
+          alerts: {
+            ...buildListAlertsResponse(),
+            alertSummaries,
+          },
+        },
+        variables: {
+          input: {
+            ruleId: '123',
+            type: AlertTypesEnum.Rule,
+            pageSize: DEFAULT_LARGE_PAGE_SIZE,
+          },
+        },
+      }),
+      mockUpdateAlertStatus({
+        variables: {
+          input: {
+            // Set API call, so that it will change status for 2 alerts to Closed
+            alertIds: [alertSummaries[1].alertId],
+            status: AlertStatusesEnum.Closed,
+          },
+        },
+        data: {
+          updateAlertStatus: [
+            // Expected Response
+            { ...alertSummaries[1], status: AlertStatusesEnum.Closed },
+          ],
+        },
+      }),
+      // Second update
+      mockUpdateAlertStatus({
+        variables: {
+          input: {
+            // Set API call, so that it will change status for 2 alerts to Closed
+            alertIds: alertSummaries.map(a => a.alertId),
+            status: AlertStatusesEnum.Open,
+          },
+        },
+        data: {
+          updateAlertStatus: alertSummaries.map(a => ({
+            ...a,
+            status: AlertStatusesEnum.Open,
+          })),
+        },
+      }),
+    ];
+
+    const {
+      getByText,
+      getByTestId,
+      getByAriaLabel,
+      findAllByText,
+      queryByAriaLabel,
+      getAllByLabelText,
+      queryAllByText,
+    } = render(
+      <Route exact path={urls.logAnalysis.rules.details(':id')}>
+        <RuleDetails />
+      </Route>,
+      {
+        mocks,
+        initialRoute: `${urls.logAnalysis.rules.details(rule.id)}`,
+      }
+    );
+    const loadingInterfaceElement = getByTestId('rule-details-loading');
+    expect(loadingInterfaceElement).toBeTruthy();
+
+    await waitForElementToBeRemoved(loadingInterfaceElement);
+    fireEvent.click(getByText('Rule Matches'));
+
+    const loadingListingInterfaceElement = getByTestId('rule-alerts-listing-loading');
+    expect(loadingListingInterfaceElement).toBeTruthy();
+    await waitForElementToBeRemoved(loadingListingInterfaceElement);
+    alertSummaries.forEach(alertSummary => {
+      expect(getByText(alertSummary.title)).toBeInTheDocument();
+    });
+    alertSummaries.forEach(alertSummary => {
+      expect(getByAriaLabel(`select ${alertSummary.alertId}`)).toBeInTheDocument();
+    });
+    // Single select all of 2 Alerts
+    const checkboxForAlert1 = getByAriaLabel(`select ${alertSummaries[0].alertId}`);
+    fireClickAndMouseEvents(checkboxForAlert1);
+    expect(getByText('1 Selected')).toBeInTheDocument();
+    const checkboxForAlert2 = getByAriaLabel(`select ${alertSummaries[1].alertId}`);
+    fireClickAndMouseEvents(checkboxForAlert2);
+    expect(getByText('2 Selected')).toBeInTheDocument();
+
+    // Deselect first alert
+    const checkedCheckboxForAlert1 = getByAriaLabel(`unselect ${alertSummaries[0].alertId}`);
+    fireClickAndMouseEvents(checkedCheckboxForAlert1);
+    expect(getByText('1 Selected')).toBeInTheDocument();
+
+    // Expect status field to have Resolved as default
+    const statusField = getAllByLabelText('Status')[0];
+    expect(statusField).toHaveValue('Resolved');
+
+    // Change its value to Invalid (Closed)
+    fireClickAndMouseEvents(statusField);
+    fireClickAndMouseEvents(getByText('Invalid'));
+    expect(statusField).toHaveValue('Invalid');
+
+    expect(await queryAllByText('INVALID')).toHaveLength(0);
+    fireClickAndMouseEvents(getByText('Apply'));
+    // Find the alerts with the updated status
+    expect(await findAllByText('INVALID')).toHaveLength(1);
+    // And expect that the selection has been reset
+    expect(await queryByAriaLabel(`unselect ${alertSummaries[0].alertId}`)).not.toBeInTheDocument();
+    expect(await queryByAriaLabel(`unselect ${alertSummaries[1].alertId}`)).not.toBeInTheDocument();
+
+    // Now select all Rule Matches and updated to Open
+    const selectAllCheckbox = getByAriaLabel('select all');
+    fireClickAndMouseEvents(selectAllCheckbox);
+
+    alertSummaries.forEach(alertSummary => {
+      expect(getByAriaLabel(`unselect ${alertSummary.alertId}`)).toBeInTheDocument();
+    });
+    // Expect status field to have Resolved as default
+
+    fireClickAndMouseEvents(getAllByLabelText('Status')[0]);
+    fireClickAndMouseEvents(getByText('Open'));
+    expect(getAllByLabelText('Status')[0]).toHaveValue('Open');
+    fireClickAndMouseEvents(getByText('Apply'));
+    expect(await findAllByText('OPEN')).toHaveLength(2);
+  });
+
+  it('can select and bulk update status for rule errors', async () => {
+    const rule = buildRuleDetails({
+      id: '123',
+      displayName: 'This is an amazing rule',
+      description: 'This is an amazing description',
+      runbook: 'Panther labs runbook',
+    });
+    const alertSummaries = [
+      buildAlertSummary({
+        ruleId: '123',
+        title: `Error 1`,
+        alertId: `error_1`,
+        type: AlertTypesEnum.RuleError,
+      }),
+      buildAlertSummary({
+        ruleId: '123',
+        title: `Error 2`,
+        alertId: `error_2`,
+        type: AlertTypesEnum.RuleError,
+      }),
+    ];
+    const mocks = [
+      mockRuleDetails({
+        data: { rule },
+        variables: {
+          input: {
+            ruleId: '123',
+          },
+        },
+      }),
+      mockListAlertsForRule({
+        data: {
+          alerts: {
+            ...buildListAlertsResponse(),
+            alertSummaries,
+          },
+        },
+        variables: {
+          input: {
+            ruleId: '123',
+            type: AlertTypesEnum.RuleError,
+            pageSize: DEFAULT_LARGE_PAGE_SIZE,
+          },
+        },
+      }),
+      mockUpdateAlertStatus({
+        variables: {
+          input: {
+            // Set API call, so that it will change status for 2 alerts to Closed
+            alertIds: [alertSummaries[1].alertId],
+            status: AlertStatusesEnum.Closed,
+          },
+        },
+        data: {
+          updateAlertStatus: [
+            // Expected Response
+            { ...alertSummaries[1], status: AlertStatusesEnum.Closed },
+          ],
+        },
+      }),
+      // Second update
+      mockUpdateAlertStatus({
+        variables: {
+          input: {
+            // Set API call, so that it will change status for 2 alerts to Closed
+            alertIds: alertSummaries.map(a => a.alertId),
+            status: AlertStatusesEnum.Open,
+          },
+        },
+        data: {
+          updateAlertStatus: alertSummaries.map(a => ({
+            ...a,
+            status: AlertStatusesEnum.Open,
+          })),
+        },
+      }),
+    ];
+
+    const {
+      getByText,
+      getByTestId,
+      getByAriaLabel,
+      findAllByText,
+      queryByAriaLabel,
+      getAllByLabelText,
+      queryAllByText,
+    } = render(
+      <Route exact path={urls.logAnalysis.rules.details(':id')}>
+        <RuleDetails />
+      </Route>,
+      {
+        mocks,
+        initialRoute: `${urls.logAnalysis.rules.details(rule.id)}`,
+      }
+    );
+    const loadingInterfaceElement = getByTestId('rule-details-loading');
+    expect(loadingInterfaceElement).toBeTruthy();
+
+    await waitForElementToBeRemoved(loadingInterfaceElement);
+    fireEvent.click(getByText('Rule Errors'));
+
+    const loadingListingInterfaceElement = getByTestId('rule-alerts-listing-loading');
+    expect(loadingListingInterfaceElement).toBeTruthy();
+    await waitForElementToBeRemoved(loadingListingInterfaceElement);
+    alertSummaries.forEach(alertSummary => {
+      expect(getByText(alertSummary.title)).toBeInTheDocument();
+    });
+    alertSummaries.forEach(alertSummary => {
+      expect(getByAriaLabel(`select ${alertSummary.alertId}`)).toBeInTheDocument();
+    });
+    // Single select all of 2 Alerts
+    const checkboxForAlert1 = getByAriaLabel(`select ${alertSummaries[0].alertId}`);
+    fireClickAndMouseEvents(checkboxForAlert1);
+    expect(getByText('1 Selected')).toBeInTheDocument();
+    const checkboxForAlert2 = getByAriaLabel(`select ${alertSummaries[1].alertId}`);
+    fireClickAndMouseEvents(checkboxForAlert2);
+    expect(getByText('2 Selected')).toBeInTheDocument();
+
+    // Deselect first alert
+    const checkedCheckboxForAlert1 = getByAriaLabel(`unselect ${alertSummaries[0].alertId}`);
+    fireClickAndMouseEvents(checkedCheckboxForAlert1);
+    expect(getByText('1 Selected')).toBeInTheDocument();
+
+    // Expect status field to have Resolved as default
+    const statusField = getAllByLabelText('Status')[0];
+    expect(statusField).toHaveValue('Resolved');
+
+    // Change its value to Invalid (Closed)
+    fireClickAndMouseEvents(statusField);
+    fireClickAndMouseEvents(getByText('Invalid'));
+    expect(statusField).toHaveValue('Invalid');
+
+    expect(await queryAllByText('INVALID')).toHaveLength(0);
+    fireClickAndMouseEvents(getByText('Apply'));
+    // Find the alerts with the updated status
+    expect(await findAllByText('INVALID')).toHaveLength(1);
+    // And expect that the selection has been reset
+    expect(await queryByAriaLabel(`unselect ${alertSummaries[0].alertId}`)).not.toBeInTheDocument();
+    expect(await queryByAriaLabel(`unselect ${alertSummaries[1].alertId}`)).not.toBeInTheDocument();
+
+    // Now select all Rule Matches and updated to Open
+    const selectAllCheckbox = getByAriaLabel('select all');
+    fireClickAndMouseEvents(selectAllCheckbox);
+
+    alertSummaries.forEach(alertSummary => {
+      expect(getByAriaLabel(`unselect ${alertSummary.alertId}`)).toBeInTheDocument();
+    });
+    // Expect status field to have Resolved as default
+
+    fireClickAndMouseEvents(getAllByLabelText('Status')[0]);
+    fireClickAndMouseEvents(getByText('Open'));
+    expect(getAllByLabelText('Status')[0]).toHaveValue('Open');
+    fireClickAndMouseEvents(getByText('Apply'));
+    expect(await findAllByText('OPEN')).toHaveLength(2);
   });
 });

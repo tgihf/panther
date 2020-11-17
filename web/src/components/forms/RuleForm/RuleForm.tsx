@@ -19,11 +19,15 @@
 import React from 'react';
 import { AddRuleInput, DetectionTestDefinition, UpdateRuleInput } from 'Generated/schema';
 import * as Yup from 'yup';
-import { Button, Flex } from 'pouncejs';
+import useUrlParams from 'Hooks/useUrlParams';
+import { Button, Card, Flex, Box, TabList, TabPanel, TabPanels, Tabs } from 'pouncejs';
+import { BorderedTab, BorderTabDivider } from 'Components/BorderedTab';
+import invert from 'lodash/invert';
 import ErrorBoundary from 'Components/ErrorBoundary';
+import Breadcrumbs from 'Components/Breadcrumbs';
+import SaveButton from 'Components/buttons/SaveButton';
 import { BaseRuleFormCoreSection, BaseRuleFormEditorSection } from 'Components/forms/BaseRuleForm';
 import { Form, Formik } from 'formik';
-import SubmitButton from 'Components/buttons/SubmitButton/SubmitButton';
 import FormSessionRestoration from 'Components/utils/FormSessionRestoration';
 import useRouter from 'Hooks/useRouter';
 import RuleFormTestSection from 'Components/forms/RuleForm/RuleFormTestSection';
@@ -45,6 +49,17 @@ const validationSchema = Yup.object().shape({
   ),
 });
 
+export interface RuleFormUrlParams {
+  section?: 'settings' | 'functions';
+}
+
+const sectionToTabIndex: Record<RuleFormUrlParams['section'], number> = {
+  settings: 0,
+  functions: 1,
+};
+
+const tabIndexToSection = invert(sectionToTabIndex) as Record<number, RuleFormUrlParams['section']>;
+
 export type RuleFormValues = Required<AddRuleInput> | Required<UpdateRuleInput>;
 export type RuleFormProps = {
   /** The initial values of the form */
@@ -56,45 +71,70 @@ export type RuleFormProps = {
 
 const RuleForm: React.FC<RuleFormProps> = ({ initialValues, onSubmit }) => {
   const { history } = useRouter();
+  const { urlParams, setUrlParams } = useUrlParams<RuleFormUrlParams>();
 
   return (
-    <Formik<RuleFormValues>
-      initialValues={initialValues}
-      onSubmit={onSubmit}
-      enableReinitialize
-      validationSchema={validationSchema}
-    >
-      <FormSessionRestoration sessionId={`rule-form-${initialValues.id || 'create'}`}>
-        {({ clearFormSession }) => (
-          <Form>
-            <Flex direction="column" as="article" spacing={5}>
-              <ErrorBoundary>
-                <BaseRuleFormCoreSection type="rule" />
-              </ErrorBoundary>
-              <ErrorBoundary>
-                <BaseRuleFormEditorSection type="rule" />
-              </ErrorBoundary>
-              <ErrorBoundary>
-                <RuleFormTestSection />
-              </ErrorBoundary>
-            </Flex>
-            <Flex spacing={4} mt={5} justify="flex-end">
-              <Button
-                variant="outline"
-                variantColor="navyblue"
-                onClick={() => {
-                  clearFormSession();
-                  history.goBack();
-                }}
+    <Card position="relative">
+      <Formik<RuleFormValues>
+        initialValues={initialValues}
+        onSubmit={onSubmit}
+        enableReinitialize
+        validationSchema={validationSchema}
+      >
+        <FormSessionRestoration sessionId={`rule-form-${initialValues.id || 'create'}`}>
+          {({ clearFormSession }) => (
+            <Form>
+              <Breadcrumbs.Actions>
+                <Flex spacing={4} justify="flex-end">
+                  <SaveButton aria-label="Update Rule">
+                    {initialValues.id ? 'Update Rule' : 'Create Rule'}
+                  </SaveButton>
+                  <Button
+                    variantColor="darkgray"
+                    icon="close-outline"
+                    aria-label="Cancel Rule editing"
+                    onClick={() => {
+                      clearFormSession();
+                      history.goBack();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </Flex>
+              </Breadcrumbs.Actions>
+              <Tabs
+                index={sectionToTabIndex[urlParams.section] || 0}
+                onChange={index => setUrlParams({ section: tabIndexToSection[index] })}
               >
-                Cancel
-              </Button>
-              <SubmitButton>{initialValues.id ? 'Update' : 'Create'}</SubmitButton>
-            </Flex>
-          </Form>
-        )}
-      </FormSessionRestoration>
-    </Formik>
+                <Box px={2}>
+                  <TabList>
+                    <BorderedTab>Policy Setttings</BorderedTab>
+                    <BorderedTab>Functions & Tests</BorderedTab>
+                  </TabList>
+                </Box>
+
+                <BorderTabDivider />
+                <TabPanels>
+                  <TabPanel data-testid="rule-settings-tabpanel" lazy>
+                    <ErrorBoundary>
+                      <BaseRuleFormCoreSection type="rule" />
+                    </ErrorBoundary>
+                  </TabPanel>
+                  <TabPanel data-testid="function-settings-tabpanel" lazy>
+                    <ErrorBoundary>
+                      <BaseRuleFormEditorSection type="rule" />
+                    </ErrorBoundary>
+                    <ErrorBoundary>
+                      <RuleFormTestSection />
+                    </ErrorBoundary>
+                  </TabPanel>
+                </TabPanels>
+              </Tabs>
+            </Form>
+          )}
+        </FormSessionRestoration>
+      </Formik>
+    </Card>
   );
 };
 

@@ -17,9 +17,8 @@
  */
 
 import React from 'react';
-import { Box, Combobox } from 'pouncejs';
+import { Flex, Box, Combobox, Card } from 'pouncejs';
 import { FastField } from 'formik';
-import Panel from 'Components/Panel';
 import FormikTextInput from 'Components/fields/TextInput';
 import { formatJSON } from 'Helpers/utils';
 import FormikEditor from 'Components/fields/Editor';
@@ -77,10 +76,9 @@ const PolicyFormAutoRemediationFields: React.FC<PolicyFormAutoRemediationFieldsP
 
   const autoRemediationSelected = !!autoRemediationSelection[0];
   return (
-    <Panel
-      title="Auto Remediation Settings"
-      actions={
-        <Box minWidth={300}>
+    <Box p={6}>
+      <Flex mb={6}>
+        <Box ml="auto" minWidth={300}>
           <Combobox<RemediationTuple>
             searchable
             label="Remediation"
@@ -91,22 +89,23 @@ const PolicyFormAutoRemediationFields: React.FC<PolicyFormAutoRemediationFieldsP
             placeholder="Remediation"
           />
         </Box>
-      }
-    >
-      {autoRemediationSelected && (
-        <React.Fragment>
-          <FastField as={FormikTextInput} name="autoRemediationId" hidden />
-          <FastField
-            as={FormikEditor}
-            placeholder="# Enter a JSON object describing the parameters of the remediation"
-            name="autoRemediationParameters"
-            width="100%"
-            minLines={9}
-            mode="json"
-          />
-        </React.Fragment>
-      )}
-    </Panel>
+      </Flex>
+      <Card variant="dark" p={4}>
+        {autoRemediationSelected && (
+          <React.Fragment>
+            <FastField as={FormikTextInput} name="autoRemediationId" hidden />
+            <FastField
+              as={FormikEditor}
+              placeholder="# Enter a JSON object describing the parameters of the remediation"
+              name="autoRemediationParameters"
+              width="100%"
+              minLines={9}
+              mode="json"
+            />
+          </React.Fragment>
+        )}
+      </Card>
+    </Box>
   );
 };
 

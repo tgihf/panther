@@ -17,7 +17,7 @@
  */
 
 import React from 'react';
-import { Alert, Link } from 'pouncejs';
+import { Alert, Link, Box } from 'pouncejs';
 import { useFormikContext } from 'formik';
 import { extractErrorMessage } from 'Helpers/utils';
 import { REMEDIATION_DOC_URL } from 'Source/constants';
@@ -44,22 +44,28 @@ const PolicyFormAutoRemediationSection: React.FC = () => {
   );
 
   if (loading) {
-    return <TablePlaceholder rowCount={2} />;
+    return (
+      <Box p={6}>
+        <TablePlaceholder rowCount={2} />
+      </Box>
+    );
   }
 
   if (error) {
     return (
-      <Alert
-        variant="warning"
-        title="Couldn't load your available remediations"
-        description={[
-          extractErrorMessage(error),
-          '. For more info, please consult the ',
-          <Link external href={REMEDIATION_DOC_URL} key="docs">
-            related docs
-          </Link>,
-        ]}
-      />
+      <Box p={6}>
+        <Alert
+          variant="warning"
+          title="Couldn't load your available remediations"
+          description={[
+            extractErrorMessage(error),
+            '. For more info, please consult the ',
+            <Link external href={REMEDIATION_DOC_URL} key="docs">
+              related docs
+            </Link>,
+          ]}
+        />
+      </Box>
     );
   }
   return (

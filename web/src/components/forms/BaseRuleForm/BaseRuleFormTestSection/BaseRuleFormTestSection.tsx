@@ -19,7 +19,17 @@
 import React, { MouseEvent } from 'react';
 import { DetectionTestDefinition, DetectionTestDefinitionInput } from 'Generated/schema';
 import { FieldArray, FastField as Field, useFormikContext } from 'formik';
-import { Button, Flex, Icon, Grid, Box, AbstractButton, Card } from 'pouncejs';
+import {
+  Button,
+  Flex,
+  Icon,
+  Grid,
+  Box,
+  AbstractButton,
+  Card,
+  SimpleGrid,
+  IconButton,
+} from 'pouncejs';
 import { formatJSON, generateRandomColor } from 'Helpers/utils';
 import FormikTextInput from 'Components/fields/TextInput';
 import FormikEditor from 'Components/fields/Editor';
@@ -27,7 +37,6 @@ import FormikRadio from 'Components/fields/Radio';
 import { PolicyFormValues } from 'Components/forms/PolicyForm';
 import { RuleFormValues } from 'Components/forms/RuleForm';
 import { MODALS } from 'Components/utils/Modal';
-import Panel from 'Components/Panel';
 import useModal from 'Hooks/useModal';
 
 interface BaseRuleFormTestSectionProps {
@@ -49,7 +58,7 @@ const BaseRuleFormTestSection: React.FC<BaseRuleFormTestSectionProps> = ({
   } = useFormikContext<RuleFormValues | PolicyFormValues>();
 
   const { showModal } = useModal();
-
+  const [open, setOpen] = React.useState(true);
   // Controls which test is the active test at the moment through a simple index variable
   const [activeTabIndex, setActiveTabIndex] = React.useState(0);
 
@@ -112,92 +121,108 @@ const BaseRuleFormTestSection: React.FC<BaseRuleFormTestSectionProps> = ({
         };
 
         return (
-          <Panel
-            title="Test Record"
-            actions={
-              <Button icon="add" onClick={handleTestAddition}>
-                Create {!testsCount ? 'your first' : ''} test
-              </Button>
-            }
-          >
+          <Box p={6}>
             {testsCount > 0 && (
               <Card variant="dark" p={4}>
-                <Flex as="ul" wrap="wrap" spacing={4}>
-                  {tests.map((test, index) => (
-                    <Box as="li" mb={4} key={test.name}>
-                      <AbstractButton
-                        borderRadius="pill"
-                        px={4}
-                        py={2}
-                        backgroundColor={activeTabIndex === index ? 'blue-400' : 'navyblue-300'}
-                        onClick={() => setActiveTabIndex(index)}
-                      >
-                        <Flex align="center">
-                          {test.name}
-                          <Icon
-                            type="close"
-                            size="x-small"
-                            ml={6}
-                            onClick={e => handleTestRemoval(e, index)}
-                          />
-                        </Flex>
-                      </AbstractButton>
+                <SimpleGrid gap={2} columns={9} spacing={2}>
+                  <Flex as="ul" wrap="wrap" spacing={4} gridColumn="1/10">
+                    <Box as="li">
+                      <IconButton
+                        variant="ghost"
+                        active={open}
+                        variantColor="darkblue"
+                        icon={open ? 'caret-up' : 'caret-down'}
+                        onClick={() => setOpen(!open)}
+                        size="medium"
+                        aria-label="Toggle Tests visibility"
+                      />
                     </Box>
-                  ))}
-                </Flex>
-                <Grid columnGap={5} templateColumns="1fr 2fr" mt={2} mb={6}>
-                  <Field
-                    as={FormikTextInput}
-                    name={`tests[${activeTabIndex}].name`}
-                    placeholder="The name of your test"
-                    label="Name"
-                  />
-                  <Flex align="center" spacing={5}>
-                    <Box fontSize="medium" fontWeight="medium" flexGrow={1} textAlign="right">
-                      {type === 'policy'
-                        ? 'Test resource should be compliant'
-                        : 'Test event should trigger an alert'}
-                    </Box>
-                    <Field
-                      as={FormikRadio}
-                      name={`tests[${activeTabIndex}].expectedResult`}
-                      value={true}
-                      label="Yes"
-                    />
-                    <Field
-                      as={FormikRadio}
-                      name={`tests[${activeTabIndex}].expectedResult`}
-                      value={false}
-                      label="No"
-                    />
+                    {tests.map((test, index) => (
+                      <Box as="li" mb={4} key={test.name}>
+                        <AbstractButton
+                          borderRadius="pill"
+                          px={4}
+                          py={2}
+                          backgroundColor={activeTabIndex === index ? 'blue-400' : 'navyblue-300'}
+                          onClick={() => setActiveTabIndex(index)}
+                        >
+                          <Flex align="center">
+                            {test.name}
+                            <Icon
+                              type="close"
+                              size="x-small"
+                              ml={6}
+                              onClick={e => handleTestRemoval(e, index)}
+                            />
+                          </Flex>
+                        </AbstractButton>
+                      </Box>
+                    ))}
                   </Flex>
-                </Grid>
-                <Box mb={5}>
-                  <Field
-                    as={FormikEditor}
-                    placeholder="# Enter a JSON object describing the resource to test against"
-                    name={`tests[${activeTabIndex}].resource`}
-                    width="100%"
-                    minLines={20}
-                    mode="json"
-                  />
-                </Box>
-                {renderTestResults}
-                <Flex mt={5} spacing={4}>
-                  <Button
-                    variantColor="orange"
-                    icon="play"
-                    onClick={() => runTests([tests[activeTabIndex]])}
-                  >
-                    Run Test
-                  </Button>
-                  <Button variantColor="orange" icon="play-all" onClick={() => runTests(tests)}>
-                    Run All
-                  </Button>
-                </Flex>
+                  <Box gridColumn="10/10">
+                    <Button icon="brackets" onClick={handleTestAddition}>
+                      Create {!testsCount ? 'your first' : ''} test
+                    </Button>
+                  </Box>
+                </SimpleGrid>
+                {open && (
+                  <>
+                    <Grid columnGap={5} templateColumns="1fr 2fr" mt={2} mb={6}>
+                      <Field
+                        as={FormikTextInput}
+                        name={`tests[${activeTabIndex}].name`}
+                        placeholder="The name of your test"
+                        label="Name"
+                      />
+                      <Flex align="center" spacing={5}>
+                        <Box fontSize="medium" fontWeight="medium" flexGrow={1} textAlign="right">
+                          {type === 'policy'
+                            ? 'Test resource should be compliant'
+                            : 'Test event should trigger an alert'}
+                        </Box>
+                        <Field
+                          as={FormikRadio}
+                          name={`tests[${activeTabIndex}].expectedResult`}
+                          value={true}
+                          label="Yes"
+                        />
+                        <Field
+                          as={FormikRadio}
+                          name={`tests[${activeTabIndex}].expectedResult`}
+                          value={false}
+                          label="No"
+                        />
+                      </Flex>
+                    </Grid>
+
+                    <Box mb={5}>
+                      <Field
+                        as={FormikEditor}
+                        placeholder="# Enter a JSON object describing the resource to test against"
+                        name={`tests[${activeTabIndex}].resource`}
+                        width="100%"
+                        minLines={20}
+                        mode="json"
+                      />
+                    </Box>
+                    {renderTestResults}
+                    <Flex mt={5} spacing={4}>
+                      <Button
+                        variantColor="orange"
+                        icon="play"
+                        onClick={() => runTests([tests[activeTabIndex]])}
+                      >
+                        Run Test
+                      </Button>
+                      <Button variantColor="orange" icon="play-all" onClick={() => runTests(tests)}>
+                        Run All
+                      </Button>
+                    </Flex>
+                  </>
+                )}
               </Card>
             )}
-          </Panel>
+          </Box>
         );
       }}
     />

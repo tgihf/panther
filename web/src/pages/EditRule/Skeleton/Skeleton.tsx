@@ -28,7 +28,7 @@ const EditRulePageSkeleton: React.FC = () => {
         <Tabs>
           <Box px={2}>
             <TabList>
-              <BorderedTab>Policy Setttings</BorderedTab>
+              <BorderedTab>Policy Settings</BorderedTab>
               <BorderedTab>Functions & Tests</BorderedTab>
             </TabList>
           </Box>

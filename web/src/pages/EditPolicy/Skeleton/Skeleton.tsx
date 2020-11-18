@@ -24,13 +24,13 @@ import { BorderedTab, BorderTabDivider } from 'Components/BorderedTab';
 const EditPolicyPageSkeleton: React.FC = () => {
   return (
     <FadeIn from="bottom">
-      <Card position="relative">
+      <Card position="relative" data-testid="policy-edit-loading">
         <Tabs>
           <Box px={2}>
             <TabList>
-              <BorderedTab>Policy Setttings</BorderedTab>
+              <BorderedTab>Policy Settings</BorderedTab>
               <BorderedTab>Functions & Tests</BorderedTab>
-              <BorderedTab>Auto Remedation</BorderedTab>
+              <BorderedTab>Auto Remediation</BorderedTab>
             </TabList>
           </Box>
           <BorderTabDivider />

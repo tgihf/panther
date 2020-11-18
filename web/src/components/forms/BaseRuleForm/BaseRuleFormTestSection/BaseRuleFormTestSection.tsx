@@ -160,7 +160,7 @@ const BaseRuleFormTestSection: React.FC<BaseRuleFormTestSectionProps> = ({
                     ))}
                   </Flex>
                   <Box gridColumn="10/10">
-                    <Button icon="brackets" onClick={handleTestAddition}>
+                    <Button icon="brackets" aria-label="Create test" onClick={handleTestAddition}>
                       Create {!testsCount ? 'your first' : ''} test
                     </Button>
                   </Box>

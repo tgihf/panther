@@ -45,7 +45,7 @@ const PolicyFormAutoRemediationSection: React.FC = () => {
 
   if (loading) {
     return (
-      <Box p={6}>
+      <Box p={6} data-testid="remediation-loading">
         <TablePlaceholder rowCount={2} />
       </Box>
     );

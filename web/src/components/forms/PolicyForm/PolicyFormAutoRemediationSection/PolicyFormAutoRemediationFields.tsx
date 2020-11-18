@@ -76,11 +76,12 @@ const PolicyFormAutoRemediationFields: React.FC<PolicyFormAutoRemediationFieldsP
 
   const autoRemediationSelected = !!autoRemediationSelection[0];
   return (
-    <Box p={6}>
+    <Box p={6} data-testid="auto-remediation">
       <Flex mb={6}>
         <Box ml="auto" minWidth={300}>
           <Combobox<RemediationTuple>
             searchable
+            data-testid="dropdown-remediation"
             label="Remediation"
             items={comboboxOptions}
             itemToString={remediationTuple => remediationTuple[0] || '(No remediation)'}
@@ -98,6 +99,7 @@ const PolicyFormAutoRemediationFields: React.FC<PolicyFormAutoRemediationFieldsP
               as={FormikEditor}
               placeholder="# Enter a JSON object describing the parameters of the remediation"
               name="autoRemediationParameters"
+              aria-label="Auto Remediation Parameters"
               width="100%"
               minLines={9}
               mode="json"

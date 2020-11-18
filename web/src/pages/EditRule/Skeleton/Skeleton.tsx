@@ -24,7 +24,7 @@ import { BorderedTab, BorderTabDivider } from 'Components/BorderedTab';
 const EditRulePageSkeleton: React.FC = () => {
   return (
     <FadeIn from="bottom">
-      <Card position="relative">
+      <Card position="relative" data-testid="rule-edit-loading">
         <Tabs>
           <Box px={2}>
             <TabList>

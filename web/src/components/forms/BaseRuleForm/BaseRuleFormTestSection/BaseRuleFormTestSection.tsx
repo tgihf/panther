@@ -210,11 +210,17 @@ const BaseRuleFormTestSection: React.FC<BaseRuleFormTestSectionProps> = ({
                       <Button
                         variantColor="orange"
                         icon="play"
+                        aria-label="Run Test"
                         onClick={() => runTests([tests[activeTabIndex]])}
                       >
                         Run Test
                       </Button>
-                      <Button variantColor="orange" icon="play-all" onClick={() => runTests(tests)}>
+                      <Button
+                        aria-label="Run All"
+                        variantColor="orange"
+                        icon="play-all"
+                        onClick={() => runTests(tests)}
+                      >
                         Run All
                       </Button>
                     </Flex>

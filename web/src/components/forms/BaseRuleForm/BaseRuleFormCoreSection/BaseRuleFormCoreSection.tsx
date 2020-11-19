@@ -197,7 +197,7 @@ const BaseRuleFormCoreSection: React.FC<BaseRuleFormCoreSectionProps> = ({ type 
       </Box>
       <SimpleGrid columns={2} spacing={5}>
         {isPolicy && (
-          <Box>
+          <Box as="fieldset">
             <FastField
               as={FormikMultiCombobox}
               searchable
@@ -239,7 +239,7 @@ const BaseRuleFormCoreSection: React.FC<BaseRuleFormCoreSectionProps> = ({ type 
             as={FormikMultiCombobox}
             disabled={disableDestinationField}
             searchable
-            label="Alert Destination Overrides"
+            label="Destination Overrides"
             name="outputIds"
             value={listValidOutputIds}
             items={availableOutputIds}

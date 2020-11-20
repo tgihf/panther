@@ -78,7 +78,7 @@ describe('EditPolicy', () => {
     expect(getByText('Resource Types')).toBeInTheDocument();
     expect(getByText('Custom Tags')).toBeInTheDocument();
     expect(getByText('Ignore Patterns')).toBeInTheDocument();
-    expect(getByText('Alert Destination Overrides')).toBeInTheDocument();
+    expect(getByText('Destination Overrides')).toBeInTheDocument();
 
     // Helper text
     expect(getByText('Basic Information')).toBeInTheDocument();

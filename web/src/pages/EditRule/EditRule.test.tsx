@@ -74,7 +74,7 @@ describe('EditRule', () => {
     expect(getByLabelText('Runbook')).toBeInTheDocument();
     expect(getByLabelText('Reference')).toBeInTheDocument();
     expect(getByText('Custom Tags')).toBeInTheDocument();
-    expect(getByText('Alert Destination Overrides')).toBeInTheDocument();
+    expect(getByText('Destination Overrides')).toBeInTheDocument();
     expect(getByText('* Log Types')).toBeInTheDocument();
     expect(getByText('* Deduplication Period')).toBeInTheDocument();
 

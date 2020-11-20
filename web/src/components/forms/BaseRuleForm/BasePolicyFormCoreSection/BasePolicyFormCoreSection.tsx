@@ -19,41 +19,26 @@
 import React from 'react';
 import { FastField, useFormikContext, Field } from 'formik';
 import FormikTextInput from 'Components/fields/TextInput';
-import {
-  Text,
-  Flex,
-  Box,
-  SimpleGrid,
-  FormHelperText,
-  Link,
-  FormError,
-  useSnackbar,
-} from 'pouncejs';
+import { Text, Flex, Box, SimpleGrid, FormHelperText, Link, FormError } from 'pouncejs';
 import { SeverityEnum } from 'Generated/schema';
-import { capitalize, minutesToString } from 'Helpers/utils';
+import { capitalize } from 'Helpers/utils';
 import FormikTextArea from 'Components/fields/TextArea';
 import FormikSwitch from 'Components/fields/Switch';
 import FormikCombobox from 'Components/fields/ComboBox';
-import FormikNumberInput from 'Components/fields/NumberInput';
+
 import FormikMultiCombobox from 'Components/fields/MultiComboBox';
+import { RESOURCE_TYPES } from 'Source/constants';
 import { RuleFormValues } from 'Components/forms/RuleForm';
+import { PolicyFormValues } from 'Components/forms/PolicyForm';
 import urls from 'Source/urls';
 import { Link as RRLink } from 'react-router-dom';
-import { useListAvailableLogTypes } from 'Source/graphql/queries';
 import useListAvailableDestinations from '../useListAvailableDestinations';
 
 const severityOptions = Object.values(SeverityEnum);
 const severityItemToString = (severity: string) => capitalize(severity.toLowerCase());
-const dedupPeriodMinutesOptions = [15, 30, 60, 180, 720, 1440];
 
-const BaseRuleFormCoreSection: React.FC = () => {
-  // Read the values from the "parent" form. We expect a formik to be declared in the upper scope
-  // since this is a "partial" form. If no Formik context is found this will error out intentionally
-  const { values, initialValues } = useFormikContext<RuleFormValues>();
-  const { pushSnackbar } = useSnackbar();
-  const { data } = useListAvailableLogTypes({
-    onError: () => pushSnackbar({ title: "Couldn't fetch your available log types" }),
-  });
+const BasePolicyFormCoreSection: React.FC = () => {
+  const { values, initialValues } = useFormikContext<RuleFormValues | PolicyFormValues>();
 
   const tagAdditionValidation = React.useMemo(() => (tag: string) => !values.tags.includes(tag), [
     values.tags,
@@ -115,7 +100,7 @@ const BaseRuleFormCoreSection: React.FC = () => {
           <Text color="navyblue-100">Basic Information</Text>
         </Box>
         <Flex spacing={6} ml="auto" mr={0} align="center" alignSelf="flex-end">
-          <FastField as={FormikSwitch} name="enabled" label="Rule Enabled" />
+          <FastField as={FormikSwitch} name="enabled" label="Policy Enabled" />
           <FastField
             as={FormikCombobox}
             name="severity"
@@ -130,13 +115,13 @@ const BaseRuleFormCoreSection: React.FC = () => {
         <FastField
           as={FormikTextInput}
           label="Display Name"
-          placeholder="A human-friendly name for this Rule"
+          placeholder="A human-friendly name for this Policy"
           name="displayName"
         />
         <FastField
           as={FormikTextInput}
-          label="* Rule ID"
-          placeholder={`The unique ID of this Rule`}
+          label="* Policy ID"
+          placeholder="The unique ID of this Policy"
           name="id"
           disabled={!!initialValues.id}
           required
@@ -146,15 +131,24 @@ const BaseRuleFormCoreSection: React.FC = () => {
         <FastField
           as={FormikTextArea}
           label="Description"
-          placeholder={`Additional context about this Rule`}
+          placeholder="Additional context about this Policy"
           name="description"
         />
         <SimpleGrid columns={1} spacing={5}>
           <FastField
             as={FormikTextArea}
             label="Runbook"
-            placeholder={`Procedures and operations related to this Rule`}
+            placeholder="Procedures and operations related to this Policy"
             name="runbook"
+          />
+        </SimpleGrid>
+
+        <SimpleGrid columns={1} spacing={5}>
+          <FastField
+            as={FormikTextArea}
+            label="Reference"
+            placeholder="An external link to why this Policy exists"
+            name="reference"
           />
         </SimpleGrid>
       </SimpleGrid>
@@ -162,28 +156,22 @@ const BaseRuleFormCoreSection: React.FC = () => {
         <Text color="navyblue-100">Additional Information</Text>
       </Box>
 
-      <SimpleGrid columns={6} spacing={5} mb={5}>
-        <Box gridColumn="1/6">
+      <SimpleGrid columns={2} spacing={5}>
+        <Box as="fieldset">
           <FastField
-            as={FormikTextArea}
-            label="Reference"
-            placeholder={`An external link to why this Rule exists`}
-            name="reference"
+            as={FormikMultiCombobox}
+            searchable
+            label="Resource Types"
+            name="resourceTypes"
+            items={RESOURCE_TYPES}
+            placeholder="Where should the policy apply?"
+            aria-describedby="resourceTypes-description"
           />
+          <FormHelperText id="resourceTypes-description" mt={2}>
+            Leave empty to apply to all resources
+          </FormHelperText>
         </Box>
 
-        <Box>
-          <Field
-            as={FormikNumberInput}
-            label="* Events Threshold"
-            min={1}
-            name="threshold"
-            placeholder="Send an alert only after # events"
-          />
-        </Box>
-      </SimpleGrid>
-
-      <SimpleGrid columns={4} spacing={5}>
         <FastField
           as={FormikMultiCombobox}
           searchable
@@ -193,6 +181,16 @@ const BaseRuleFormCoreSection: React.FC = () => {
           allowAdditions
           validateAddition={tagAdditionValidation}
           placeholder="i.e. HIPAA (separate with <Enter>)"
+        />
+
+        <FastField
+          as={FormikMultiCombobox}
+          searchable
+          name="suppressions"
+          label="Ignore Patterns"
+          items={(values as PolicyFormValues).suppressions}
+          allowAdditions
+          placeholder="i.e. aws::s3::* (separate with <Enter>)"
         />
 
         <Box as="fieldset">
@@ -211,25 +209,9 @@ const BaseRuleFormCoreSection: React.FC = () => {
           />
           {destinationHelperText}
         </Box>
-
-        <Field
-          as={FormikMultiCombobox}
-          searchable
-          label="* Log Types"
-          name="logTypes"
-          items={data?.listAvailableLogTypes.logTypes ?? []}
-          placeholder="Where should the rule appoly?"
-        />
-        <FastField
-          as={FormikCombobox}
-          label="* Deduplication Period"
-          name="dedupPeriodMinutes"
-          items={dedupPeriodMinutesOptions}
-          itemToString={minutesToString}
-        />
       </SimpleGrid>
     </Box>
   );
 };
 
-export default React.memo(BaseRuleFormCoreSection);
+export default React.memo(BasePolicyFormCoreSection);

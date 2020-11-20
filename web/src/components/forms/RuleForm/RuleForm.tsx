@@ -117,7 +117,7 @@ const RuleForm: React.FC<RuleFormProps> = ({ initialValues, onSubmit }) => {
                 <TabPanels>
                   <TabPanel data-testid="rule-settings-tabpanel" lazy>
                     <ErrorBoundary>
-                      <BaseRuleFormCoreSection type="rule" />
+                      <BaseRuleFormCoreSection />
                     </ErrorBoundary>
                   </TabPanel>
                   <TabPanel data-testid="function-settings-tabpanel" lazy>

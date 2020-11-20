@@ -27,7 +27,10 @@ import useUrlParams from 'Hooks/useUrlParams';
 import invert from 'lodash/invert';
 import Breadcrumbs from 'Components/Breadcrumbs';
 import SaveButton from 'Components/buttons/SaveButton';
-import { BaseRuleFormCoreSection, BaseRuleFormEditorSection } from 'Components/forms/BaseRuleForm';
+import {
+  BasePolicyFormCoreSection,
+  BaseRuleFormEditorSection,
+} from 'Components/forms/BaseRuleForm';
 import ErrorBoundary from 'Components/ErrorBoundary';
 import FormSessionRestoration from 'Components/utils/FormSessionRestoration';
 import PolicyFormAutoRemediationSection from './PolicyFormAutoRemediationSection';
@@ -121,7 +124,7 @@ const PolicyForm: React.FC<PolicyFormProps> = ({ initialValues, onSubmit }) => {
                 <TabPanels>
                   <TabPanel data-testid="policy-settings-tabpanel" lazy>
                     <ErrorBoundary>
-                      <BaseRuleFormCoreSection type="policy" />
+                      <BasePolicyFormCoreSection />
                     </ErrorBoundary>
                   </TabPanel>
                   <TabPanel data-testid="policy-functions-tabpanel" lazy>

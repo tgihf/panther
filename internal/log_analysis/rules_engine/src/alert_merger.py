@@ -24,8 +24,8 @@ from . import AlertInfo
 from .aws_clients import DDB_CLIENT
 
 _DDB_TABLE_NAME = os.environ['ALERTS_DEDUP_TABLE']
-
 # DDB Table attributes and keys
+    
 _PARTITION_KEY_NAME = 'partitionKey'
 _RULE_ID_ATTR_NAME = 'ruleId'
 _RULE_VERSION_ATTR_NAME = "ruleVersion"
@@ -42,7 +42,6 @@ _ALERT_REFERENCE = 'reference'
 _ALERT_SEVERITY = 'severity'
 _ALERT_RUNBOOK = 'runbook'
 _ALERT_DESTINATION_OVERRIDE = 'destinationOverride'
-_ALERT_SUMMARY_ATTRIBUTES = 'summaryAttributes'
 # The attribute defining the type of the error
 _ALERT_TYPE = 'type'
 
@@ -66,8 +65,7 @@ class MatchingGroupInfo:
     reference: Optional[str] = None
     severity: Optional[str] = None
     runbook: Optional[str] = None
-    destination_override: Optional[str] = None
-    summary_attributes: Optional[List[str]] = None
+    destination_override: Optional[List[str]] = None
 
 
 def _generate_dedup_key(rule_id: str, dedup: str, is_rule_error: bool) -> str:
@@ -190,12 +188,7 @@ def _update_get_conditional(group_info: MatchingGroupInfo) -> AlertInfo:
     if group_info.destination_override:
         update_expression += ', #18=:18'
         expression_attribute_names['#18'] = _ALERT_DESTINATION_OVERRIDE
-        expression_attribute_values[':18'] = {'S': group_info.destination_override}
-
-    if group_info.summary_attributes:
-        update_expression += ', #19=:19'
-        expression_attribute_names['#19'] = _ALERT_SUMMARY_ATTRIBUTES
-        expression_attribute_values[':19'] = {'SS': group_info.summary_attributes}
+        expression_attribute_values[':18'] = {'SS': group_info.destination_override}
 
     response = DDB_CLIENT.update_item(
         TableName=_DDB_TABLE_NAME,

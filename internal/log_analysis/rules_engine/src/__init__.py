@@ -41,8 +41,7 @@ class EngineResult:
     reference: Optional[str] = None
     severity: Optional[str] = None
     runbook: Optional[str] = None
-    destination_override: Optional[str] = None
-    summary_attributes: Optional[List[str]] = None
+    destination_override: Optional[List[str]] = None
 
 
 @dataclass

@@ -37,7 +37,7 @@ MAX_DEDUP_STRING_SIZE = 1000
 MAX_CUSTOM_FIELD_SIZE = 1000
 
 # Maximum number of Summary Attributes
-MAX_SUMMARY_ATTRIBUTES_SIZE = 10
+MAX_DESTINATION_OVERRIDE_SIZE = 10
 
 # The limit for DDB is 400kb per item (we store this one in DDB) and the limit for SQS/SNS is 256KB.
 # The limit of 200kb is an approximation - the other fields included in the request will be less than the remaining 56kb
@@ -187,11 +187,6 @@ class Rule:
         else:
             self._has_destination_override = False
 
-        if hasattr(self._module, 'summary_attributes'):
-            self._has_summary_attributes = True
-        else:
-            self._has_summary_attributes = False
-
         if hasattr(self._module, 'dedup'):
             self._has_dedup = True
         else:
@@ -277,15 +272,6 @@ class Rule:
             rule_result.destination_override_exception = err
 
         try:
-            rule_result.summary_attributes_output = self._get_custom_field(
-                event,
-                'summary_attributes',
-                use_default_on_exception=batch_mode
-            )
-        except Exception as err:  # pylint: disable=broad-except
-            rule_result.summary_attributes_exception = err
-
-        try:
             rule_result.dedup_output = self._get_dedup(
                 event,
                 rule_result.title_output,
@@ -343,22 +329,21 @@ class Rule:
             'severity': (self._has_severity, self._module.severity),
             'runbook': (self._has_runbook, self._module.runbook),
             'destination_override': (self._has_destination_override, self._module.destination_override),
-            'summary_attributes': (self._has_summary_attributes, self._module.summary_attributes),
         }
         if field not in _custom_field_map:
             self.logger.warning('attempted to access field [%s], this should only access custom fields. ', field)
             return None, None
         else:
             return _custom_field_map[field]
-
+    # TODO: Modify logic to use rule as default
     def _get_custom_field(self, event: Mapping, target_field: str, use_default_on_exception: bool = True) -> Optional[str]:
         has_field, command = self._get_custom_fields_mapper(target_field)
         if has_field:
-            if target_field == "summary_attributes":
-                expected_return_type = List[str]
-                max_custom_field_size = MAX_SUMMARY_ATTRIBUTES_SIZE
+            if target_field == "destination_override":
+                expected_return_type = Optional[List[str]]
+                max_custom_field_size = MAX_DESTINATION_OVERRIDE_SIZE
             else:
-                expected_return_type = str
+                expected_return_type = Optional[str]
                 max_custom_field_size = MAX_CUSTOM_FIELD_SIZE
 
             try:
@@ -376,7 +361,7 @@ class Rule:
                     '[%s] is [%d] characters. Truncating.',
                     target_field, max_custom_field_size, target_field, self.rule_id, len(custom_field)
                 )
-                if target_field == "summary_attributes":
+                if target_field == "destination_override":
                     return custom_field[:max_custom_field_size]
                 else:
                     num_characters_to_keep = max_custom_field_size - len(TRUNCATED_STRING_SUFFIX)

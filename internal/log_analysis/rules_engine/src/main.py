@@ -86,8 +86,6 @@ def direct_analysis(request: Dict[str, Any]) -> Dict[str, Any]:
                 'runbookError': format_exception(rule_result.runbook_exception),
                 'destinationOverrideOutput': rule_result.destination_override_output,
                 'destinationOverride': format_exception(rule_result.destination_override_exception),
-                'summaryAttributesOutput': rule_result.summary_attributes_output,
-                'summaryAttributesError': format_exception(rule_result.summary_attributes_exception),
                 'dedupOutput': rule_result.dedup_output,
                 'dedupError': format_exception(rule_result.dedup_exception),
                 'alertContextOutput': rule_result.alert_context,

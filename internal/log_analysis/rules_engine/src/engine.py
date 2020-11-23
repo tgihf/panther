@@ -92,7 +92,6 @@ class Engine:
                     severity=result.severity,
                     runbook=result.runbook,
                     destination_override=result.destination_override,
-                    summary_attributes=result.summary_attributes
                 )
                 engine_results.append(match)
 

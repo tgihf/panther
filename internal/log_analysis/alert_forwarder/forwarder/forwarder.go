@@ -292,6 +292,12 @@ func getOutputIds(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) []string {
 	return rule.OutputIDs
 }
 
+func getDestinationOverride(alertDedup *AlertDedupEvent) []string {
+	if alertDedup.GeneratedDestinationOverride != nil {
+		return alertDedup.GeneratedDestinationOverride
+	} else { return nil }
+}
+
 func getRuleDisplayName(rule *ruleModel.Rule) *string {
 	if len(rule.DisplayName) > 0 {
 		return &rule.DisplayName

@@ -98,6 +98,7 @@ func reporterHandler(lc *lambdacontext.LambdaContext, event events.DynamoDBEvent
 			continue
 		}
 
+		// TODO add custom handling for getCustomField
 		if err = handler.Do(oldAlertDedupEvent, newAlertDedupEvent); err != nil {
 			return errors.Wrap(err, "encountered issue while handling deduplication event")
 		}

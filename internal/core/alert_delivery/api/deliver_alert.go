@@ -19,6 +19,7 @@ package api
  */
 
 import (
+	"github.com/panther-labs/panther/api/gateway/analysis/models"
 	"strings"
 	"time"
 
@@ -120,7 +121,7 @@ func populateAlertData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, 
 		DestinationOverride: alertItem.DestinationOverride,
 		Tags:                rule.Tags,
 		AlertID:             &alertItem.AlertID,
-		Title:               alertItem.Title,
+		Title:               aws.String(*alertItem.Title),
 		RetryCount:          0,
 		IsTest:              false,
 		IsResent:            true,

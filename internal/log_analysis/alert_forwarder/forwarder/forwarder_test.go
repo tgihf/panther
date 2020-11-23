@@ -144,7 +144,7 @@ func TestHandleStoreAndSendNotification(t *testing.T) {
 		TimePartition:       "defaultPartition",
 		Severity:            string(testRuleResponse.Severity),
 		RuleDisplayName:     aws.String(string(testRuleResponse.DisplayName)),
-		Title:               aws.StringValue(newAlertDedupEvent.GeneratedTitle),
+		Title:               *newAlertDedupEvent.GeneratedTitle,
 		FirstEventMatchTime: newAlertDedupEvent.CreationTime,
 		LogTypes:            newAlertDedupEvent.LogTypes,
 		AlertDedupEvent: AlertDedupEvent{
@@ -329,7 +329,7 @@ func TestHandleStoreAndSendNotificationNoGeneratedTitle(t *testing.T) {
 		TimePartition:       "defaultPartition",
 		Severity:            string(testRuleResponse.Severity),
 		RuleDisplayName:     aws.String(string(testRuleResponse.DisplayName)),
-		Title:               "DisplayName",
+		Title:               *aws.String("DisplayName"),
 		FirstEventMatchTime: newAlertDedupEvent.CreationTime,
 		LogTypes:            newAlertDedupEvent.LogTypes,
 		AlertDedupEvent: AlertDedupEvent{

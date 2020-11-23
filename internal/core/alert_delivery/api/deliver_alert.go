@@ -19,6 +19,7 @@ package api
  */
 
 import (
+	"github.com/panther-labs/panther/api/gateway/analysis/models"
 	"strings"
 	"time"
 
@@ -54,7 +55,17 @@ func (API) DeliverAlert(input *deliveryModels.DeliverAlertInput) (*deliveryModel
 	}
 
 	// Get our Alert -> Output mappings. We determine which destinations an alert should be sent.
-	alertOutputMap, err := getAlertOutputMapping(alert, input.OutputIds)
+	// First check if there is a destination override set
+	var alertOutputMap AlertOutputMap
+	if alert.DestinationOverride != nil {
+		alertOutputMap, err = getAlertOutputMapping(alert, alert.DestinationOverride)
+		if err == nil {
+			alertOutputMap, err = getAlertOutputMapping(alert, input.OutputIds)
+		}
+	} else {
+		alertOutputMap, err = getAlertOutputMapping(alert, input.OutputIds)
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -85,8 +96,7 @@ func getAlert(input *deliveryModels.DeliverAlertInput) (*alertTable.AlertItem, e
 	}
 	return alertItem, nil
 }
-
-// populateAlertData - queries the rule or policy associated and merges in the details to the alert
+// populateAlertData - queries the rule associated and merges in the details to the alert
 func populateAlertData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, error) {
 	commonFields := []zap.Field{
 		zap.String("alertId", alertItem.AlertID),
@@ -115,19 +125,50 @@ func populateAlertData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, 
 		return nil, &genericapi.InvalidInputError{Message: genericErrorMessage}
 	}
 
+	// Logic for custom fields
+	var alertDescription models.Description; var alertReference models.Reference; var alertRunbook models.Runbook
+	// var alertDescription, alertReference, alertRunbook *string
+	var alertDestinationOverride []string
+
+
+	if alertItem.Description != nil && *alertItem.Description != "" {
+		alertDescription = models.Description(*alertItem.Description)
+	} else {
+		alertDescription = rule.Description
+	}
+
+	if alertItem.Reference != nil && *alertItem.Reference != "" {
+		alertReference = models.Reference(*alertItem.Reference)
+	} else {
+		alertReference = rule.Reference
+	}
+
+	if alertItem.Runbook != nil && *alertItem.Runbook != "" {
+		alertRunbook = models.Runbook(*alertItem.Runbook)
+	} else {
+		alertRunbook = rule.Runbook
+	}
+
+	// This will just be nil since a rule should never have a
+	if alertItem.DestinationOverride != nil {
+		alertDestinationOverride = alertItem.DestinationOverride
+	} else { alertDestinationOverride = nil }
+
 	return &deliveryModels.Alert{
 		AnalysisID:          string(rule.ID),
 		Type:                deliveryModels.RuleType,
 		CreatedAt:           alertItem.CreationTime,
 		Severity:            alertItem.Severity,
 		OutputIds:           []string{}, // We do not pay attention to this field
-		AnalysisDescription: aws.String(string(rule.Description)),
+		AnalysisDescription: aws.String(string(alertDescription)),
 		AnalysisName:        aws.String(string(rule.DisplayName)),
 		Version:             &alertItem.RuleVersion,
-		Runbook:             aws.String(string(rule.Runbook)),
+		Reference:           aws.String(string(alertReference)),
+		Runbook:             aws.String(string(alertRunbook)),
+		DestinationOverride: alertDestinationOverride,
 		Tags:                rule.Tags,
 		AlertID:             &alertItem.AlertID,
-		Title:               alertItem.Title,
+		Title:               aws.String(*alertItem.Title),
 		RetryCount:          0,
 		IsTest:              false,
 		IsResent:            true,

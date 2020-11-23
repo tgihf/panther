@@ -149,6 +149,12 @@ type Alert struct {
 	// Version is the S3 object version for the policy.
 	Version *string `json:"version,omitempty"`
 
+	// Reference is the user-provided triage information
+	Reference *string `json:"reference,omitempty"`
+
+	// DestinationOverride is the custom user-provided destination override
+	DestinationOverride []string `json:"destinationOverride,omitempty" validate:"dive,uuid4"`
+
 	// Runbook is the user-provided triage information.
 	Runbook *string `json:"runbook,omitempty"`
 

@@ -91,6 +91,10 @@ type AlertItem struct {
 	RuleVersion         string                     `json:"ruleVersion"`
 	RuleDisplayName     *string                    `json:"ruleDisplayName"`
 	Title               *string                    `json:"title"`
+	Description         *string                    `json:"description,omitempty"`
+	Reference           *string                    `json:"reference,omitempty"`
+	Runbook             *string                    `json:"runbook,omitempty"`
+	DestinationOverride []string                   `json:"destinationOverride",omitempty" validate:"dive,uuid4"`
 	DedupString         string                     `json:"dedup"`
 	FirstEventMatchTime time.Time                  `json:"firstEventMatchTime"`
 	CreationTime        time.Time                  `json:"creationTime"`

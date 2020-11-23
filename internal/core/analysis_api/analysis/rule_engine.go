@@ -109,6 +109,16 @@ func (e *RuleEngine) TestRule(rule *models.TestPolicy) (*models.TestRuleResult, 
 			testResult.Results[i].DedupError = result.DedupError
 			testResult.Results[i].TitleOutput = result.TitleOutput
 			testResult.Results[i].TitleError = result.TitleError
+			testResult.Results[i].DescriptionOutput = result.DescriptionOutput
+			testResult.Results[i].DescriptionError = result.DescriptionError
+			testResult.Results[i].ReferenceOutput = result.ReferenceOutput
+			testResult.Results[i].ReferenceError = result.ReferenceError
+			testResult.Results[i].SeverityOutput = result.SeverityOutput
+			testResult.Results[i].SeverityError = result.SeverityError
+			testResult.Results[i].RunbookOutput = result.RunbookOutput
+			testResult.Results[i].RunbookError = result.RunbookError
+			testResult.Results[i].DestinationOverrideOutput = result.DestinationOverrideOutput
+			testResult.Results[i].DestinationOverrideError = result.DestinationOverrideError
 			testResult.Results[i].AlertContextOutput = truncate(result.AlertContextOutput) // truncate, can be huge json
 			testResult.Results[i].AlertContextError = result.AlertContextError
 		}

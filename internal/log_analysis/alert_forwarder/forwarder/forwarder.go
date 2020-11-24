@@ -290,7 +290,9 @@ func getCustomField(targetField string, rule *ruleModel.Rule, alertDedup *AlertD
 func getDestinationOverride(alertDedup *AlertDedupEvent) []string {
 	if alertDedup.GeneratedDestinationOverride != nil {
 		return alertDedup.GeneratedDestinationOverride
-	} else { return nil }
+	} else {
+		return nil
+	}
 }
 
 func getRuleDisplayName(rule *ruleModel.Rule) *string {

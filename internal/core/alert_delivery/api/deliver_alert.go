@@ -154,7 +154,9 @@ func populateAlertData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, 
 	// This will just be nil since a rule should never have a
 	if alertItem.DestinationOverride != nil {
 		alertDestinationOverride = alertItem.DestinationOverride
-	} else { alertDestinationOverride = nil }
+	} else {
+		alertDestinationOverride = nil
+	}
 
 	return &deliveryModels.Alert{
 		AnalysisID:          string(rule.ID),

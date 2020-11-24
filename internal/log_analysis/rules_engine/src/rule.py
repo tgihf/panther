@@ -21,9 +21,7 @@ import tempfile
 from collections.abc import Mapping
 import traceback
 from dataclasses import dataclass
-from importlib import util as import_util
-from pathlib import Path
-from typing import Any, Dict, Optional, Callable, List
+from typing import Any, Optional, Callable, List, Tuple, Type
 
 from .logging import get_logger
 from .util import id_to_path, import_file_as_module, store_modules
@@ -76,7 +74,7 @@ class RuleResult:
     runbook_output: Optional[str] = None
     runbook_exception: Optional[Exception] = None
 
-    destination_override_output: Optional[str] = None
+    destination_override_output: Optional[List[str]] = None
     destination_override_exception: Optional[Exception] = None
 
     alert_context: Optional[str] = None
@@ -107,7 +105,7 @@ class RuleResult:
 class Rule:
     """Panther rule metadata and imported module."""
 
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches,too-many-statements
     def __init__(self, config: Mapping):
         """Create new rule from a dict.
 
@@ -263,10 +261,8 @@ class Rule:
             rule_result.runbook_exception = err
 
         try:
-            rule_result.destination_override_output = self._get_custom_field(
+            rule_result.destination_override_output = self._get_destination_override(
                 event,
-                'destination_override',
-                use_default_on_exception=batch_mode
             )
         except Exception as err:  # pylint: disable=broad-except
             rule_result.destination_override_exception = err
@@ -321,54 +317,57 @@ class Rule:
 
         return dedup_string
 
-    def _get_custom_fields_mapper(self, field: str) -> (bool, Callable):
+    def _get_custom_field(self, event: Mapping, target_field: str, use_default_on_exception: bool = True) -> Optional[str]:
         _custom_field_map = {
             'title': (self._has_title, self._module.title),
             'description': (self._has_description, self._module.description),
             'reference': (self._has_reference, self._module.reference),
             'severity': (self._has_severity, self._module.severity),
             'runbook': (self._has_runbook, self._module.runbook),
-            'destination_override': (self._has_destination_override, self._module.destination_override),
         }
-        if field not in _custom_field_map:
-            self.logger.warning('attempted to access field [%s], this should only access custom fields. ', field)
-            return None, None
-        else:
-            return _custom_field_map[field]
-    # TODO: Modify logic to use rule as default
-    def _get_custom_field(self, event: Mapping, target_field: str, use_default_on_exception: bool = True) -> Optional[str]:
-        has_field, command = self._get_custom_fields_mapper(target_field)
+        if target_field not in _custom_field_map:
+            self.logger.error('attempted to access field [%s], this should only access custom fields. ', target_field)
+            return None
+        has_field, command = _custom_field_map[target_field]
         if has_field:
-            if target_field == "destination_override":
-                expected_return_type = Optional[List[str]]
-                max_custom_field_size = MAX_DESTINATION_OVERRIDE_SIZE
-            else:
-                expected_return_type = Optional[str]
-                max_custom_field_size = MAX_CUSTOM_FIELD_SIZE
-
             try:
-                custom_field = self._run_command(command, event, expected_return_type)
+                custom_field = self._run_command(command, event, str)
             except Exception as err:  # pylint: disable=broad-except
                 if use_default_on_exception:
                     self.logger.warning('%s method raised exception. Using default. Exception: %s', target_field, err)
                     return None
                 raise
 
-            if len(custom_field) > max_custom_field_size:
+            if len(custom_field) > MAX_CUSTOM_FIELD_SIZE:
                 # If custom field exceeds max size, truncate it
                 self.logger.warning(
                     'maximum field [%s] length is [%d]. [%s]] for rule with ID '
                     '[%s] is [%d] characters. Truncating.',
-                    target_field, max_custom_field_size, target_field, self.rule_id, len(custom_field)
+                    target_field, MAX_CUSTOM_FIELD_SIZE, target_field, self.rule_id, len(custom_field)
                 )
-                if target_field == "destination_override":
-                    return custom_field[:max_custom_field_size]
-                else:
-                    num_characters_to_keep = max_custom_field_size - len(TRUNCATED_STRING_SUFFIX)
-                    return custom_field[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
+                num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
+                return custom_field[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
             return custom_field
-        else:
-            return None
+        return None
+
+    def _get_destination_override(self, event: Mapping) -> Optional[List[str]]:
+        if self._has_destination_override:
+            try:
+                custom_field = self._run_command(self._module.destination_override, event, List[str])
+            except Exception as err:  # pylint: disable=broad-except
+                return None
+
+            if len(custom_field) > MAX_DESTINATION_OVERRIDE_SIZE:
+                # If custom field exceeds max size, truncate it
+                self.logger.warning(
+                    'maximum len of destination override is [%d] for rule with ID '
+                    '[%s] is [%d] fields. Truncating.',
+                    MAX_DESTINATION_OVERRIDE_SIZE, self.rule_id, len(custom_field)
+                )
+                num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
+                return custom_field[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
+            return custom_field
+        return None
 
     def _get_alert_context(self, event: Mapping, use_default_on_exception: bool = True) -> Optional[str]:
         if not self._has_alert_context:

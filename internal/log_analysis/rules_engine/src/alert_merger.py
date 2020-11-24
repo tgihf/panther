@@ -25,7 +25,7 @@ from .aws_clients import DDB_CLIENT
 
 _DDB_TABLE_NAME = os.environ['ALERTS_DEDUP_TABLE']
 # DDB Table attributes and keys
-    
+
 _PARTITION_KEY_NAME = 'partitionKey'
 _RULE_ID_ATTR_NAME = 'ruleId'
 _RULE_VERSION_ATTR_NAME = "ruleVersion"

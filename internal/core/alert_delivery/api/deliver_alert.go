@@ -19,7 +19,6 @@ package api
  */
 
 import (
-	"github.com/panther-labs/panther/api/gateway/analysis/models"
 	"strings"
 	"time"
 
@@ -28,6 +27,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/panther-labs/panther/api/gateway/analysis/client/operations"
+	"github.com/panther-labs/panther/api/gateway/analysis/models"
 	deliveryModels "github.com/panther-labs/panther/api/lambda/delivery/models"
 	outputModels "github.com/panther-labs/panther/api/lambda/outputs/models"
 	alertTable "github.com/panther-labs/panther/internal/log_analysis/alerts_api/table"
@@ -96,6 +96,7 @@ func getAlert(input *deliveryModels.DeliverAlertInput) (*alertTable.AlertItem, e
 	}
 	return alertItem, nil
 }
+
 // populateAlertData - queries the rule associated and merges in the details to the alert
 func populateAlertData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, error) {
 	commonFields := []zap.Field{
@@ -126,10 +127,11 @@ func populateAlertData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, 
 	}
 
 	// Logic for custom fields
-	var alertDescription models.Description; var alertReference models.Reference; var alertRunbook models.Runbook
+	var alertDescription models.Description
+	var alertReference models.Reference
+	var alertRunbook models.Runbook
 	// var alertDescription, alertReference, alertRunbook *string
 	var alertDestinationOverride []string
-
 
 	if alertItem.Description != nil && *alertItem.Description != "" {
 		alertDescription = models.Description(*alertItem.Description)

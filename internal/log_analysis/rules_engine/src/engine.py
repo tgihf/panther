@@ -87,11 +87,11 @@ class Engine:
                     event=event,
                     title=result.title_output,
                     alert_context=result.alert_context,
-                    description=result.description,
-                    reference=result.reference,
-                    severity=result.severity,
-                    runbook=result.runbook,
-                    destination_override=result.destination_override,
+                    description=result.description_output,
+                    reference=result.reference_output,
+                    severity=result.severity_output,
+                    runbook=result.runbook_output,
+                    destination_override=result.destination_override_output,
                 )
                 engine_results.append(match)
 

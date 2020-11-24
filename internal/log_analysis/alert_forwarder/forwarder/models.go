@@ -36,17 +36,19 @@ const (
 	alertTableUpdateTimeAttribute = "updateTime"
 )
 
+// TODO: Update Generated custom fields dynamodbav tags
+
 // AlertDedupEvent represents the event stored in the alert dedup DDB table by the rules engine
 type AlertDedupEvent struct {
-	RuleID              string    `dynamodbav:"ruleId"`
-	RuleVersion         string    `dynamodbav:"ruleVersion"`
-	DeduplicationString string    `dynamodbav:"dedup"`
-	CreationTime        time.Time `dynamodbav:"creationTime"`
-	UpdateTime          time.Time `dynamodbav:"updateTime"`
-	EventCount          int64     `dynamodbav:"eventCount"`
-	LogTypes            []string  `dynamodbav:"logTypes,stringset"`
-	AlertContext        *string   `dynamodbav:"context,string"`
-	Type                string    `dynamodbav:"type"`
+	RuleID                       string    `dynamodbav:"ruleId"`
+	RuleVersion                  string    `dynamodbav:"ruleVersion"`
+	DeduplicationString          string    `dynamodbav:"dedup"`
+	CreationTime                 time.Time `dynamodbav:"creationTime"`
+	UpdateTime                   time.Time `dynamodbav:"updateTime"`
+	EventCount                   int64     `dynamodbav:"eventCount"`
+	LogTypes                     []string  `dynamodbav:"logTypes,stringset"`
+	AlertContext                 *string   `dynamodbav:"context,string"`
+	Type                         string    `dynamodbav:"type"`
 	// Generated Fields
 	GeneratedTitle               *string  `dynamodbav:"title,string"`
 	GeneratedDescription         *string  `dynamodbav:"description,string"`

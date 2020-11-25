@@ -218,8 +218,7 @@ class Rule:
                 rule_result.severity_output = rule_result.severity_output.upper()
                 if rule_result.severity_output not in SEVERITY_TYPES:
                     self.logger.error(
-                        "received invalid severity: [%s], expected to be one of: [%s]",
-                        str(rule_result.severity_output),
+                        "received invalid severity: [%s], expected to be one of: [%s]", str(rule_result.severity_output),
                         str(SEVERITY_TYPES)
                     )
         except Exception as err:  # pylint: disable=broad-except

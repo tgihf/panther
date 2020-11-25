@@ -60,7 +60,9 @@ func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, 
 				}
 			}
 		}
-		if len(overrideOutputs) > 0 { return overrideOutputs, nil }
+		if len(overrideOutputs) > 0 {
+			return overrideOutputs, nil
+		}
 	}
 
 	// Otherwise, return the specified output overrides for the alert

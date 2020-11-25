@@ -74,36 +74,6 @@ type RuleResult struct {
 
 	// title output
 	TitleOutput string `json:"titleOutput,omitempty"`
-
-	// description error
-	DescriptionError string `json:"descriptionError,omitempty"`
-
-	// description output
-	DescriptionOutput string `json:"descriptionOutput,omitempty"`
-
-	// reference error
-	ReferenceError string `json:"referenceError,omitempty"`
-
-	// reference output
-	ReferenceOutput string `json:"referenceOutput,omitempty"`
-
-	// severity error
-	SeverityError string `json:"severityError,omitempty"`
-
-	// severity output
-	SeverityOutput string `json:"severityOutput,omitempty"`
-
-	// runbook error
-	RunbookError string `json:"runbookError,omitempty"`
-
-	// runbook output
-	RunbookOutput string `json:"runbookOutput,omitempty"`
-
-	// destinationOverride error
-	DestinationOverrideError string `json:"destinationOverrideError,omitempty"`
-
-	// destinationOverride output
-	DestinationOverrideOutput string `json:"destinationOverrideOutput,omitempty"`
 }
 
 // Validate validates this rule result

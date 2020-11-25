@@ -34,7 +34,7 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 
-	ruleModel "github.com/panther-labs/panther/api/gateway/analysis/models"
+	ruleModel "github.com/panther-labs/panther/api/lambda/analysis/models"
 	alertModel "github.com/panther-labs/panther/api/lambda/delivery/models"
 	"github.com/panther-labs/panther/pkg/metrics"
 )
@@ -111,7 +111,7 @@ func (h *Handler) logStats(rule *ruleModel.Rule, event *AlertDedupEvent) {
 		[]metrics.Dimension{
 			{Name: "Severity", Value: *getSeverity(rule, event)},
 			{Name: "AnalysisType", Value: "Rule"},
-			{Name: "AnalysisID", Value: string(rule.ID)},
+			{Name: "AnalysisID", Value: rule.ID},
 		},
 		metrics.Metric{
 			Name:  "AlertsCreated",
@@ -205,8 +205,9 @@ func (h *Handler) sendAlertNotification(rule *ruleModel.Rule, alertDedup *AlertD
 		// as the update time -> the time that an update(new event) caused the matched events to exceed threshold
 		// In case the rule doesnt' have a threshold, the two are anyway the same
 		CreatedAt:    alertDedup.UpdateTime,
-		OutputIds:    rule.OutputIds,
+		OutputIds:    rule.OutputIDs,
 		AnalysisName: getRuleDisplayName(rule),
+		Runbook:      aws.String(string(rule.Runbook)),
 		Severity:     getSeverity(rule, alertDedup),
 		Tags:         rule.Tags,
 		Type:         alertDedup.Type,
@@ -251,9 +252,9 @@ func getTitle(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
 	}
 	ruleDisplayName := getRuleDisplayName(rule)
 	if ruleDisplayName != nil {
-		return ruleDisplayName
+		return *ruleDisplayName
 	}
-	return aws.String(string(rule.ID))
+	return rule.ID
 }
 
 func getDescription(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
@@ -293,7 +294,7 @@ func getDestinationOverride(alertDedup *AlertDedupEvent) []string {
 
 func getRuleDisplayName(rule *ruleModel.Rule) *string {
 	if len(rule.DisplayName) > 0 {
-		return aws.String(string(rule.DisplayName))
+		return &rule.DisplayName
 	}
 	return nil
 }

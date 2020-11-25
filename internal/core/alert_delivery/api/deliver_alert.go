@@ -112,7 +112,7 @@ func populateAlertData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, 
 		AnalysisID:          rule.ID,
 		Type:                deliveryModels.RuleType,
 		CreatedAt:           alertItem.CreationTime,
-		Severity:            alertItem.Severity,
+		Severity:            aws.String(alertItem.Severity),
 		OutputIds:           []string{}, // We do not pay attention to this field
 		AnalysisDescription: alertItem.Description,
 		AnalysisName:        aws.String(rule.DisplayName),

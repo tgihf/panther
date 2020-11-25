@@ -199,45 +199,31 @@ class Rule:
             return rule_result
 
         try:
-            rule_result.title_output = self._get_custom_field(
-                event, 'title', use_default_on_exception=batch_mode
-            )
+            rule_result.title_output = self._get_custom_field(event, 'title', use_default_on_exception=batch_mode)
         except Exception as err:  # pylint: disable=broad-except
             rule_result.title_exception = err
 
         try:
-            rule_result.description_output = self._get_custom_field(
-                event, 'description', use_default_on_exception=batch_mode
-            )
+            rule_result.description_output = self._get_custom_field(event, 'description', use_default_on_exception=batch_mode)
         except Exception as err:  # pylint: disable=broad-except
             rule_result.description_exception = err
 
         try:
-            rule_result.reference_output = self._get_custom_field(
-                event, 'reference', use_default_on_exception=batch_mode
-            )
+            rule_result.reference_output = self._get_custom_field(event, 'reference', use_default_on_exception=batch_mode)
         except Exception as err:  # pylint: disable=broad-except
             rule_result.reference_exception = err
 
         try:
-            rule_result.severity_output = (
-                self._get_custom_field(
-                    event, 'severity', use_default_on_exception=batch_mode
-                ).upper()
-            )
+            rule_result.severity_output = (self._get_custom_field(event, 'severity', use_default_on_exception=batch_mode).upper())
             if rule_result.severity_output not in SEVERITY_TYPES:
                 self.logger.error(
-                    "received invalid severity: [%s], expected to be one of: [%s]",
-                    str(rule_result.severity_output),
-                    str(SEVERITY_TYPES)
+                    "received invalid severity: [%s], expected to be one of: [%s]", str(rule_result.severity_output), str(SEVERITY_TYPES)
                 )
         except Exception as err:  # pylint: disable=broad-except
             rule_result.severity_exception = err
 
         try:
-            rule_result.runbook_output = self._get_custom_field(
-                event, 'runbook', use_default_on_exception=batch_mode
-            )
+            rule_result.runbook_output = self._get_custom_field(event, 'runbook', use_default_on_exception=batch_mode)
         except Exception as err:  # pylint: disable=broad-except
             rule_result.runbook_exception = err
 
@@ -247,16 +233,12 @@ class Rule:
             rule_result.destination_override_exception = err
 
         try:
-            rule_result.dedup_output = self._get_dedup(
-                event, rule_result.title_output, use_default_on_exception=batch_mode
-            )
+            rule_result.dedup_output = self._get_dedup(event, rule_result.title_output, use_default_on_exception=batch_mode)
         except Exception as err:  # pylint: disable=broad-except
             rule_result.dedup_exception = err
 
         try:
-            rule_result.alert_context = self._get_alert_context(
-                event, use_default_on_exception=batch_mode
-            )
+            rule_result.alert_context = self._get_alert_context(event, use_default_on_exception=batch_mode)
         except Exception as err:  # pylint: disable=broad-except
             rule_result.alert_context_exception = err
 
@@ -265,9 +247,7 @@ class Rule:
     # Returns the dedup string for this rule match
     # If the rule match had a custom title, use the title as a deduplication string
     # If no title and no dedup function is defined, return the default dedup string.
-    def _get_dedup(
-        self, event: Mapping, title: Optional[str], use_default_on_exception: bool = True
-    ) -> str:
+    def _get_dedup(self, event: Mapping, title: Optional[str], use_default_on_exception: bool = True) -> str:
         if not self._has_dedup:
             if title:
                 # If no dedup function is defined but the rule had a title, use the title as dedup string
@@ -305,9 +285,7 @@ class Rule:
 
         return dedup_string
 
-    def _get_custom_field(
-        self, event: Mapping, target_field: str, use_default_on_exception: bool = True
-    ) -> Optional[str]:
+    def _get_custom_field(self, event: Mapping, target_field: str, use_default_on_exception: bool = True) -> Optional[str]:
         if target_field not in self._custom_field_map:
             self.logger.error(
                 'attempted to access field [%s], this should only access custom fields. ',
@@ -349,9 +327,7 @@ class Rule:
             try:
                 custom_field = self._run_command(self._module.destination_override, event, list())
             except Exception as err:  # pylint: disable=broad-except
-                self.logger.warning(
-                    '_get_destination_override method raised exception. Exception: %s', err
-                )
+                self.logger.warning('_get_destination_override method raised exception. Exception: %s', err)
                 return None
 
             if len(custom_field) > MAX_DESTINATION_OVERRIDE_SIZE:
@@ -367,9 +343,7 @@ class Rule:
             return custom_field
         return None
 
-    def _get_alert_context(
-        self, event: Mapping, use_default_on_exception: bool = True
-    ) -> Optional[str]:
+    def _get_alert_context(self, event: Mapping, use_default_on_exception: bool = True) -> Optional[str]:
         if not self._has_alert_context:
             return None
 
@@ -419,12 +393,9 @@ class Rule:
                     )
                 )
         else:
-            if not isinstance(expected_type, list) or not all(
-                [isinstance(x, (str, bool)) for x in result]
-            ):
+            if not isinstance(expected_type, list) or not all([isinstance(x, (str, bool)) for x in result]):
                 raise Exception(
-                    'rule [{}] function [{}] returned [{}], expected a list'.format(
-                        self.rule_id, function.__name__, type(result).__name__
-                    )
+                    'rule [{}] function [{}] returned [{}], expected a list'.format(self.rule_id, function.__name__,
+                                                                                    type(result).__name__)
                 )
         return result

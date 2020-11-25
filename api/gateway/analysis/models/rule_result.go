@@ -69,47 +69,11 @@ type RuleResult struct {
 	// test name
 	TestName string `json:"testName,omitempty"`
 
-	// title output
-	TitleOutput string `json:"titleOutput,omitempty"`
-
 	// title error
 	TitleError string `json:"titleError,omitempty"`
 
-	// description output
-	DescriptionOutput string `json:"descriptionOutput,omitempty"`
-
-	// description error
-	DescriptionError string `json:"descriptionError,omitempty"`
-
-	// reference output
-	ReferenceOutput string `json:"referenceOutput,omitempty"`
-
-	// reference error
-	ReferenceError string `json:"referenceError,omitempty"`
-
-	// severity output
-	SeverityOutput string `json:"severityOutput,omitempty"`
-
-	// severity error
-	SeverityError string `json:"severityError,omitempty"`
-
-	// runbook output
-	RunbookOutput string `json:"runbookOutput,omitempty"`
-
-	// runbook error
-	RunbookError string `json:"runbookError,omitempty"`
-
-	// destinationOverride output
-	DestinationOverrideOutput string `json:"destinationOverrideOutput,omitempty"`
-
-	// destinationOverride error
-	DestinationOverrideError string `json:"destinationOverrideError,omitempty"`
-
-	// summaryAttributes output
-	SummaryAttributesOutput string `json:"summaryAttributesOutput,omitempty"`
-
-	// summaryAttributes error
-	SummaryAttributesError string `json:"summaryAttributesError,omitempty"`
+	// title output
+	TitleOutput string `json:"titleOutput,omitempty"`
 }
 
 // Validate validates this rule result

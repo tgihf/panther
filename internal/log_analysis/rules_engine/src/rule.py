@@ -99,8 +99,8 @@ class RuleResult:
         """Returns whether any of the rule functions raised an error"""
         return bool(
             self.rule_exception or self.title_exception or self.dedup_exception or self.alert_context_exception or
-            self.description_exception or self.reference_exception or self.severity_exception or
-            self.runbook_exception or self.destination_override_exception
+            self.description_exception or self.reference_exception or self.severity_exception or self.runbook_exception or
+            self.destination_override_exception
         )
 
 
@@ -132,9 +132,7 @@ class Rule:
             raise AssertionError('Field "versionId" of type str is required field')
         self.rule_version = config['versionId']
 
-        if not ('dedupPeriodMinutes' in config) or not isinstance(
-            config['dedupPeriodMinutes'], int
-        ):
+        if not ('dedupPeriodMinutes' in config) or not isinstance(config['dedupPeriodMinutes'], int):
             self.rule_dedup_period_mins = DEFAULT_RULE_DEDUP_PERIOD_MINS
         else:
             self.rule_dedup_period_mins = config['dedupPeriodMinutes']

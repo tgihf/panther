@@ -127,28 +127,19 @@ func populateAlertData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, 
 	}
 
 	// Logic for custom fields
-	var alertDescription models.Description
-	var alertReference models.Reference
-	var alertRunbook models.Runbook
-	// var alertDescription, alertReference, alertRunbook *string
+	var alertDescription, alertReference, alertRunbook = rule.Description, rule.Reference, rule.Runbook
 	var alertDestinationOverride []string
 
-	if alertItem.Description != nil && *alertItem.Description != "" {
+	if aws.StringValue(alertItem.Description) != "" {
 		alertDescription = models.Description(*alertItem.Description)
-	} else {
-		alertDescription = rule.Description
 	}
 
-	if alertItem.Reference != nil && *alertItem.Reference != "" {
+	if aws.StringValue(alertItem.Reference) != "" {
 		alertReference = models.Reference(*alertItem.Reference)
-	} else {
-		alertReference = rule.Reference
 	}
 
-	if alertItem.Runbook != nil && *alertItem.Runbook != "" {
+	if aws.StringValue(alertItem.Runbook) != "" {
 		alertRunbook = models.Runbook(*alertItem.Runbook)
-	} else {
-		alertRunbook = rule.Runbook
 	}
 
 	// This will just be nil since a rule should never have a

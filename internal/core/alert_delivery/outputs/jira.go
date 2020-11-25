@@ -40,7 +40,7 @@ func (client *OutputClient) Jira(
 	description := "*Description:* " + aws.StringValue(alert.AnalysisDescription)
 	link := "\n [Click here to view in the Panther UI](" + generateURL(alert) + ")"
 	runBook := "\n *Runbook:* " + aws.StringValue(alert.Runbook)
-	severity := "\n *Severity:* " + alert.Severity
+	severity := "\n *Severity:* " + aws.StringValue(alert.Severity)
 	tags := "\n *Tags:* " + strings.Join(alert.Tags, ", ")
 	// Best effort attempt to marshal Alert Context
 	marshaledContext, _ := jsoniter.MarshalToString(alert.Context)

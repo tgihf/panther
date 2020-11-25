@@ -65,7 +65,7 @@ func generateTestAlert() *deliveryModels.Alert {
 		AnalysisID:          "Test.Alert",
 		Type:                deliveryModels.RuleType,
 		CreatedAt:           time.Now().UTC(),
-		Severity:            "INFO",
+		Severity:            aws.String("INFO"),
 		OutputIds:           []string{},
 		AnalysisDescription: aws.String("This is a Test Alert"),
 		AnalysisName:        aws.String("Test Alert"),

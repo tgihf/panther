@@ -43,7 +43,7 @@ func (client *OutputClient) Opsgenie(
 	description := "<strong>Description:</strong> " + aws.StringValue(alert.AnalysisDescription)
 	link := "\n<a href=\"" + generateURL(alert) + "\">Click here to view in the Panther UI</a>"
 	runBook := "\n <strong>Runbook:</strong> " + aws.StringValue(alert.Runbook)
-	severity := "\n <strong>Severity:</strong> " + alert.Severity
+	severity := "\n <strong>Severity:</strong> " + aws.StringValue(alert.Severity)
 
 	// Best effort attempt to marshal Alert Context
 	marshaledContext, _ := jsoniter.MarshalToString(alert.Context)
@@ -53,7 +53,7 @@ func (client *OutputClient) Opsgenie(
 		"message":     generateAlertTitle(alert),
 		"description": description + link + runBook + severity + alertContext,
 		"tags":        alert.Tags,
-		"priority":    pantherToOpsGeniePriority[alert.Severity],
+		"priority":    pantherToOpsGeniePriority[aws.StringValue(alert.Severity)],
 	}
 	authorization := "GenieKey " + config.APIKey
 	requestHeader := map[string]string{

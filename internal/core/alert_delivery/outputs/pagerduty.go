@@ -32,7 +32,7 @@ const (
 
 // PagerDuty sends an alert to a pager duty integration endpoint.
 func (client *OutputClient) PagerDuty(alert *alertModels.Alert, config *outputModels.PagerDutyConfig) *AlertDeliveryResponse {
-	severity, err := pantherSeverityToPagerDuty(alert.Severity)
+	severity, err := pantherSeverityToPagerDuty(*alert.Severity)
 	if err != nil {
 		return err
 	}

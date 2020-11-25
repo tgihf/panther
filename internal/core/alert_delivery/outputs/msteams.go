@@ -46,7 +46,7 @@ func (client *OutputClient) MsTeams(
 				"facts": []interface{}{
 					map[string]string{"name": "Description", "value": aws.StringValue(alert.AnalysisDescription)},
 					map[string]string{"name": "Runbook", "value": aws.StringValue(alert.Runbook)},
-					map[string]string{"name": "Severity", "value": alert.Severity},
+					map[string]string{"name": "Severity", "value": aws.StringValue(alert.Severity)},
 					map[string]string{"name": "Tags", "value": strings.Join(alert.Tags, ", ")},
 					map[string]string{"name": "AlertContext", "value": marshaledContext},
 				},

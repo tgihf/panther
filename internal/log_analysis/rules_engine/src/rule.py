@@ -120,16 +120,14 @@ class Rule:
                 (Optional) dedup_period_mins: The period during which the events will be deduplicated
         """
         self.logger = get_logger()
-        if not ('id' in config) or not isinstance(config['id'], str):
-            raise AssertionError('Field "id" of type str is required field')
+
+        # Check for required string fields
+        for each_field in ['id', 'body', 'versionId']:
+            if not (each_field in config) or not isinstance(config[each_field], str):
+                raise AssertionError('Field "%s" of type str is required field' % each_field)
+
         self.rule_id = config['id']
-
-        if not ('body' in config) or not isinstance(config['body'], str):
-            raise AssertionError('Field "body" of type str is required field')
         self.rule_body = config['body']
-
-        if not ('versionId' in config) or not isinstance(config['versionId'], str):
-            raise AssertionError('Field "versionId" of type str is required field')
         self.rule_version = config['versionId']
 
         if not ('dedupPeriodMinutes' in config) or not isinstance(config['dedupPeriodMinutes'], int):

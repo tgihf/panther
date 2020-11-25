@@ -21,7 +21,7 @@ import tempfile
 from collections.abc import Mapping
 import traceback
 from dataclasses import dataclass
-from typing import Any, Optional, Callable, List, Tuple, Type
+from typing import Any, Optional, Callable, List
 
 from .logging import get_logger
 from .util import id_to_path, import_file_as_module, store_modules
@@ -169,12 +169,13 @@ class Rule:
         self._default_dedup_string = 'defaultDedupString:{}'.format(self.rule_id)
 
         # Added to support custom fields
+
         self._custom_field_map = {
-            'title': (self._has_title, self._module.title),
-            'description': (self._has_description, self._module.description),
-            'reference': (self._has_reference, self._module.reference),
-            'severity': (self._has_severity, self._module.severity),
-            'runbook': (self._has_runbook, self._module.runbook),
+            'title': (self._has_title, self._module.title if self._has_title else None),
+            'description': (self._has_description, self._module.description if self._has_description else None),
+            'reference': (self._has_reference, self._module.reference if self._has_reference else None),
+            'severity': (self._has_severity, self._module.severity if self._has_severity else None),
+            'runbook': (self._has_runbook, self._module.runbook if self._has_runbook else None),
         }
 
     def run(self, event: Mapping, batch_mode: bool = True) -> RuleResult:
@@ -212,11 +213,15 @@ class Rule:
             rule_result.reference_exception = err
 
         try:
-            rule_result.severity_output = (self._get_custom_field(event, 'severity', use_default_on_exception=batch_mode).upper())
-            if rule_result.severity_output not in SEVERITY_TYPES:
-                self.logger.error(
-                    "received invalid severity: [%s], expected to be one of: [%s]", str(rule_result.severity_output), str(SEVERITY_TYPES)
-                )
+            rule_result.severity_output = self._get_custom_field(event, 'severity', use_default_on_exception=batch_mode)
+            if isinstance(rule_result.severity_output, str):
+                rule_result.severity_output = rule_result.severity_output.upper()
+                if rule_result.severity_output not in SEVERITY_TYPES:
+                    self.logger.error(
+                        "received invalid severity: [%s], expected to be one of: [%s]",
+                        str(rule_result.severity_output),
+                        str(SEVERITY_TYPES)
+                    )
         except Exception as err:  # pylint: disable=broad-except
             rule_result.severity_exception = err
 

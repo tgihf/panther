@@ -271,17 +271,17 @@ func getReference(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
 }
 
 func getRunbook(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
-	if alertDedup.GeneratedSeverity != nil {
-		return alertDedup.GeneratedSeverity
-	}
-	return aws.String(string(rule.Severity))
-}
-
-func getSeverity(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
 	if alertDedup.GeneratedRunbook != nil {
 		return alertDedup.GeneratedRunbook
 	}
 	return aws.String(string(rule.Runbook))
+}
+
+func getSeverity(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
+	if alertDedup.GeneratedSeverity != nil {
+		return alertDedup.GeneratedSeverity
+	}
+	return aws.String(string(rule.Severity))
 }
 
 func getDestinationOverride(alertDedup *AlertDedupEvent) []string {

@@ -52,7 +52,7 @@ func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, 
 
 	// If alert has a dynamically set destination override, return the specified output overrides for the alert
 	overrideOutputs := []*outputModels.AlertOutput{}
-	if alert.DestinationOverride != nil && len(alert.DestinationOverride) >= 0 {
+	if alert.DestinationOverride != nil && len(alert.DestinationOverride) > 0 {
 		for _, output := range outputs {
 			for _, outputID := range alert.DestinationOverride {
 				if *output.OutputID == outputID {
@@ -60,7 +60,7 @@ func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, 
 				}
 			}
 		}
-		return overrideOutputs, nil
+		if len(overrideOutputs) > 0 { return overrideOutputs, nil }
 	}
 
 	// Otherwise, return the specified output overrides for the alert

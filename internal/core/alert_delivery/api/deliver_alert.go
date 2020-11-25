@@ -128,7 +128,7 @@ func populateAlertData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, 
 
 	// Logic for custom fields
 	var alertDescription, alertReference, alertRunbook = rule.Description, rule.Reference, rule.Runbook
-	var alertDestinationOverride []string
+	alertDestinationOverride := alertItem.DestinationOverride
 
 	if aws.StringValue(alertItem.Description) != "" {
 		alertDescription = models.Description(*alertItem.Description)
@@ -141,11 +141,6 @@ func populateAlertData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, 
 	if aws.StringValue(alertItem.Runbook) != "" {
 		alertRunbook = models.Runbook(*alertItem.Runbook)
 	}
-
-	// This will just be nil since a rule should never have a
-	if alertItem.DestinationOverride != nil {
-		alertDestinationOverride = alertItem.DestinationOverride
-	} else { alertDestinationOverride = nil }
 
 	return &deliveryModels.Alert{
 		AnalysisID:          string(rule.ID),

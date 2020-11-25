@@ -202,6 +202,15 @@ class Rule:
 
         self._default_dedup_string = 'defaultDedupString:{}'.format(self.rule_id)
 
+        # Added to support custom fields
+        self._custom_field_map = {
+            'title': (self._has_title, self._module.title),
+            'description': (self._has_description, self._module.description),
+            'reference': (self._has_reference, self._module.reference),
+            'severity': (self._has_severity, self._module.severity),
+            'runbook': (self._has_runbook, self._module.runbook),
+        }
+
     def run(self, event: Mapping, batch_mode: bool = True) -> RuleResult:
         """
         Analyze a log line with this rule and return True, False, or an error.
@@ -331,20 +340,13 @@ class Rule:
     def _get_custom_field(
         self, event: Mapping, target_field: str, use_default_on_exception: bool = True
     ) -> Optional[str]:
-        _custom_field_map = {
-            'title': (self._has_title, self._module.title),
-            'description': (self._has_description, self._module.description),
-            'reference': (self._has_reference, self._module.reference),
-            'severity': (self._has_severity, self._module.severity),
-            'runbook': (self._has_runbook, self._module.runbook),
-        }
-        if target_field not in _custom_field_map:
+        if target_field not in self._custom_field_map:
             self.logger.error(
                 'attempted to access field [%s], this should only access custom fields. ',
                 target_field,
             )
             return None
-        has_field, command = _custom_field_map[target_field]
+        has_field, command = self._custom_field_map[target_field]
         if has_field:
             try:
                 custom_field = self._run_command(command, event, str)

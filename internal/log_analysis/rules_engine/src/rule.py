@@ -31,7 +31,7 @@ _RULE_FOLDER = os.path.join(tempfile.gettempdir(), 'rules')
 # Maximum size for a dedup string
 MAX_DEDUP_STRING_SIZE = 1000
 
-# Maximum size for a title
+# Maximum size for a custom field
 MAX_CUSTOM_FIELD_SIZE = 1000
 
 # Maximum number of Summary Attributes
@@ -46,6 +46,9 @@ ALERT_CONTEXT_ERROR_KEY = "_error"
 TRUNCATED_STRING_SUFFIX = '... (truncated)'
 
 DEFAULT_RULE_DEDUP_PERIOD_MINS = 60
+
+# Used to check dynamic severity output
+SEVERITY_TYPES = ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
 
 
 # pylint: disable=too-many-instance-attributes
@@ -240,9 +243,17 @@ class Rule:
             rule_result.reference_exception = err
 
         try:
-            rule_result.severity_output = self._get_custom_field(
-                event, 'severity', use_default_on_exception=batch_mode
+            rule_result.severity_output = (
+                self._get_custom_field(
+                    event, 'severity', use_default_on_exception=batch_mode
+                ).upper()
             )
+            if rule_result.severity_output not in SEVERITY_TYPES:
+                self.logger.error(
+                    "received invalid severity: [%s], expected to be one of: [%s]",
+                    str(rule_result.severity_output),
+                    str(SEVERITY_TYPES)
+                )
         except Exception as err:  # pylint: disable=broad-except
             rule_result.severity_exception = err
 

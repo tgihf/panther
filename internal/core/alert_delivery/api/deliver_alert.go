@@ -19,6 +19,7 @@ package api
  */
 
 import (
+	"github.com/panther-labs/panther/api/gateway/analysis/models"
 	"strings"
 	"time"
 
@@ -27,7 +28,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/panther-labs/panther/api/gateway/analysis/client/operations"
-	"github.com/panther-labs/panther/api/gateway/analysis/models"
 	deliveryModels "github.com/panther-labs/panther/api/lambda/delivery/models"
 	outputModels "github.com/panther-labs/panther/api/lambda/outputs/models"
 	alertTable "github.com/panther-labs/panther/internal/log_analysis/alerts_api/table"

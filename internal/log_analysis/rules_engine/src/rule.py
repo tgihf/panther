@@ -34,7 +34,7 @@ MAX_DEDUP_STRING_SIZE = 1000
 # Maximum size for a custom field
 MAX_CUSTOM_FIELD_SIZE = 1000
 
-# Maximum number of Summary Attributes
+# Maximum number of destination overrides
 MAX_DESTINATION_OVERRIDE_SIZE = 10
 
 # The limit for DDB is 400kb per item (we store this one in DDB) and the limit for SQS/SNS is 256KB.

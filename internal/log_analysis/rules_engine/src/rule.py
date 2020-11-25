@@ -193,6 +193,15 @@ class Rule:
 
         self._default_dedup_string = 'defaultDedupString:{}'.format(self.rule_id)
 
+        # Added to support custom fields
+        self._custom_field_map = {
+            'title': (self._has_title, self._module.title),
+            'description': (self._has_description, self._module.description),
+            'reference': (self._has_reference, self._module.reference),
+            'severity': (self._has_severity, self._module.severity),
+            'runbook': (self._has_runbook, self._module.runbook),
+        }
+
     def run(self, event: Mapping, batch_mode: bool = True) -> RuleResult:
         """
         Analyze a log line with this rule and return True, False, or an error.

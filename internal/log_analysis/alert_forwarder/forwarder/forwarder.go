@@ -109,7 +109,7 @@ func (h *Handler) handleNewAlert(rule *ruleModel.Rule, event *AlertDedupEvent) e
 func (h *Handler) logStats(rule *ruleModel.Rule, event *AlertDedupEvent) {
 	h.MetricsLogger.Log(
 		[]metrics.Dimension{
-			{Name: "Severity", Value: *getCustomField("severity", rule, event)},
+			{Name: "Severity", Value: *getSeverity(rule, event)},
 			{Name: "AnalysisType", Value: "Rule"},
 			{Name: "AnalysisID", Value: string(rule.ID)},
 		},
@@ -156,12 +156,12 @@ func (h *Handler) storeNewAlert(rule *ruleModel.Rule, alertDedup *AlertDedupEven
 	alert := &Alert{
 		ID:                  generateAlertID(alertDedup),
 		TimePartition:       defaultTimePartition,
-		Severity:            *getCustomField("severity", rule, alertDedup),
+		Severity:            *getSeverity(rule, alertDedup),
 		RuleDisplayName:     getRuleDisplayName(rule),
-		Title:               *getCustomField("title", rule, alertDedup),
-		Description:         getCustomField("description", rule, alertDedup),
-		Reference:           getCustomField("reference", rule, alertDedup),
-		Runbook:             getCustomField("runbook", rule, alertDedup),
+		Title:               *getTitle(rule, alertDedup),
+		Description:         getDescription(rule, alertDedup),
+		Reference:           getReference(rule, alertDedup),
+		Runbook:             getRunbook(rule, alertDedup),
 		DestinationOverride: getDestinationOverride(alertDedup),
 		FirstEventMatchTime: alertDedup.CreationTime,
 		LogTypes:            alertDedup.LogTypes,
@@ -199,7 +199,7 @@ func (h *Handler) storeNewAlert(rule *ruleModel.Rule, alertDedup *AlertDedupEven
 func (h *Handler) sendAlertNotification(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) error {
 	alertNotification := &alertModel.Alert{
 		AlertID:             aws.String(generateAlertID(alertDedup)),
-		AnalysisDescription: getCustomField("description", rule, alertDedup),
+		AnalysisDescription: getDescription(rule, alertDedup),
 		AnalysisID:          alertDedup.RuleID,
 		// In case a rule has a threshold, we want the alert creation time to be the same time
 		// as the update time -> the time that an update(new event) caused the matched events to exceed threshold
@@ -207,14 +207,14 @@ func (h *Handler) sendAlertNotification(rule *ruleModel.Rule, alertDedup *AlertD
 		CreatedAt:    alertDedup.UpdateTime,
 		OutputIds:    rule.OutputIds,
 		AnalysisName: getRuleDisplayName(rule),
-		Severity:     *getCustomField("severity", rule, alertDedup),
+		Severity:     *getSeverity(rule, alertDedup),
 		Tags:         rule.Tags,
 		Type:         alertDedup.Type,
-		Title:        getCustomField("title", rule, alertDedup),
+		Title:        getTitle(rule, alertDedup),
 		Version:      &alertDedup.RuleVersion,
 		// Custom Fields
-		Reference:           getCustomField("reference", rule, alertDedup),
-		Runbook:             getCustomField("runbook", rule, alertDedup),
+		Reference:           getReference(rule, alertDedup),
+		Runbook:             getRunbook(rule, alertDedup),
 		DestinationOverride: getDestinationOverride(alertDedup),
 	}
 
@@ -245,52 +245,56 @@ func (h *Handler) sendAlertNotification(rule *ruleModel.Rule, alertDedup *AlertD
 	return nil
 }
 
-func getCustomField(targetField string, rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
-	switch {
-	case targetField == "title":
-		if alertDedup.GeneratedTitle != nil {
-			return alertDedup.GeneratedTitle
-		} else {
-			ruleDisplayName := getRuleDisplayName(rule)
-			if ruleDisplayName != nil {
-				return ruleDisplayName
-			}
-			return aws.String(string(rule.ID))
+func getTitle(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
+	if alertDedup.GeneratedTitle != nil {
+		return alertDedup.GeneratedTitle
+	} else {
+		ruleDisplayName := getRuleDisplayName(rule)
+		if ruleDisplayName != nil {
+			return ruleDisplayName
 		}
-	case targetField == "description":
-		if alertDedup.GeneratedDescription != nil {
-			return alertDedup.GeneratedDescription
-		} else {
-			return aws.String(string(rule.Description))
-		}
-	case targetField == "reference":
-		if alertDedup.GeneratedReference != nil {
-			return alertDedup.GeneratedReference
-		} else {
-			return aws.String(string(rule.Reference))
-		}
-	case targetField == "severity":
-		if alertDedup.GeneratedSeverity != "" {
-			return aws.String(alertDedup.GeneratedSeverity)
-		} else {
-			return aws.String(string(rule.Severity))
-		}
-	case targetField == "runbook":
-		if alertDedup.GeneratedRunbook != nil {
-			return alertDedup.GeneratedRunbook
-		} else {
-			return aws.String(string(rule.Runbook))
-		}
-	default:
-		zap.L().Error("Unexpected type for getCustomField: ", zap.String("targetField", targetField))
-		return nil
+		return aws.String(string(rule.ID))
+	}
+}
+
+func getDescription(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
+	if alertDedup.GeneratedDescription != nil {
+		return alertDedup.GeneratedDescription
+	} else {
+		return aws.String(string(rule.Description))
+	}
+}
+
+func getReference(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
+	if alertDedup.GeneratedReference != nil {
+		return alertDedup.GeneratedReference
+	} else {
+		return aws.String(string(rule.Reference))
+	}
+}
+
+func getRunbook(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
+	if alertDedup.GeneratedSeverity != "" {
+		return aws.String(alertDedup.GeneratedSeverity)
+	} else {
+		return aws.String(string(rule.Severity))
+	}
+}
+
+func getSeverity(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
+	if alertDedup.GeneratedRunbook != nil {
+		return alertDedup.GeneratedRunbook
+	} else {
+		return aws.String(string(rule.Runbook))
 	}
 }
 
 func getDestinationOverride(alertDedup *AlertDedupEvent) []string {
 	if alertDedup.GeneratedDestinationOverride != nil {
 		return alertDedup.GeneratedDestinationOverride
-	} else { return nil }
+	} else {
+		return nil
+	}
 }
 
 func getRuleDisplayName(rule *ruleModel.Rule) *string {

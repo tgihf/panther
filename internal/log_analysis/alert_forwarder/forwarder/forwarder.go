@@ -274,8 +274,8 @@ func getReference(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
 }
 
 func getRunbook(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
-	if alertDedup.GeneratedSeverity != "" {
-		return aws.String(alertDedup.GeneratedSeverity)
+	if alertDedup.GeneratedSeverity != nil {
+		return alertDedup.GeneratedSeverity
 	} else {
 		return aws.String(string(rule.Severity))
 	}

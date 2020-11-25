@@ -160,45 +160,15 @@ class Rule:
         if not hasattr(self._module, 'rule'):
             raise AssertionError("rule needs to have a method named 'rule'")
 
-        if hasattr(self._module, 'title'):
-            self._has_title = True
-        else:
-            self._has_title = False
-
-        if hasattr(self._module, 'description'):
-            self._has_description = True
-        else:
-            self._has_description = False
-
-        if hasattr(self._module, 'reference'):
-            self._has_reference = True
-        else:
-            self._has_reference = False
-
-        if hasattr(self._module, 'severity'):
-            self._has_severity = True
-        else:
-            self._has_severity = False
-
-        if hasattr(self._module, 'runbook'):
-            self._has_runbook = True
-        else:
-            self._has_runbook = False
-
-        if hasattr(self._module, 'destination_override'):
-            self._has_destination_override = True
-        else:
-            self._has_destination_override = False
-
-        if hasattr(self._module, 'dedup'):
-            self._has_dedup = True
-        else:
-            self._has_dedup = False
-
-        if hasattr(self._module, 'alert_context'):
-            self._has_alert_context = True
-        else:
-            self._has_alert_context = False
+        # Check if the imported module has these attributes
+        self._has_title = hasattr(self._module, 'title')
+        self._has_description = hasattr(self._module, 'description')
+        self._has_reference = hasattr(self._module, 'reference')
+        self._has_severity = hasattr(self._module, 'severity')
+        self._has_runbook = hasattr(self._module, 'runbook')
+        self._has_destination_override = hasattr(self._module, 'destination_override')
+        self._has_dedup = hasattr(self._module, 'dedup')
+        self._has_alert_context = hasattr(self._module, 'alert_context')
 
         self._default_dedup_string = 'defaultDedupString:{}'.format(self.rule_id)
 

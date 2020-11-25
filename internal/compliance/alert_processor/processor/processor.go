@@ -226,7 +226,7 @@ func getAlertConfigPolicy(event *models.ComplianceNotification) (*alertmodel.Ale
 			CreatedAt:           event.Timestamp,
 			OutputIds:           event.OutputIds,
 			Runbook:             aws.String(string(policy.Payload.Runbook)),
-			Severity:            string(policy.Payload.Severity),
+			Severity:            aws.String(string(policy.Payload.Severity)),
 			Tags:                policy.Payload.Tags,
 			Type:                alertmodel.PolicyType,
 			Version:             &event.PolicyVersionID,

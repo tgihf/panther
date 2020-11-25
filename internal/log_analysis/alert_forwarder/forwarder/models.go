@@ -145,29 +145,19 @@ func FromDynamodDBAttribute(input map[string]events.DynamoDBAttributeValue) (eve
 
 	// Generated Fields
 	generatedTitle := getOptionalAttribute("title", input)
-	if generatedTitle != nil {
-		result.GeneratedTitle = aws.String(generatedTitle.String())
-	}
+	result.GeneratedTitle = aws.String(generatedTitle.String())
 
 	generatedDescription := getOptionalAttribute("description", input)
-	if generatedDescription != nil {
-		result.GeneratedDescription = aws.String(generatedDescription.String())
-	}
+	result.GeneratedDescription = aws.String(generatedDescription.String())
 
 	generatedReference := getOptionalAttribute("reference", input)
-	if generatedReference != nil {
-		result.GeneratedReference = aws.String(generatedReference.String())
-	}
+	result.GeneratedReference = aws.String(generatedReference.String())
 
 	generatedSeverity := getOptionalAttribute("severity", input)
-	if generatedSeverity != nil {
-		result.GeneratedSeverity = aws.String(generatedSeverity.String())
-	}
+	result.GeneratedSeverity = aws.String(generatedSeverity.String())
 
 	generatedRunbook := getOptionalAttribute("runbook", input)
-	if generatedRunbook != nil {
-		result.GeneratedRunbook = aws.String(generatedRunbook.String())
-	}
+	result.GeneratedRunbook = aws.String(generatedRunbook.String())
 
 	generatedDestinationOverride := getOptionalAttribute("destinationOverride", input)
 	if generatedDestinationOverride != nil {

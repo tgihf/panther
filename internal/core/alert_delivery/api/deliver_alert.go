@@ -59,7 +59,7 @@ func (API) DeliverAlert(input *deliveryModels.DeliverAlertInput) (*deliveryModel
 	var alertOutputMap AlertOutputMap
 	if alert.DestinationOverride != nil {
 		alertOutputMap, err = getAlertOutputMapping(alert, alert.DestinationOverride)
-		if err == nil {
+		if err != nil {
 			alertOutputMap, err = getAlertOutputMapping(alert, input.OutputIds)
 		}
 	} else {

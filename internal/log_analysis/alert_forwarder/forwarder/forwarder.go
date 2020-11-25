@@ -248,53 +248,47 @@ func (h *Handler) sendAlertNotification(rule *ruleModel.Rule, alertDedup *AlertD
 func getTitle(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
 	if alertDedup.GeneratedTitle != nil {
 		return alertDedup.GeneratedTitle
-	} else {
-		ruleDisplayName := getRuleDisplayName(rule)
-		if ruleDisplayName != nil {
-			return ruleDisplayName
-		}
-		return aws.String(string(rule.ID))
 	}
+	ruleDisplayName := getRuleDisplayName(rule)
+	if ruleDisplayName != nil {
+		return ruleDisplayName
+	}
+	return aws.String(string(rule.ID))
 }
 
 func getDescription(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
 	if alertDedup.GeneratedDescription != nil {
 		return alertDedup.GeneratedDescription
-	} else {
-		return aws.String(string(rule.Description))
 	}
+	return aws.String(string(rule.Description))
 }
 
 func getReference(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
 	if alertDedup.GeneratedReference != nil {
 		return alertDedup.GeneratedReference
-	} else {
-		return aws.String(string(rule.Reference))
 	}
+	return aws.String(string(rule.Reference))
 }
 
 func getRunbook(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
 	if alertDedup.GeneratedSeverity != nil {
 		return alertDedup.GeneratedSeverity
-	} else {
-		return aws.String(string(rule.Severity))
 	}
+	return aws.String(string(rule.Severity))
 }
 
 func getSeverity(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
 	if alertDedup.GeneratedRunbook != nil {
 		return alertDedup.GeneratedRunbook
-	} else {
-		return aws.String(string(rule.Runbook))
 	}
+	return aws.String(string(rule.Runbook))
 }
 
 func getDestinationOverride(alertDedup *AlertDedupEvent) []string {
 	if alertDedup.GeneratedDestinationOverride != nil {
 		return alertDedup.GeneratedDestinationOverride
-	} else {
-		return nil
 	}
+	return nil
 }
 
 func getRuleDisplayName(rule *ruleModel.Rule) *string {

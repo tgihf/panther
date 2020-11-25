@@ -145,7 +145,7 @@ func generateNotificationFromAlert(alert *alertModels.Alert) Notification {
 		ID:           alert.AnalysisID,
 		AlertID:      alert.AlertID,
 		Name:         alert.AnalysisName,
-		Severity:     alert.Severity,
+		Severity:     aws.StringValue(alert.Severity),
 		Type:         alert.Type,
 		Link:         generateURL(alert),
 		Title:        generateAlertTitle(alert),

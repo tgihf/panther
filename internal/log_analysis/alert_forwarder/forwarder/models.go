@@ -51,7 +51,7 @@ type AlertDedupEvent struct {
 	GeneratedTitle               *string   `dynamodbav:"title,string"`       // The title that was generated dynamically using Python. Might be null.
 	GeneratedDescription         *string   `dynamodbav:"description,string"` // The description that was generated dynamically using Python. Might be null.
 	GeneratedReference           *string   `dynamodbav:"-"`                  // The reference that was generated dynamically using Python. Might be null.
-	GeneratedSeverity            string    `dynamodbav:"-"`                  // The severity that was generated dynamically using Python. Might be null.
+	GeneratedSeverity            *string    `dynamodbav:"-"`                  // The severity that was generated dynamically using Python. Might be null.
 	GeneratedRunbook             *string   `dynamodbav:"-"`                  // The runbook that was generated dynamically using Python. Might be null.
 	GeneratedDestinationOverride []string  `dynamodbav:"-"`                  // The destination override that was generated dynamically using Python. Might be null.
 	AlertCount                   int64     `dynamodbav:"-"`                  // There is no need to store this item in DDB
@@ -61,11 +61,11 @@ type AlertDedupEvent struct {
 type Alert struct {
 	ID                  string    `dynamodbav:"id,string"`
 	TimePartition       string    `dynamodbav:"timePartition,string"`
-	Severity            string    `dynamodbav:"severity,string"`
+	Severity            *string    `dynamodbav:"severity,string"`
 	RuleDisplayName     *string   `dynamodbav:"ruleDisplayName,string"`
 	FirstEventMatchTime time.Time `dynamodbav:"firstEventMatchTime,string"`
 	LogTypes            []string  `dynamodbav:"logTypes,stringset"`
-	Title               string    `dynamodbav:"title,string"`                  // The alert title. It will be the Python-generated title or a default one if no Python-generated title is available.
+	Title               *string    `dynamodbav:"title,string"`                  // The alert title. It will be the Python-generated title or a default one if no Python-generated title is available.
 	Description         *string   `dynamodbav:"description,string"`            // The alert description. It will be the Python-generated description or a default one if no Python-generated description is available.
 	Reference           *string   `dynamodbav:"reference,string"`              // The alert reference. It will be the Python-generated description or a default one if no Python-generated reference is available.
 	Runbook             *string   `dynamodbav:"runbook,string"`                // The alert runbook. It will be the Python-generated description or a default one if no Python-generated runbook is available.
@@ -162,7 +162,7 @@ func FromDynamodDBAttribute(input map[string]events.DynamoDBAttributeValue) (eve
 
 	generatedSeverity := getOptionalAttribute("severity", input)
 	if generatedSeverity != nil {
-		result.GeneratedSeverity = generatedSeverity.String()
+		result.GeneratedSeverity = aws.String(generatedSeverity.String())
 	}
 
 	generatedRunbook := getOptionalAttribute("runbook", input)

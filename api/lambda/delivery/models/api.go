@@ -132,7 +132,7 @@ type Alert struct {
 	CreatedAt time.Time `json:"createdAt" validate:"required"`
 
 	// Severity is the alert severity at the time of creation.
-	Severity string `json:"severity" validate:"oneof=INFO LOW MEDIUM HIGH CRITICAL"`
+	Severity *string `json:"severity" validate:"oneof=INFO LOW MEDIUM HIGH CRITICAL"`
 
 	// OutputIds is the set of outputs for this alert.
 	OutputIds []string `json:"outputIds,omitempty"`

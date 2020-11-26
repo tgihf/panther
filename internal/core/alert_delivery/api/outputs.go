@@ -51,11 +51,11 @@ func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, 
 	}
 
 	// If alert has a dynamically set destination override, return the specified output overrides for the alert
-	overrideOutputs := []*outputModels.AlertOutput{}
+	alertOutputs := []*outputModels.AlertOutput{}
 	for _, output := range outputs {
 		for _, outputID := range alert.DestinationOverride {
 			if *output.OutputID == outputID {
-				overrideOutputs = append(overrideOutputs, output)
+				alertOutputs = append(alertOutputs, output)
 			}
 		}
 	}
@@ -64,11 +64,11 @@ func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, 
 	for _, output := range outputs {
 		for _, outputID := range alert.OutputIds {
 			if *output.OutputID == outputID {
-				overrideOutputs = append(overrideOutputs, output)
+				alertOutputs = append(alertOutputs, output)
 			}
 		}
 	}
-	return overrideOutputs, nil
+	return alertOutputs, nil
 }
 
 // getOutputs - Gets a list of outputs from panther (using a cache)

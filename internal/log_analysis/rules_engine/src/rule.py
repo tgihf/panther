@@ -325,25 +325,26 @@ class Rule:
         return None
 
     def _get_destination_override(self, event: Mapping) -> Optional[List[str]]:
-        if self._has_destination_override:
-            try:
-                custom_field = self._run_command(self._module.destination_override, event, list())
-            except Exception as err:  # pylint: disable=broad-except
-                self.logger.warning('_get_destination_override method raised exception. Exception: %s', err)
-                return None
+        if not self._has_destination_override:
+            return None
 
-            if len(custom_field) > MAX_DESTINATION_OVERRIDE_SIZE:
-                # If custom field exceeds max size, truncate it
-                self.logger.warning(
-                    'maximum len of destination override is [%d] for rule with ID '
-                    '[%s] is [%d] fields. Truncating.',
-                    MAX_DESTINATION_OVERRIDE_SIZE,
-                    self.rule_id,
-                    len(custom_field),
-                )
-                return custom_field[:MAX_DESTINATION_OVERRIDE_SIZE]
-            return custom_field
-        return None
+        try:
+            custom_field = self._run_command(self._module.destination_override, event, list())
+        except Exception as err:  # pylint: disable=broad-except
+            self.logger.warning('_get_destination_override method raised exception. Exception: %s', err)
+            return None
+
+        if len(custom_field) > MAX_DESTINATION_OVERRIDE_SIZE:
+            # If custom field exceeds max size, truncate it
+            self.logger.warning(
+                'maximum len of destination override is [%d] for rule with ID '
+                '[%s] is [%d] fields. Truncating.',
+                MAX_DESTINATION_OVERRIDE_SIZE,
+                self.rule_id,
+                len(custom_field),
+            )
+            return custom_field[:MAX_DESTINATION_OVERRIDE_SIZE]
+        return custom_field
 
     def _get_alert_context(self, event: Mapping, use_default_on_exception: bool = True) -> Optional[str]:
         if not self._has_alert_context:

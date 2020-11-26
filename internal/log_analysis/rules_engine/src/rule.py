@@ -263,11 +263,7 @@ class Rule:
             dedup_string = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
             if use_default_on_exception:
-                self.logger.warning(
-                    "dedup method raised exception. Defaulting dedup string to '%s'. Exception: %s",
-                    self.rule_id,
-                    err,
-                )
+                self.logger.warning("dedup method raised exception. Defaulting dedup string to '%s'. Exception: %s", self.rule_id, err)
                 return self._default_dedup_string
             raise
 
@@ -278,11 +274,8 @@ class Rule:
         if len(dedup_string) > MAX_DEDUP_STRING_SIZE:
             # If dedup_string exceeds max size, truncate it
             self.logger.warning(
-                'maximum dedup string size is [%d] characters. Dedup string for rule with ID '
-                '[%s] is [%d] characters. Truncating.',
-                MAX_DEDUP_STRING_SIZE,
-                self.rule_id,
-                len(dedup_string),
+                'maximum dedup string size is [%d] characters. Dedup string for rule with ID [%s] is [%d] characters. Truncating.',
+                MAX_DEDUP_STRING_SIZE, self.rule_id, len(dedup_string),
             )
             num_characters_to_keep = MAX_DEDUP_STRING_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return dedup_string[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
@@ -297,20 +290,14 @@ class Rule:
             command = getattr(self._module, 'description')
             description = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
-            self.logger.warning(
-                'description method for rule with id [%s] raised exception. Using default. Exception: %s',
-                self.rule_id,
-                err
-            )
+            self.logger.warning('description method for rule with id [%s] raised exception. Using default Exception: %s', self.rule_id, err)
             return None
 
         if len(description) > MAX_CUSTOM_FIELD_SIZE:
             # If custom field exceeds max size, truncate it
             self.logger.warning(
                 'maximum field [description] length is [%d]. [%d] for rule with ID [%s] . Truncating.',
-                MAX_CUSTOM_FIELD_SIZE,
-                len(description),
-                self.rule_id,
+                MAX_CUSTOM_FIELD_SIZE, len(description), self.rule_id,
             )
             num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return description[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
@@ -330,11 +317,8 @@ class Rule:
         if len(destination_override) > MAX_DESTINATION_OVERRIDE_SIZE:
             # If custom field exceeds max size, truncate it
             self.logger.warning(
-                'maximum len of destination override is [%d] for rule with ID '
-                '[%s] is [%d] fields. Truncating.',
-                MAX_DESTINATION_OVERRIDE_SIZE,
-                self.rule_id,
-                len(destination_override),
+                'maximum len of destination override is [%d] for rule with ID [%s] is [%d] fields. Truncating.',
+                MAX_DESTINATION_OVERRIDE_SIZE, self.rule_id, len(destination_override)
             )
             return destination_override[:MAX_DESTINATION_OVERRIDE_SIZE]
         return destination_override
@@ -347,20 +331,14 @@ class Rule:
             command = getattr(self._module, 'reference')
             reference = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
-            self.logger.warning(
-                'reference method for rule with id [%s] raised exception. Using default. Exception: %s',
-                self.rule_id,
-                err,
-            )
+            self.logger.warning('reference method for rule with id [%s] raised exception. Using default. Exception: %s', self.rule_id, err)
             return None
 
         if len(reference) > MAX_CUSTOM_FIELD_SIZE:
             # If custom field exceeds max size, truncate it
             self.logger.warning(
                 'maximum field [reference] length is [%d]. [%d] for rule with ID [%s] . Truncating.',
-                MAX_CUSTOM_FIELD_SIZE,
-                len(reference),
-                self.rule_id,
+                MAX_CUSTOM_FIELD_SIZE, len(reference), self.rule_id,
             )
             num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return reference[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
@@ -380,9 +358,7 @@ class Rule:
             # If custom field exceeds max size, truncate it
             self.logger.warning(
                 'maximum field [runbook] length is [%d]. [%d] for rule with ID [%s] . Truncating.',
-                MAX_CUSTOM_FIELD_SIZE,
-                len(runbook),
-                self.rule_id,
+                MAX_CUSTOM_FIELD_SIZE, len(runbook), self.rule_id,
             )
             num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return runbook[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
@@ -396,20 +372,14 @@ class Rule:
             command = getattr(self._module, 'severity')
             severity = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
-            self.logger.warning(
-                'severity method for rule with id [%s] raised exception. Using default. Exception: %s',
-                self.rule_id,
-                err,
-            )
+            self.logger.warning('severity method for rule with id [%s] raised exception. Using default. Exception: %s', self.rule_id, err)
             return None
 
         if len(severity) > MAX_CUSTOM_FIELD_SIZE:
             # If custom field exceeds max size, truncate it
             self.logger.warning(
                 'maximum field [severity] length is [%d]. [%d] for rule with ID [%s] . Truncating.',
-                MAX_CUSTOM_FIELD_SIZE,
-                len(severity),
-                self.rule_id,
+                MAX_CUSTOM_FIELD_SIZE, len(severity), self.rule_id,
             )
             num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return severity[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
@@ -424,11 +394,7 @@ class Rule:
             title = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
             if use_default_on_exception:
-                self.logger.warning(
-                    'title method for rule with id [%s] raised exception. Using default. Exception: %s',
-                    self.rule_id,
-                    err,
-                )
+                self.logger.warning('title method for rule with id [%s] raised exception. Using default. Exception: %s', self.rule_id, err)
                 return self.rule_id
             raise
 
@@ -436,9 +402,7 @@ class Rule:
             # If custom field exceeds max size, truncate it
             self.logger.warning(
                 'maximum field [title] length is [%d]. [%d] for rule with ID [%s] . Truncating.',
-                MAX_CUSTOM_FIELD_SIZE,
-                len(title),
-                self.rule_id,
+                MAX_CUSTOM_FIELD_SIZE, len(title), self.rule_id,
             )
             num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return title[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX

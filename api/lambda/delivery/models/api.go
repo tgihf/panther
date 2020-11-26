@@ -135,7 +135,7 @@ type Alert struct {
 	Severity *string `json:"severity" validate:"oneof=INFO LOW MEDIUM HIGH CRITICAL"`
 
 	// OutputIds is the set of outputs for this alert.
-	OutputIds []string `json:"outputIds,omitempty" validate:"gt=0,dive,uuid4"`
+	OutputIds []string `json:"outputIds,omitempty" validate:"dive,uuid4"`
 
 	// LogTypes is the set of logs that could trigger the alert.
 	LogTypes []string `json:"logTypes,omitempty"`
@@ -153,7 +153,7 @@ type Alert struct {
 	Reference *string `json:"reference,omitempty"`
 
 	// DestinationOverride is the custom user-provided destination override
-	DestinationOverride []string `json:"destinationOverride,omitempty" validate:"gt=0,dive,uuid4"`
+	DestinationOverride []string `json:"destinationOverride,omitempty" validate:"dive,uuid4"`
 
 	// Runbook is the user-provided triage information.
 	Runbook *string `json:"runbook,omitempty"`

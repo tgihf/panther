@@ -156,16 +156,6 @@ class Rule:
         if not hasattr(self._module, 'rule'):
             raise AssertionError("rule needs to have a method named 'rule'")
 
-        # Check if the imported module has these attributes
-        self._has_title = hasattr(self._module, 'title')
-        self._has_description = hasattr(self._module, 'description')
-        self._has_reference = hasattr(self._module, 'reference')
-        self._has_severity = hasattr(self._module, 'severity')
-        self._has_runbook = hasattr(self._module, 'runbook')
-        self._has_destination_override = hasattr(self._module, 'destination_override')
-        self._has_dedup = hasattr(self._module, 'dedup')
-        self._has_alert_context = hasattr(self._module, 'alert_context')
-
         self._default_dedup_string = 'defaultDedupString:{}'.format(self.rule_id)
 
     def run(self, event: Mapping, batch_mode: bool = True) -> RuleResult:
@@ -237,11 +227,12 @@ class Rule:
         return rule_result
 
     def _get_alert_context(self, event: Mapping, use_default_on_exception: bool = True) -> Optional[str]:
-        if not self._has_alert_context:
+        if not hasattr(self._module, 'alert_context'):
             return None
 
         try:
-            alert_context = self._run_command(self._module.alert_context, event, dict)
+            command = getattr(self._module, 'alert_context')
+            alert_context = self._run_command(command, event, dict)
             serialized_alert_context = json.dumps(alert_context)
         except Exception as err:  # pylint: disable=broad-except
             if use_default_on_exception:
@@ -260,7 +251,7 @@ class Rule:
     # If the rule match had a custom title, use the title as a deduplication string
     # If no title and no dedup function is defined, return the default dedup string.
     def _get_dedup(self, event: Mapping, title: Optional[str], use_default_on_exception: bool = True) -> str:
-        if not self._has_dedup:
+        if not hasattr(self._module, 'dedup'):
             if title:
                 # If no dedup function is defined but the rule had a title, use the title as dedup string
                 return title
@@ -268,7 +259,8 @@ class Rule:
             return self._default_dedup_string
 
         try:
-            dedup_string = self._run_command(self._module.dedup, event, str)
+            command = getattr(self._module, 'dedup')
+            dedup_string = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
             if use_default_on_exception:
                 self.logger.warning(
@@ -302,7 +294,8 @@ class Rule:
             return None
 
         try:
-            description = self._run_command(self._module.description, event, str)
+            command = getattr(self._module, 'description')
+            description = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
             self.logger.warning(
                 'description method for rule with id [%s] raised exception. Using default. Exception: %s',
@@ -324,11 +317,12 @@ class Rule:
         return description
 
     def _get_destination_override(self, event: Mapping) -> Optional[List[str]]:
-        if not self._has_destination_override:
+        if not hasattr(self._module, 'destination_override'):
             return None
 
         try:
-            destination_override = self._run_command(self._module.destination_override, event, list())
+            command = getattr(self._module, 'destination_override')
+            destination_override = self._run_command(command, event, list())
         except Exception as err:  # pylint: disable=broad-except
             self.logger.warning('_get_destination_override method raised exception. Exception: %s', err)
             return None
@@ -350,7 +344,8 @@ class Rule:
             return None
 
         try:
-            reference = self._run_command(self._module.reference, event, str)
+            command = getattr(self._module, 'reference')
+            reference = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
             self.logger.warning(
                 'reference method for rule with id [%s] raised exception. Using default. Exception: %s',
@@ -376,7 +371,8 @@ class Rule:
             return None
 
         try:
-            runbook = self._run_command(self._module.runbook, event, str)
+            command = getattr(self._module, 'runbook')
+            runbook = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
             return None
 
@@ -397,7 +393,8 @@ class Rule:
             return None
 
         try:
-            severity = self._run_command(self._module.severity, event, str)
+            command = getattr(self._module, 'severity')
+            severity = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
             self.logger.warning(
                 'severity method for rule with id [%s] raised exception. Using default. Exception: %s',
@@ -423,7 +420,8 @@ class Rule:
             return None
 
         try:
-            title = self._run_command(self._module.title, event, str)
+            command = getattr(self._module, 'title')
+            title = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
             if use_default_on_exception:
                 self.logger.warning(

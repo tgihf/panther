@@ -204,15 +204,14 @@ func (h *Handler) sendAlertNotification(rule *ruleModel.Rule, alertDedup *AlertD
 		// In case a rule has a threshold, we want the alert creation time to be the same time
 		// as the update time -> the time that an update(new event) caused the matched events to exceed threshold
 		// In case the rule doesnt' have a threshold, the two are anyway the same
-		CreatedAt:    alertDedup.UpdateTime,
-		OutputIds:    rule.OutputIDs,
-		AnalysisName: getRuleDisplayName(rule),
-		Runbook:      aws.String(string(rule.Runbook)),
-		Severity:     getSeverity(rule, alertDedup),
-		Tags:         rule.Tags,
-		Type:         alertDedup.Type,
-		Title:        getTitle(rule, alertDedup),
-		Version:      &alertDedup.RuleVersion,
+		CreatedAt:           alertDedup.UpdateTime,
+		OutputIds:           rule.OutputIDs,
+		AnalysisName:        getRuleDisplayName(rule),
+		Severity:            getSeverity(rule, alertDedup),
+		Tags:                rule.Tags,
+		Type:                alertDedup.Type,
+		Title:               getTitle(rule, alertDedup),
+		Version:             &alertDedup.RuleVersion,
 		// Custom Fields
 		Reference:           getReference(rule, alertDedup),
 		Runbook:             getRunbook(rule, alertDedup),
@@ -252,30 +251,30 @@ func getTitle(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
 	}
 	ruleDisplayName := getRuleDisplayName(rule)
 	if ruleDisplayName != nil {
-		return *ruleDisplayName
+		return ruleDisplayName
 	}
-	return rule.ID
+	return aws.String(rule.ID)
 }
 
 func getDescription(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
 	if alertDedup.GeneratedDescription != nil {
 		return alertDedup.GeneratedDescription
 	}
-	return aws.String(string(rule.Description))
+	return aws.String(rule.Description)
 }
 
 func getReference(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
 	if alertDedup.GeneratedReference != nil {
 		return alertDedup.GeneratedReference
 	}
-	return aws.String(string(rule.Reference))
+	return aws.String(rule.Reference)
 }
 
 func getRunbook(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {
 	if alertDedup.GeneratedRunbook != nil {
 		return alertDedup.GeneratedRunbook
 	}
-	return aws.String(string(rule.Runbook))
+	return aws.String(rule.Runbook)
 }
 
 func getSeverity(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) *string {

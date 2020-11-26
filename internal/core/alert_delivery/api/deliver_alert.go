@@ -19,6 +19,7 @@ package api
  */
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
 	"strings"
 	"time"
 
@@ -114,31 +115,20 @@ func populateAlertData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, 
 		return nil, &genericapi.InternalError{Message: genericErrorMessage}
 	}
 
-	if response == nil {
-		zap.L().Error("Rule response was nil", commonFields...)
-		return nil, &genericapi.InternalError{Message: genericErrorMessage}
-	}
-
-	rule := response.GetPayload()
-	if rule == nil {
-		zap.L().Error("Rule response payload was nil", commonFields...)
-		return nil, &genericapi.InvalidInputError{Message: genericErrorMessage}
-	}
-
 	// Logic for custom fields
 	var alertDescription, alertReference, alertRunbook = rule.Description, rule.Reference, rule.Runbook
 	alertDestinationOverride := alertItem.DestinationOverride
 
 	if aws.StringValue(alertItem.Description) != "" {
-		alertDescription = models.Description(*alertItem.Description)
+		alertDescription = *alertItem.Description
 	}
 
 	if aws.StringValue(alertItem.Reference) != "" {
-		alertReference = models.Reference(*alertItem.Reference)
+		alertReference = *alertItem.Reference
 	}
 
 	if aws.StringValue(alertItem.Runbook) != "" {
-		alertRunbook = models.Runbook(*alertItem.Runbook)
+		alertRunbook = *alertItem.Runbook
 	}
 
 	return &deliveryModels.Alert{
@@ -147,11 +137,11 @@ func populateAlertData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, 
 		CreatedAt:           alertItem.CreationTime,
 		Severity:            aws.String(alertItem.Severity),
 		OutputIds:           []string{}, // We do not pay attention to this field
-		AnalysisDescription: aws.String(string(alertDescription)),
-		AnalysisName:        aws.String(string(rule.DisplayName)),
+		AnalysisDescription: aws.String(alertDescription),
+		AnalysisName:        aws.String(rule.DisplayName),
 		Version:             &alertItem.RuleVersion,
-		Reference:           aws.String(string(alertReference)),
-		Runbook:             aws.String(string(alertRunbook)),
+		Reference:           aws.String(alertReference),
+		Runbook:             aws.String(alertRunbook),
 		DestinationOverride: alertDestinationOverride,
 		Tags:                rule.Tags,
 		AlertID:             &alertItem.AlertID,

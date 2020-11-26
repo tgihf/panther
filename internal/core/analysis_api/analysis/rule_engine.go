@@ -112,7 +112,7 @@ func (e *RuleEngine) TestRule(rule *models.TestRuleInput) (*models.TestRuleOutpu
 			record.Functions.Reference = buildTestSubRecord(result.ReferenceOutput, result.ReferenceError)
 			record.Functions.Severity = buildTestSubRecord(result.SeverityOutput, result.SeverityError)
 			record.Functions.Runbook = buildTestSubRecord(result.RunbookOutput, result.RunbookError)
-			record.Functions.DestinationOverride = buildTestSubRecord(result.DestinationOverrideOutput)
+			record.Functions.DestinationOverride = buildTestSubRecord(result.DestinationOverrideOutput, result.DestinationOverrideError)
 		}
 
 		testResult.Results[i] = record

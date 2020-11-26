@@ -252,9 +252,9 @@ func getTitle(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) string {
 	}
 	ruleDisplayName := getRuleDisplayName(rule)
 	if ruleDisplayName != nil {
-		return *ruleDisplayName
+		return ruleDisplayName
 	}
-	return rule.ID
+	return aws.String(rule.ID)
 }
 
 func getDescription(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) string {

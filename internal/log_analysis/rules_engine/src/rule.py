@@ -197,10 +197,8 @@ class Rule:
             if isinstance(rule_result.severity_output, str):
                 rule_result.severity_output = rule_result.severity_output.upper()
                 if rule_result.severity_output not in SEVERITY_TYPES:
-                    self.logger.error(
-                        "received invalid severity: [%s], expected to be one of: [%s]", str(rule_result.severity_output),
-                        str(SEVERITY_TYPES)
-                    )
+                    raise AssertionError('Expected severity to be any of the following: [%s], got [%s] instead.'
+                                         % str(SEVERITY_TYPES), rule_result.severity_output)
         except Exception as err:  # pylint: disable=broad-except
             rule_result.severity_exception = err
 
@@ -274,7 +272,7 @@ class Rule:
         if len(dedup_string) > MAX_DEDUP_STRING_SIZE:
             # If dedup_string exceeds max size, truncate it
             self.logger.warning(
-                'maximum dedup string size is [%d] characters. Dedup string for rule with ID [%s] is [%d] characters. Truncating.',
+                "maximum dedup string size is [%d] characters. Dedup string for rule with ID [%s] is [%d] characters. Truncating.",
                 MAX_DEDUP_STRING_SIZE, self.rule_id, len(dedup_string),
             )
             num_characters_to_keep = MAX_DEDUP_STRING_SIZE - len(TRUNCATED_STRING_SUFFIX)
@@ -290,13 +288,13 @@ class Rule:
             command = getattr(self._module, 'description')
             description = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
-            self.logger.warning('description method for rule with id [%s] raised exception. Using default Exception: %s', self.rule_id, err)
+            self.logger.warning("description method for rule with id [%s] raised exception. Using default Exception: %s", self.rule_id, err)
             return None
 
         if len(description) > MAX_CUSTOM_FIELD_SIZE:
             # If custom field exceeds max size, truncate it
             self.logger.warning(
-                'maximum field [description] length is [%d]. [%d] for rule with ID [%s] . Truncating.',
+                "maximum field [description] length is [%d]. [%d] for rule with ID [%s] . Truncating.",
                 MAX_CUSTOM_FIELD_SIZE, len(description), self.rule_id,
             )
             num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
@@ -311,13 +309,13 @@ class Rule:
             command = getattr(self._module, 'destination_override')
             destination_override = self._run_command(command, event, list())
         except Exception as err:  # pylint: disable=broad-except
-            self.logger.warning('_get_destination_override method raised exception. Exception: %s', err)
+            self.logger.warning("_get_destination_override method raised exception. Exception: %s", err)
             return None
 
         if len(destination_override) > MAX_DESTINATION_OVERRIDE_SIZE:
             # If custom field exceeds max size, truncate it
             self.logger.warning(
-                'maximum len of destination override is [%d] for rule with ID [%s] is [%d] fields. Truncating.',
+                "maximum len of destination override is [%d] for rule with ID [%s] is [%d] fields. Truncating.",
                 MAX_DESTINATION_OVERRIDE_SIZE, self.rule_id, len(destination_override)
             )
             return destination_override[:MAX_DESTINATION_OVERRIDE_SIZE]
@@ -331,13 +329,13 @@ class Rule:
             command = getattr(self._module, 'reference')
             reference = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
-            self.logger.warning('reference method for rule with id [%s] raised exception. Using default. Exception: %s', self.rule_id, err)
+            self.logger.warning("reference method for rule with id [%s] raised exception. Using default. Exception: %s", self.rule_id, err)
             return None
 
         if len(reference) > MAX_CUSTOM_FIELD_SIZE:
             # If custom field exceeds max size, truncate it
             self.logger.warning(
-                'maximum field [reference] length is [%d]. [%d] for rule with ID [%s] . Truncating.',
+                "maximum field [reference] length is [%d]. [%d] for rule with ID [%s] . Truncating.",
                 MAX_CUSTOM_FIELD_SIZE, len(reference), self.rule_id,
             )
             num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
@@ -357,7 +355,7 @@ class Rule:
         if len(runbook) > MAX_CUSTOM_FIELD_SIZE:
             # If custom field exceeds max size, truncate it
             self.logger.warning(
-                'maximum field [runbook] length is [%d]. [%d] for rule with ID [%s] . Truncating.',
+                "maximum field [runbook] length is [%d]. [%d] for rule with ID [%s] . Truncating.",
                 MAX_CUSTOM_FIELD_SIZE, len(runbook), self.rule_id,
             )
             num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
@@ -372,16 +370,16 @@ class Rule:
             command = getattr(self._module, 'severity')
             severity = self._run_command(command, event, str)
             if severity not in SEVERITY_TYPES:
-                self.logger.warning('severity method for rule with id [%s] yielded [%s], expected [%s]',
+                self.logger.warning("severity method for rule with id [%s] yielded [%s], expected [%s]",
                                     self.rule_id, severity, str(SEVERITY_TYPES))
         except Exception as err:  # pylint: disable=broad-except
-            self.logger.warning('severity method for rule with id [%s] raised exception. Using default. Exception: %s', self.rule_id, err)
+            self.logger.warning("severity method for rule with id [%s] raised exception. Using default. Exception: %s", self.rule_id, err)
             return None
 
         if len(severity) > MAX_CUSTOM_FIELD_SIZE:
             # If custom field exceeds max size, truncate it
             self.logger.warning(
-                'maximum field [severity] length is [%d]. [%d] for rule with ID [%s] . Truncating.',
+                "maximum field [severity] length is [%d]. [%d] for rule with ID [%s] . Truncating.",
                 MAX_CUSTOM_FIELD_SIZE, len(severity), self.rule_id,
             )
             num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
@@ -397,14 +395,14 @@ class Rule:
             title = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
             if use_default_on_exception:
-                self.logger.warning('title method for rule with id [%s] raised exception. Using default. Exception: %s', self.rule_id, err)
+                self.logger.warning("title method for rule with id [%s] raised exception. Using default. Exception: %s", self.rule_id, err)
                 return self.rule_id
             raise
 
         if len(title) > MAX_CUSTOM_FIELD_SIZE:
             # If custom field exceeds max size, truncate it
             self.logger.warning(
-                'maximum field [title] length is [%d]. [%d] for rule with ID [%s] . Truncating.',
+                "maximum field [title] length is [%d]. [%d] for rule with ID [%s] . Truncating.",
                 MAX_CUSTOM_FIELD_SIZE, len(title), self.rule_id,
             )
             num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
@@ -433,7 +431,7 @@ class Rule:
         if not isinstance(expected_type, list):
             if not isinstance(result, expected_type):
                 raise Exception(
-                    'rule [{}] function [{}] returned [{}], expected [{}]'.format(
+                    "rule [{}] function [{}] returned [{}], expected [{}]".format(
                         self.rule_id,
                         function.__name__,
                         type(result).__name__,
@@ -443,7 +441,7 @@ class Rule:
         else:
             if not isinstance(expected_type, list) or not all([isinstance(x, (str, bool)) for x in result]):
                 raise Exception(
-                    'rule [{}] function [{}] returned [{}], expected a list'.format(self.rule_id, function.__name__,
+                    "rule [{}] function [{}] returned [{}], expected a list".format(self.rule_id, function.__name__,
                                                                                     type(result).__name__)
                 )
         return result

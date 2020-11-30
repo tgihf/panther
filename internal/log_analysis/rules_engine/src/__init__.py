@@ -35,7 +35,7 @@ class EngineResult:
     rule_tags: List[str] = field(default_factory=list)
     rule_reports: Dict[str, List[str]] = field(default_factory=dict)
     alert_context: Optional[str] = None
-    # custom fields
+    # generated fields
     title: Optional[str] = None
     description: Optional[str] = None
     reference: Optional[str] = None

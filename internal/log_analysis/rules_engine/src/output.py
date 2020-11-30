@@ -99,7 +99,7 @@ class MatchedEventsBuffer:
         self.total_events += 1
         # Check the total size of data in memory. If we exceed threshold, flush data from the biggest 'offender'
         if self.bytes_in_memory > self.max_bytes:
-            _LOGGER.debug('data reached size threshold')
+            _LOGGER.debug("data reached size threshold")
             max_size = 0
             key_to_remove: Optional[OutputGroupingKey]
             for key, value in self.data.items():

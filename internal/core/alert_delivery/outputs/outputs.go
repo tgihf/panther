@@ -184,8 +184,9 @@ func generateDetailedAlertMessage(alert *alertModels.Alert) string {
 		generateAlertMessage(alert),
 		generateURL(alert),
 		alert.Severity,
-		aws.String(alert.Runbook),
-		aws.String(alert.AnalysisDescription),
+		alert.Runbook,
+		alert.Runbook,
+		alert.AnalysisDescription,
 		marshaledContext,
 	)
 }

@@ -238,8 +238,10 @@ class Rule:
             if isinstance(rule_result.severity_output, str):
                 rule_result.severity_output = rule_result.severity_output.upper()
                 if rule_result.severity_output not in SEVERITY_TYPES:
-                    raise AssertionError('Expected severity to be any of the following: [%s], got [%s] instead.'
-                                         % (str(SEVERITY_TYPES), rule_result.severity_output))
+                    raise AssertionError(
+                        'Expected severity to be any of the following: [%s], got [%s] instead.' %
+                        (str(SEVERITY_TYPES), rule_result.severity_output)
+                    )
         except Exception as err:  # pylint: disable=broad-except
             rule_result.severity_exception = err
 
@@ -314,7 +316,9 @@ class Rule:
             # If dedup_string exceeds max size, truncate it
             self.logger.warning(
                 'maximum dedup string size is [%d] characters. Dedup string for rule with ID [%s] is [%d] characters. Truncating.',
-                MAX_DEDUP_STRING_SIZE, self.rule_id, len(dedup_string),
+                MAX_DEDUP_STRING_SIZE,
+                self.rule_id,
+                len(dedup_string),
             )
             num_characters_to_keep = MAX_DEDUP_STRING_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return dedup_string[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
@@ -339,7 +343,9 @@ class Rule:
             # If generated field exceeds max size, truncate it
             self.logger.warning(
                 'maximum field [description] length is [%d]. [%d] for rule with ID [%s] . Truncating.',
-                MAX_GENERATED_FIELD_SIZE, len(description), self.rule_id,
+                MAX_GENERATED_FIELD_SIZE,
+                len(description),
+                self.rule_id,
             )
             num_characters_to_keep = MAX_GENERATED_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return description[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
@@ -376,8 +382,9 @@ class Rule:
             reference = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
             if use_default_on_exception:
-                self.logger.warning('reference method for rule with id [%s] raised exception. Using default. Exception: %s',
-                                    self.rule_id, err)
+                self.logger.warning(
+                    'reference method for rule with id [%s] raised exception. Using default. Exception: %s', self.rule_id, err
+                )
                 return ''
             raise
 
@@ -385,7 +392,9 @@ class Rule:
             # If generated field exceeds max size, truncate it
             self.logger.warning(
                 'maximum field [reference] length is [%d]. [%d] for rule with ID [%s] . Truncating.',
-                MAX_GENERATED_FIELD_SIZE, len(reference), self.rule_id,
+                MAX_GENERATED_FIELD_SIZE,
+                len(reference),
+                self.rule_id,
             )
             num_characters_to_keep = MAX_GENERATED_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return reference[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
@@ -400,8 +409,9 @@ class Rule:
             runbook = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
             if use_default_on_exception:
-                self.logger.warning('runbook method for rule with id [%s] raised exception. Using default. Exception: %s',
-                                    self.rule_id, err)
+                self.logger.warning(
+                    'runbook method for rule with id [%s] raised exception. Using default. Exception: %s', self.rule_id, err
+                )
                 return ''
             raise
 
@@ -409,7 +419,9 @@ class Rule:
             # If generated field exceeds max size, truncate it
             self.logger.warning(
                 'maximum field [runbook] length is [%d]. [%d] for rule with ID [%s] . Truncating.',
-                MAX_GENERATED_FIELD_SIZE, len(runbook), self.rule_id,
+                MAX_GENERATED_FIELD_SIZE,
+                len(runbook),
+                self.rule_id,
             )
             num_characters_to_keep = MAX_GENERATED_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return runbook[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
@@ -423,12 +435,14 @@ class Rule:
             command = getattr(self._module, 'severity')
             severity = self._run_command(command, event, str)
             if severity not in SEVERITY_TYPES:
-                self.logger.warning('severity method for rule with id [%s] yielded [%s], expected [%s]',
-                                    self.rule_id, severity, str(SEVERITY_TYPES))
+                self.logger.warning(
+                    'severity method for rule with id [%s] yielded [%s], expected [%s]', self.rule_id, severity, str(SEVERITY_TYPES)
+                )
         except Exception as err:  # pylint: disable=broad-except
             if use_default_on_exception:
-                self.logger.warning('severity method for rule with id [%s] raised exception. Using default. Exception: %s',
-                                    self.rule_id, err)
+                self.logger.warning(
+                    'severity method for rule with id [%s] raised exception. Using default. Exception: %s', self.rule_id, err
+                )
                 return 'INFO'
             raise
 
@@ -436,7 +450,9 @@ class Rule:
             # If generated field exceeds max size, truncate it
             self.logger.warning(
                 'maximum field [severity] length is [%d]. [%d] for rule with ID [%s] . Truncating.',
-                MAX_GENERATED_FIELD_SIZE, len(severity), self.rule_id,
+                MAX_GENERATED_FIELD_SIZE,
+                len(severity),
+                self.rule_id,
             )
             num_characters_to_keep = MAX_GENERATED_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return severity[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
@@ -459,7 +475,9 @@ class Rule:
             # If generated field exceeds max size, truncate it
             self.logger.warning(
                 'maximum field [title] length is [%d]. [%d] for rule with ID [%s] . Truncating.',
-                MAX_GENERATED_FIELD_SIZE, len(title), self.rule_id,
+                MAX_GENERATED_FIELD_SIZE,
+                len(title),
+                self.rule_id,
             )
             num_characters_to_keep = MAX_GENERATED_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return title[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX

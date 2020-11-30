@@ -19,7 +19,6 @@ package outputs
  */
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
@@ -38,10 +37,10 @@ const (
 func (client *OutputClient) Github(
 	alert *alertModels.Alert, config *outputModels.GithubConfig) *AlertDeliveryResponse {
 
-	description := "**Description:** " + aws.StringValue(&alert.AnalysisDescription)
+	description := "**Description:** " + alert.AnalysisDescription
 	link := "\n [Click here to view in the Panther UI](" + generateURL(alert) + ")"
-	runBook := "\n **Runbook:** " + aws.StringValue(&alert.Runbook)
-	severity := "\n **Severity:** " + aws.StringValue(&alert.Severity)
+	runBook := "\n **Runbook:** " + alert.Runbook
+	severity := "\n **Severity:** " + alert.Severity
 	tags := "\n **Tags:** " + strings.Join(alert.Tags, ", ")
 	// Best effort attempt to marshal Alert Context
 	marshaledContext, _ := jsoniter.MarshalToString(alert.Context)

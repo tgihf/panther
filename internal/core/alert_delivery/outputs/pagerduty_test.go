@@ -37,7 +37,7 @@ var (
 		AnalysisName: aws.String("policyName"),
 		AnalysisID:   "policyId",
 		Severity:     "INFO",
-		Runbook:      aws.String("runbook"),
+		Runbook:      "runbook",
 		CreatedAt:    createdAtTime,
 		Type:         alertModels.PolicyType,
 	}

@@ -21,8 +21,6 @@ package outputs
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-
 	alertModels "github.com/panther-labs/panther/api/lambda/delivery/models"
 	outputModels "github.com/panther-labs/panther/api/lambda/outputs/models"
 )
@@ -48,7 +46,7 @@ func (client *OutputClient) Slack(alert *alertModels.Alert, config *outputModels
 		},
 		{
 			"title": "Runbook",
-			"value": aws.String(alert.Runbook),
+			"value": alert.Runbook,
 			"short": false,
 		},
 		{
@@ -62,7 +60,7 @@ func (client *OutputClient) Slack(alert *alertModels.Alert, config *outputModels
 		"attachments": []map[string]interface{}{
 			{
 				"fallback": generateAlertTitle(alert),
-				"color":    severityColors[aws.StringValue(&alert.Severity)],
+				"color":    severityColors[alert.Severity],
 				"title":    generateAlertTitle(alert),
 				"fields":   fields,
 			},

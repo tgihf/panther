@@ -29,14 +29,14 @@ import (
 
 func TestConvertAttribute(t *testing.T) {
 	expectedAlertDedup := &AlertDedupEvent{
-		RuleID:              "testRuleId",
-		RuleVersion:         "testRuleVersion",
-		DeduplicationString: "testDedup",
-		AlertCount:          10,
-		CreationTime:        time.Unix(1582285279, 0).UTC(),
-		UpdateTime:          time.Unix(1582285280, 0).UTC(),
-		EventCount:          100,
-		LogTypes:            []string{"Log.Type.1", "Log.Type.2"},
+		RuleID:               "testRuleId",
+		RuleVersion:          "testRuleVersion",
+		DeduplicationString:  "testDedup",
+		AlertCount:           10,
+		CreationTime:         time.Unix(1582285279, 0).UTC(),
+		UpdateTime:           time.Unix(1582285280, 0).UTC(),
+		EventCount:           100,
+		LogTypes:             []string{"Log.Type.1", "Log.Type.2"},
 		GeneratedTitle:       aws.String("test title"),
 		GeneratedDescription: aws.String("test description"),
 		GeneratedReference:   aws.String("test reference"),
@@ -44,8 +44,8 @@ func TestConvertAttribute(t *testing.T) {
 		GeneratedRunbook:     aws.String("test runbook"),
 		GeneratedDestinationOverride: []string{
 			"6c59430f-4953-42e7-a47a-64a8ad6ea645", "dde678a9-6a14-4f30-8bb2-9da6ea7b603f"},
-		Type:                "RULE_ERROR",
-		AlertContext:        aws.String("{}"),
+		Type:         "RULE_ERROR",
+		AlertContext: aws.String("{}"),
 	}
 
 	alertDedupEvent, err := FromDynamodDBAttribute(getNewTestCase())
@@ -61,15 +61,15 @@ func TestConvertNilValue(t *testing.T) {
 
 func TestConvertAttributeWithoutOptionalFields(t *testing.T) {
 	expectedAlertDedup := &AlertDedupEvent{
-		RuleID:              "testRuleId",
-		RuleVersion:         "testRuleVersion",
-		DeduplicationString: "testDedup",
-		AlertCount:          10,
-		CreationTime:        time.Unix(1582285279, 0).UTC(),
-		UpdateTime:          time.Unix(1582285280, 0).UTC(),
-		EventCount:          100,
-		AlertContext:        aws.String("{}"),
-		LogTypes:            []string{"Log.Type.1", "Log.Type.2"},
+		RuleID:               "testRuleId",
+		RuleVersion:          "testRuleVersion",
+		DeduplicationString:  "testDedup",
+		AlertCount:           10,
+		CreationTime:         time.Unix(1582285279, 0).UTC(),
+		UpdateTime:           time.Unix(1582285280, 0).UTC(),
+		EventCount:           100,
+		AlertContext:         aws.String("{}"),
+		LogTypes:             []string{"Log.Type.1", "Log.Type.2"},
 		GeneratedTitle:       aws.String("test title"),
 		GeneratedDescription: aws.String("test description"),
 		GeneratedReference:   aws.String("test reference"),

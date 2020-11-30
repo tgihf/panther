@@ -19,10 +19,10 @@ package outputs
  */
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/stretchr/testify/require"
 
 	alertModels "github.com/panther-labs/panther/api/lambda/delivery/models"

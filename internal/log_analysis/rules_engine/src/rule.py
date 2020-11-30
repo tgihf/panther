@@ -280,7 +280,7 @@ class Rule:
 
         return dedup_string
 
-    def _get_description(self, event: Mapping) -> Optional[str]:
+    def _get_description(self, event: Mapping, use_default_on_exception: bool = True) -> Optional[str]:
         if not hasattr(self._module, 'description'):
             return None
 
@@ -288,8 +288,10 @@ class Rule:
             command = getattr(self._module, 'description')
             description = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
-            self.logger.warning("description method for rule with id [%s] raised exception. Using default Exception: %s", self.rule_id, err)
-            return None
+            if use_default_on_exception:
+                self.logger.warning("description method for rule with id [%s] raised exception. Using default Exception: %s", self.rule_id, err)
+                return ''
+            raise
 
         if len(description) > MAX_CUSTOM_FIELD_SIZE:
             # If custom field exceeds max size, truncate it
@@ -301,7 +303,7 @@ class Rule:
             return description[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
         return description
 
-    def _get_destination_override(self, event: Mapping) -> Optional[List[str]]:
+    def _get_destination_override(self, event: Mapping, use_default_on_exception: bool = True) -> Optional[List[str]]:
         if not hasattr(self._module, 'destination_override'):
             return None
 
@@ -309,8 +311,10 @@ class Rule:
             command = getattr(self._module, 'destination_override')
             destination_override = self._run_command(command, event, list())
         except Exception as err:  # pylint: disable=broad-except
-            self.logger.warning("_get_destination_override method raised exception. Exception: %s", err)
-            return None
+            if use_default_on_exception:
+                self.logger.warning("_get_destination_override method raised exception. Exception: %s", err)
+                return []
+            raise
 
         if len(destination_override) > MAX_DESTINATION_OVERRIDE_SIZE:
             # If custom field exceeds max size, truncate it
@@ -321,7 +325,7 @@ class Rule:
             return destination_override[:MAX_DESTINATION_OVERRIDE_SIZE]
         return destination_override
 
-    def _get_reference(self, event: Mapping) -> Optional[str]:
+    def _get_reference(self, event: Mapping, use_default_on_exception: bool = True) -> Optional[str]:
         if not hasattr(self._module, 'reference'):
             return None
 
@@ -329,8 +333,11 @@ class Rule:
             command = getattr(self._module, 'reference')
             reference = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
-            self.logger.warning("reference method for rule with id [%s] raised exception. Using default. Exception: %s", self.rule_id, err)
-            return None
+            if use_default_on_exception:
+                self.logger.warning("reference method for rule with id [%s] raised exception. Using default. Exception: %s",
+                                    self.rule_id, err)
+                return ''
+            raise
 
         if len(reference) > MAX_CUSTOM_FIELD_SIZE:
             # If custom field exceeds max size, truncate it
@@ -342,7 +349,7 @@ class Rule:
             return reference[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
         return reference
 
-    def _get_runbook(self, event: Mapping) -> Optional[str]:
+    def _get_runbook(self, event: Mapping, use_default_on_exception: bool = True) -> Optional[str]:
         if not hasattr(self._module, 'runbook'):
             return None
 
@@ -350,7 +357,11 @@ class Rule:
             command = getattr(self._module, 'runbook')
             runbook = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
-            return None
+            if use_default_on_exception:
+                self.logger.warning("runbook method for rule with id [%s] raised exception. Using default. Exception: %s",
+                                    self.rule_id, err)
+                return ''
+            raise
 
         if len(runbook) > MAX_CUSTOM_FIELD_SIZE:
             # If custom field exceeds max size, truncate it
@@ -362,7 +373,7 @@ class Rule:
             return runbook[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
         return runbook
 
-    def _get_severity(self, event: Mapping) -> Optional[str]:
+    def _get_severity(self, event: Mapping, use_default_on_exception: bool = True) -> Optional[str]:
         if not hasattr(self._module, 'severity'):
             return None
 
@@ -373,8 +384,10 @@ class Rule:
                 self.logger.warning("severity method for rule with id [%s] yielded [%s], expected [%s]",
                                     self.rule_id, severity, str(SEVERITY_TYPES))
         except Exception as err:  # pylint: disable=broad-except
-            self.logger.warning("severity method for rule with id [%s] raised exception. Using default. Exception: %s", self.rule_id, err)
-            return None
+            if use_default_on_exception:
+                self.logger.warning("severity method for rule with id [%s] raised exception. Using default. Exception: %s", self.rule_id, err)
+                return 'INFO'
+            raise
 
         if len(severity) > MAX_CUSTOM_FIELD_SIZE:
             # If custom field exceeds max size, truncate it

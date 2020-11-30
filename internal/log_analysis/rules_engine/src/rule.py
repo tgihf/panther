@@ -371,6 +371,9 @@ class Rule:
         try:
             command = getattr(self._module, 'severity')
             severity = self._run_command(command, event, str)
+            if severity not in SEVERITY_TYPES:
+                self.logger.warning('severity method for rule with id [%s] yielded [%s], expected [%s]',
+                                    self.rule_id, severity, str(SEVERITY_TYPES))
         except Exception as err:  # pylint: disable=broad-except
             self.logger.warning('severity method for rule with id [%s] raised exception. Using default. Exception: %s', self.rule_id, err)
             return None

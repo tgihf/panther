@@ -61,14 +61,14 @@ type AlertDedupEvent struct {
 type Alert struct {
 	ID                  string    `dynamodbav:"id,string"`
 	TimePartition       string    `dynamodbav:"timePartition,string"`
-	Severity            *string   `dynamodbav:"severity,string"`
+	Severity            string   `dynamodbav:"severity,string"`
 	RuleDisplayName     *string   `dynamodbav:"ruleDisplayName,string"`
 	FirstEventMatchTime time.Time `dynamodbav:"firstEventMatchTime,string"`
 	LogTypes            []string  `dynamodbav:"logTypes,stringset"`
-	Title               *string   `dynamodbav:"title,string"`                  // The alert title. It will be the Python-generated title or a default one if no Python-generated title is available.
-	Description         *string   `dynamodbav:"description,string"`            // The alert description. It will be the Python-generated description or a default one if no Python-generated description is available.
-	Reference           *string   `dynamodbav:"reference,string"`              // The alert reference. It will be the Python-generated description or a default one if no Python-generated reference is available.
-	Runbook             *string   `dynamodbav:"runbook,string"`                // The alert runbook. It will be the Python-generated description or a default one if no Python-generated runbook is available.
+	Title               string   `dynamodbav:"title,string"`                  // The alert title. It will be the Python-generated title or a default one if no Python-generated title is available.
+	Description         string   `dynamodbav:"description,string"`            // The alert description. It will be the Python-generated description or a default one if no Python-generated description is available.
+	Reference           string   `dynamodbav:"reference,string"`              // The alert reference. It will be the Python-generated description or a default one if no Python-generated reference is available.
+	Runbook             string   `dynamodbav:"runbook,string"`                // The alert runbook. It will be the Python-generated description or a default one if no Python-generated runbook is available.
 	DestinationOverride []string  `dynamodbav:"destinationOverride,stringset"` // The alert destinationOverride. It will be the Python-generated description or a default one if no Python-generated destinationOverride is available.
 	AlertDedupEvent
 }

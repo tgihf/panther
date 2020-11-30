@@ -60,6 +60,10 @@ func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, 
 		}
 	}
 
+	if len(alertOutputs) > 0 {
+		return alertOutputs, nil
+	}
+
 	// Otherwise, return the specified output overrides for the alert
 	for _, output := range outputs {
 		for _, outputID := range alert.OutputIds {

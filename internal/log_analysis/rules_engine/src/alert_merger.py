@@ -46,7 +46,7 @@ _ALERT_DESTINATION_OVERRIDE = 'destinationOverride'
 _ALERT_TYPE = 'type'
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,unsubscriptable-object
 @dataclass
 class MatchingGroupInfo:
     """Represents information for a batch of matched events"""

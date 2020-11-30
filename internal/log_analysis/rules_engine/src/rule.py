@@ -51,7 +51,7 @@ DEFAULT_RULE_DEDUP_PERIOD_MINS = 60
 SEVERITY_TYPES = ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,unsubscriptable-object
 @dataclass
 class RuleResult:
     """Class containing the result of running a rule"""
@@ -330,7 +330,8 @@ class Rule:
             description = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
             if use_default_on_exception:
-                self.logger.warning('description method for rule with id [%s] raised exception. Using default Exception: %s', self.rule_id, err)
+                self.logger.warning('description method for rule with id [%s] raised exception. Using default Exception: %s',
+                                    self.rule_id, err)
                 return ''
             raise
 
@@ -426,7 +427,8 @@ class Rule:
                                     self.rule_id, severity, str(SEVERITY_TYPES))
         except Exception as err:  # pylint: disable=broad-except
             if use_default_on_exception:
-                self.logger.warning('severity method for rule with id [%s] raised exception. Using default. Exception: %s', self.rule_id, err)
+                self.logger.warning('severity method for rule with id [%s] raised exception. Using default. Exception: %s',
+                                    self.rule_id, err)
                 return 'INFO'
             raise
 

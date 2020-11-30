@@ -20,7 +20,7 @@ from collections.abc import Mapping
 from typing import Any, Dict, Optional, List
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,unsubscriptable-object
 @dataclass
 class EngineResult:
     """Represents an event that matched a rule"""

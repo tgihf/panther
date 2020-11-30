@@ -44,7 +44,7 @@ _SNS_TOPIC_ARN = os.environ['NOTIFICATIONS_TOPIC']
 _LOGGER = get_logger()
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,unsubscriptable-object
 @dataclass
 class EventCommonFields:
     """Fields that will be added to all stored events"""
@@ -101,7 +101,7 @@ class MatchedEventsBuffer:
         if self.bytes_in_memory > self.max_bytes:
             _LOGGER.debug("data reached size threshold")
             max_size = 0
-            key_to_remove: Optional[OutputGroupingKey]
+            key_to_remove: Optional[OutputGroupingKey]  # pylint: disable=unsubscriptable-object
             for key, value in self.data.items():
                 if value.size_in_bytes > max_size:
                     max_size = value.size_in_bytes

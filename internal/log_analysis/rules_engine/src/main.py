@@ -32,7 +32,7 @@ _LOGGER = get_logger()
 
 _RULES_ENGINE = Engine(AnalysisAPIClient())
 
-
+#  pylint: disable=unsubscriptable-object
 def lambda_handler(event: Dict[str, Any], unused_context: Any) -> Optional[Dict[str, Any]]:
     """Entry point for the Lambda"""
     if 'rules' in event:

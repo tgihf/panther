@@ -82,7 +82,17 @@ class TestMainDirectAnalysis(TestCase):
                         'ruleId': 'rule_id',
                         'ruleOutput': True,
                         'titleError': None,
-                        'titleOutput': None
+                        'titleOutput': None,
+                        'descriptionError': None,
+                        'descriptionOutput': None,
+                        'referenceError': None,
+                        'referenceOutput': None,
+                        'severityError': None,
+                        'severityOutput': None,
+                        'runbookError': None,
+                        'runbookOutput': None,
+                        'destinationOverrideError': None,
+                        'destinationOverrideOutput': None,
                     }
                 ]
         }
@@ -106,7 +116,17 @@ class TestMainDirectAnalysis(TestCase):
                         'ruleId': 'rule_id',
                         'ruleOutput': False,
                         'titleError': None,
-                        'titleOutput': None
+                        'titleOutput': None,
+                        'descriptionError': None,
+                        'descriptionOutput': None,
+                        'referenceError': None,
+                        'referenceOutput': None,
+                        'severityError': None,
+                        'severityOutput': None,
+                        'runbookError': None,
+                        'runbookOutput': None,
+                        'destinationOverrideError': None,
+                        'destinationOverrideOutput': None,
                     }
                 ]
         }
@@ -138,7 +158,17 @@ class TestMainDirectAnalysis(TestCase):
                         'ruleId': 'rule_id',
                         'ruleOutput': None,
                         'titleError': None,
-                        'titleOutput': None
+                        'titleOutput': None,
+                        'descriptionError': None,
+                        'descriptionOutput': None,
+                        'referenceError': None,
+                        'referenceOutput': None,
+                        'severityError': None,
+                        'severityOutput': None,
+                        'runbookError': None,
+                        'runbookOutput': None,
+                        'destinationOverrideError': None,
+                        'destinationOverrideOutput': None,
                     }
                 ]
         }
@@ -161,7 +191,17 @@ class TestMainDirectAnalysis(TestCase):
                         'ruleId': 'rule_id',
                         'ruleOutput': None,
                         'titleError': None,
-                        'titleOutput': None
+                        'titleOutput': None,
+                        'descriptionError': None,
+                        'descriptionOutput': None,
+                        'referenceError': None,
+                        'referenceOutput': None,
+                        'severityError': None,
+                        'severityOutput': None,
+                        'runbookError': None,
+                        'runbookOutput': None,
+                        'destinationOverrideError': None,
+                        'destinationOverrideOutput': None,
                     }
                 ]
         }
@@ -194,7 +234,17 @@ class TestMainDirectAnalysis(TestCase):
                         'ruleId': 'rule_id',
                         'ruleOutput': True,
                         'titleError': None,
-                        'titleOutput': None
+                        'titleOutput': None,
+                        'descriptionError': None,
+                        'descriptionOutput': None,
+                        'referenceError': None,
+                        'referenceOutput': None,
+                        'severityError': None,
+                        'severityOutput': None,
+                        'runbookError': None,
+                        'runbookOutput': None,
+                        'destinationOverrideError': None,
+                        'destinationOverrideOutput': None,
                     }
                 ]
         }
@@ -229,7 +279,17 @@ class TestMainDirectAnalysis(TestCase):
                         'ruleId': 'rule_id',
                         'ruleOutput': True,
                         'titleError': 'Exception: title error',
-                        'titleOutput': None
+                        'titleOutput': None,
+                        'descriptionError': None,
+                        'descriptionOutput': None,
+                        'referenceError': None,
+                        'referenceOutput': None,
+                        'severityError': None,
+                        'severityOutput': None,
+                        'runbookError': None,
+                        'runbookOutput': None,
+                        'destinationOverrideError': None,
+                        'destinationOverrideOutput': None,
                     }
                 ]
         }

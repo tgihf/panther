@@ -183,17 +183,17 @@ class Rule:
             rule_result.title_exception = err
 
         try:
-            rule_result.description_output = self._get_description(event)
+            rule_result.description_output = self._get_description(event, use_default_on_exception=batch_mode)
         except Exception as err:  # pylint: disable=broad-except
             rule_result.description_exception = err
 
         try:
-            rule_result.reference_output = self._get_reference(event)
+            rule_result.reference_output = self._get_reference(event, use_default_on_exception=batch_mode)
         except Exception as err:  # pylint: disable=broad-except
             rule_result.reference_exception = err
 
         try:
-            rule_result.severity_output = self._get_severity(event)
+            rule_result.severity_output = self._get_severity(event, use_default_on_exception=batch_mode)
             if isinstance(rule_result.severity_output, str):
                 rule_result.severity_output = rule_result.severity_output.upper()
                 if rule_result.severity_output not in SEVERITY_TYPES:
@@ -203,12 +203,12 @@ class Rule:
             rule_result.severity_exception = err
 
         try:
-            rule_result.runbook_output = self._get_runbook(event)
+            rule_result.runbook_output = self._get_runbook(event, use_default_on_exception=batch_mode)
         except Exception as err:  # pylint: disable=broad-except
             rule_result.runbook_exception = err
 
         try:
-            rule_result.destination_override_output = self._get_destination_override(event)
+            rule_result.destination_override_output = self._get_destination_override(event, use_default_on_exception=batch_mode)
         except Exception as err:  # pylint: disable=broad-except
             rule_result.destination_override_exception = err
 

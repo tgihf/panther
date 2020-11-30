@@ -38,23 +38,23 @@ const (
 
 // AlertDedupEvent represents the event stored in the alert dedup DDB table by the rules engine
 type AlertDedupEvent struct {
-	RuleID                       string    `dynamodbav:"ruleId"`
-	RuleVersion                  string    `dynamodbav:"ruleVersion"`
-	DeduplicationString          string    `dynamodbav:"dedup"`
-	CreationTime                 time.Time `dynamodbav:"creationTime"`
-	UpdateTime                   time.Time `dynamodbav:"updateTime"`
-	EventCount                   int64     `dynamodbav:"eventCount"`
-	LogTypes                     []string  `dynamodbav:"logTypes,stringset"`
-	AlertContext                 *string   `dynamodbav:"context,string"`
-	Type                         string    `dynamodbav:"type"`
+	RuleID              string    `dynamodbav:"ruleId"`
+	RuleVersion         string    `dynamodbav:"ruleVersion"`
+	DeduplicationString string    `dynamodbav:"dedup"`
+	CreationTime        time.Time `dynamodbav:"creationTime"`
+	UpdateTime          time.Time `dynamodbav:"updateTime"`
+	EventCount          int64     `dynamodbav:"eventCount"`
+	LogTypes            []string  `dynamodbav:"logTypes,stringset"`
+	AlertContext        *string   `dynamodbav:"context,string"`
+	Type                string    `dynamodbav:"type"`
 	// Generated Fields
-	GeneratedTitle               *string   `dynamodbav:"title,string"`
-	GeneratedDescription         *string   `dynamodbav:"description,string"`
-	GeneratedReference           *string   `dynamodbav:"reference"`
-	GeneratedSeverity            *string   `dynamodbav:"severity"`
-	GeneratedRunbook             *string   `dynamodbav:"runbook"`
-	GeneratedDestinationOverride []string  `dynamodbav:"destinationOverride,stringset"`
-	AlertCount                   int64     `dynamodbav:"-"`  // There is no need to store this item in DDB
+	GeneratedTitle               *string  `dynamodbav:"title,string"`
+	GeneratedDescription         *string  `dynamodbav:"description,string"`
+	GeneratedReference           *string  `dynamodbav:"reference"`
+	GeneratedSeverity            *string  `dynamodbav:"severity"`
+	GeneratedRunbook             *string  `dynamodbav:"runbook"`
+	GeneratedDestinationOverride []string `dynamodbav:"destinationOverride,stringset"`
+	AlertCount                   int64    `dynamodbav:"-"` // There is no need to store this item in DDB
 }
 
 // Alert contains all the fields associated to the alert stored in DDB
@@ -66,7 +66,7 @@ type Alert struct {
 	FirstEventMatchTime time.Time `dynamodbav:"firstEventMatchTime,string"`
 	LogTypes            []string  `dynamodbav:"logTypes,stringset"`
 	// Alert Title - will be the Python-generated title or a default one if no Python-generated title is available.
-	Title               string    `dynamodbav:"title,string"`
+	Title string `dynamodbav:"title,string"`
 	AlertDedupEvent
 }
 

@@ -37,7 +37,13 @@ func TestConvertAttribute(t *testing.T) {
 		UpdateTime:          time.Unix(1582285280, 0).UTC(),
 		EventCount:          100,
 		LogTypes:            []string{"Log.Type.1", "Log.Type.2"},
-		GeneratedTitle:      aws.String("test title"),
+		GeneratedTitle:       aws.String("test title"),
+		GeneratedDescription: aws.String("test description"),
+		GeneratedReference:   aws.String("test reference"),
+		GeneratedSeverity:    aws.String("INFO"),
+		GeneratedRunbook:     aws.String("test runbook"),
+		GeneratedDestinationOverride: []string{
+			"6c59430f-4953-42e7-a47a-64a8ad6ea645", "dde678a9-6a14-4f30-8bb2-9da6ea7b603f"},
 		Type:                "RULE_ERROR",
 		AlertContext:        aws.String("{}"),
 	}
@@ -64,6 +70,13 @@ func TestConvertAttributeWithoutOptionalFields(t *testing.T) {
 		EventCount:          100,
 		AlertContext:        aws.String("{}"),
 		LogTypes:            []string{"Log.Type.1", "Log.Type.2"},
+		GeneratedTitle:       aws.String("test title"),
+		GeneratedDescription: aws.String("test description"),
+		GeneratedReference:   aws.String("test reference"),
+		GeneratedSeverity:    aws.String("INFO"),
+		GeneratedRunbook:     aws.String("test runbook"),
+		GeneratedDestinationOverride: []string{
+			"6c59430f-4953-42e7-a47a-64a8ad6ea645", "dde678a9-6a14-4f30-8bb2-9da6ea7b603f"},
 	}
 
 	ddbItem := getNewTestCase()
@@ -160,5 +173,11 @@ func getNewTestCase() map[string]events.DynamoDBAttributeValue {
 		"status":            events.NewStringAttribute("OPEN"),
 		"type":              events.NewStringAttribute("RULE_ERROR"),
 		"context":           events.NewStringAttribute("{}"),
+		"description":       events.NewStringAttribute("test description"),
+		"reference":         events.NewStringAttribute("test reference"),
+		"severity":          events.NewStringAttribute("INFO"),
+		"runbook":           events.NewStringAttribute("test runbook"),
+		"destinationOverride": events.NewStringSetAttribute([]string{
+			"6c59430f-4953-42e7-a47a-64a8ad6ea645", "dde678a9-6a14-4f30-8bb2-9da6ea7b603f"}),
 	}
 }

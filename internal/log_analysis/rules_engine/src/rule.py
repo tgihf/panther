@@ -198,7 +198,7 @@ class Rule:
                 rule_result.severity_output = rule_result.severity_output.upper()
                 if rule_result.severity_output not in SEVERITY_TYPES:
                     raise AssertionError('Expected severity to be any of the following: [%s], got [%s] instead.'
-                                         % str(SEVERITY_TYPES), rule_result.severity_output)
+                                         % (str(SEVERITY_TYPES), rule_result.severity_output))
         except Exception as err:  # pylint: disable=broad-except
             rule_result.severity_exception = err
 

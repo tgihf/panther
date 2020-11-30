@@ -42,7 +42,7 @@ func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, 
 		for _, output := range outputs {
 			// If `DefaultForSeverity` is nil or empty, this loop will skip
 			for _, outputSeverity := range output.DefaultForSeverity {
-				if alert.Severity == outputSeverity {
+				if alert.Severity == *outputSeverity {
 					defaultsForSeverity = append(defaultsForSeverity, output)
 				}
 			}

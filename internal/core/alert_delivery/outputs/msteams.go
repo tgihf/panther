@@ -19,9 +19,9 @@ package outputs
  */
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
 	jsoniter "github.com/json-iterator/go"
 
 	alertModels "github.com/panther-labs/panther/api/lambda/delivery/models"
@@ -44,9 +44,9 @@ func (client *OutputClient) MsTeams(
 		"sections": []interface{}{
 			map[string]interface{}{
 				"facts": []interface{}{
-					map[string]string{"name": "Description", "value": aws.StringValue(alert.AnalysisDescription)},
-					map[string]string{"name": "Runbook", "value": aws.StringValue(alert.Runbook)},
-					map[string]string{"name": "Severity", "value": aws.StringValue(alert.Severity)},
+					map[string]string{"name": "Description", "value": aws.StringValue(&alert.AnalysisDescription)},
+					map[string]string{"name": "Runbook", "value": aws.StringValue(&alert.Runbook)},
+					map[string]string{"name": "Severity", "value": aws.StringValue(&alert.Severity)},
 					map[string]string{"name": "Tags", "value": strings.Join(alert.Tags, ", ")},
 					map[string]string{"name": "AlertContext", "value": marshaledContext},
 				},

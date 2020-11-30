@@ -159,10 +159,6 @@ func (h *Handler) storeNewAlert(rule *ruleModel.Rule, alertDedup *AlertDedupEven
 		Severity:            getSeverity(rule, alertDedup),
 		RuleDisplayName:     getRuleDisplayName(rule),
 		Title:               getTitle(rule, alertDedup),
-		Description:         getDescription(rule, alertDedup),
-		Reference:           getReference(rule, alertDedup),
-		Runbook:             getRunbook(rule, alertDedup),
-		DestinationOverride: alertDedup.GeneratedDestinationOverride,
 		FirstEventMatchTime: alertDedup.CreationTime,
 		LogTypes:            alertDedup.LogTypes,
 		AlertDedupEvent: AlertDedupEvent{

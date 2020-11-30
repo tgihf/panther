@@ -48,7 +48,7 @@ func (client *OutputClient) Slack(alert *alertModels.Alert, config *outputModels
 		},
 		{
 			"title": "Runbook",
-			"value": aws.StringValue(alert.Runbook),
+			"value": aws.String(alert.Runbook),
 			"short": false,
 		},
 		{
@@ -62,7 +62,7 @@ func (client *OutputClient) Slack(alert *alertModels.Alert, config *outputModels
 		"attachments": []map[string]interface{}{
 			{
 				"fallback": generateAlertTitle(alert),
-				"color":    severityColors[aws.StringValue(alert.Severity)],
+				"color":    severityColors[aws.StringValue(&alert.Severity)],
 				"title":    generateAlertTitle(alert),
 				"fields":   fields,
 			},

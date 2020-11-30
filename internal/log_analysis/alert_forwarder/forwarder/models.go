@@ -140,7 +140,7 @@ func FromDynamodDBAttribute(input map[string]events.DynamoDBAttributeValue) (eve
 		result.AlertContext = aws.String(alertContext.String())
 	}
 
-	// Custom Fields
+	// Generated Fields
 	generatedTitle := getOptionalAttribute("title", input)
 	result.GeneratedTitle = aws.String(generatedTitle.String())
 
@@ -161,7 +161,7 @@ func FromDynamodDBAttribute(input map[string]events.DynamoDBAttributeValue) (eve
 		result.GeneratedDestinationOverride = generatedDestinationOverride.StringSet()
 	}
 
-	// End Custom Fields
+	// End Generated Fields
 
 	alertType := getOptionalAttribute("type", input)
 	if alertType != nil {

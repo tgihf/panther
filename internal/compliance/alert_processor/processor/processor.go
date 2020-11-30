@@ -211,13 +211,13 @@ func getAlertConfigPolicy(event *models.ComplianceNotification) (*alertmodel.Ale
 	}
 
 	return &alertmodel.Alert{
-			AnalysisDescription: &policy.Description,
+			AnalysisDescription: policy.Description,
 			AnalysisID:          event.PolicyID,
 			AnalysisName:        &policy.DisplayName,
 			CreatedAt:           event.Timestamp,
 			OutputIds:           event.OutputIds,
-			Runbook:             &policy.Runbook,
-			Severity:            aws.String(string(policy.Severity)),
+			Runbook:             policy.Runbook,
+			Severity:            string(policy.Severity),
 			Tags:                policy.Tags,
 			Type:                alertmodel.PolicyType,
 			Version:             &event.PolicyVersionID,

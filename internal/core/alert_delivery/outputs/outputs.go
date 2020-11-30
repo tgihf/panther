@@ -196,7 +196,7 @@ func generateAlertTitle(alert *alertModels.Alert) string {
 	}
 	switch alert.Type {
 	case alertModels.RuleType:
-		if &alert.Title != nil {
+		if alert.Title != "" {
 			return "New Alert: " + alert.Title
 		}
 		return "New Alert: " + getDisplayName(alert)

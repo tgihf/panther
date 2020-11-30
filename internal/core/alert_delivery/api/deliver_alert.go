@@ -53,16 +53,7 @@ func (API) DeliverAlert(input *deliveryModels.DeliverAlertInput) (*deliveryModel
 	}
 
 	// Get our Alert -> Output mappings. We determine which destinations an alert should be sent.
-	// First check if there is a destination override set
-	var alertOutputMap AlertOutputMap
-	if alert.DestinationOverride != nil {
-		alertOutputMap, err = getAlertOutputMapping(alert, alert.DestinationOverride)
-		if err != nil {
-			alertOutputMap, err = getAlertOutputMapping(alert, input.OutputIds)
-		}
-	} else {
-		alertOutputMap, err = getAlertOutputMapping(alert, input.OutputIds)
-	}
+	alertOutputMap, err := getAlertOutputMapping(alert, input.OutputIds)
 
 	if err != nil {
 		return nil, err

@@ -114,21 +114,25 @@ const RuleForm: React.FC<RuleFormProps> = ({ initialValues, onSubmit }) => {
                 </Box>
 
                 <BorderTabDivider />
-                <TabPanels>
-                  <TabPanel data-testid="rule-settings-tabpanel" lazy>
-                    <ErrorBoundary>
-                      <BaseRuleFormCoreSection />
-                    </ErrorBoundary>
-                  </TabPanel>
-                  <TabPanel data-testid="function-settings-tabpanel" lazy>
-                    <ErrorBoundary>
-                      <BaseRuleFormEditorSection type="rule" />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                      <RuleFormTestSection />
-                    </ErrorBoundary>
-                  </TabPanel>
-                </TabPanels>
+                <Box p={6}>
+                  <TabPanels>
+                    <TabPanel data-testid="rule-settings-tabpanel" lazy>
+                      <ErrorBoundary>
+                        <BaseRuleFormCoreSection />
+                      </ErrorBoundary>
+                    </TabPanel>
+                    <TabPanel data-testid="function-settings-tabpanel" lazy>
+                      <Flex spacing="6" direction="column">
+                        <ErrorBoundary>
+                          <BaseRuleFormEditorSection type="rule" />
+                        </ErrorBoundary>
+                        <ErrorBoundary>
+                          <RuleFormTestSection />
+                        </ErrorBoundary>
+                      </Flex>
+                    </TabPanel>
+                  </TabPanels>
+                </Box>
               </Tabs>
             </Form>
           )}

@@ -94,7 +94,7 @@ const BasePolicyFormCoreSection: React.FC = () => {
   ]);
 
   return (
-    <Box p={6}>
+    <React.Fragment>
       <Flex spacing={5} mb={5} align="center">
         <Box>
           <Text color="navyblue-100">Basic Information</Text>
@@ -210,7 +210,7 @@ const BasePolicyFormCoreSection: React.FC = () => {
           {destinationHelperText}
         </Box>
       </SimpleGrid>
-    </Box>
+    </React.Fragment>
   );
 };
 

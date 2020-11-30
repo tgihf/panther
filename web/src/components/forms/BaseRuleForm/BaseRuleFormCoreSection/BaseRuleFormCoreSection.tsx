@@ -109,7 +109,7 @@ const BaseRuleFormCoreSection: React.FC = () => {
   ]);
 
   return (
-    <Box p={6}>
+    <React.Fragment>
       <Flex spacing={5} mb={5} align="center">
         <Box>
           <Text color="navyblue-100">Basic Information</Text>
@@ -158,9 +158,9 @@ const BaseRuleFormCoreSection: React.FC = () => {
           />
         </SimpleGrid>
       </SimpleGrid>
-      <Box mb={5} mt={8}>
-        <Text color="navyblue-100">Additional Information</Text>
-      </Box>
+      <Text color="navyblue-100" mb={5} mt={8}>
+        Additional Information
+      </Text>
 
       <SimpleGrid columns={6} spacing={5} mb={5}>
         <Box gridColumn="1/6">
@@ -228,7 +228,7 @@ const BaseRuleFormCoreSection: React.FC = () => {
           itemToString={minutesToString}
         />
       </SimpleGrid>
-    </Box>
+    </React.Fragment>
   );
 };
 

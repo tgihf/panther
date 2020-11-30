@@ -45,7 +45,7 @@ describe('EditRule', () => {
         data: { rule },
         variables: {
           input: {
-            ruleId: rule.id,
+            id: rule.id,
           },
         },
       }),
@@ -101,7 +101,7 @@ describe('EditRule', () => {
         data: { rule },
         variables: {
           input: {
-            ruleId: rule.id,
+            id: rule.id,
           },
         },
       }),

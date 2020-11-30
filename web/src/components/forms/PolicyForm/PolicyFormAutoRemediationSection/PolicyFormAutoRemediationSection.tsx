@@ -45,7 +45,7 @@ const PolicyFormAutoRemediationSection: React.FC = () => {
 
   if (loading) {
     return (
-      <Box p={6} data-testid="remediation-loading">
+      <Box data-testid="remediation-loading">
         <TablePlaceholder rowCount={2} />
       </Box>
     );
@@ -53,19 +53,17 @@ const PolicyFormAutoRemediationSection: React.FC = () => {
 
   if (error) {
     return (
-      <Box p={6}>
-        <Alert
-          variant="warning"
-          title="Couldn't load your available remediations"
-          description={[
-            extractErrorMessage(error),
-            '. For more info, please consult the ',
-            <Link external href={REMEDIATION_DOC_URL} key="docs">
-              related docs
-            </Link>,
-          ]}
-        />
-      </Box>
+      <Alert
+        variant="warning"
+        title="Couldn't load your available remediations"
+        description={[
+          extractErrorMessage(error),
+          '. For more info, please consult the ',
+          <Link external href={REMEDIATION_DOC_URL} key="docs">
+            related docs
+          </Link>,
+        ]}
+      />
     );
   }
   return (

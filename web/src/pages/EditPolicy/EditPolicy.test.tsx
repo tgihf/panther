@@ -47,7 +47,7 @@ describe('EditPolicy', () => {
         data: { policy },
         variables: {
           input: {
-            policyId: policy.id,
+            id: policy.id,
           },
         },
       }),
@@ -108,7 +108,7 @@ describe('EditPolicy', () => {
         data: { policy },
         variables: {
           input: {
-            policyId: policy.id,
+            id: policy.id,
           },
         },
       }),
@@ -159,7 +159,7 @@ describe('EditPolicy', () => {
         data: { policy },
         variables: {
           input: {
-            policyId: policy.id,
+            id: policy.id,
           },
         },
       }),

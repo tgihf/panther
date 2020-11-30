@@ -121,26 +121,30 @@ const PolicyForm: React.FC<PolicyFormProps> = ({ initialValues, onSubmit }) => {
                 </Box>
 
                 <BorderTabDivider />
-                <TabPanels>
-                  <TabPanel data-testid="policy-settings-tabpanel" lazy>
-                    <ErrorBoundary>
-                      <BasePolicyFormCoreSection />
-                    </ErrorBoundary>
-                  </TabPanel>
-                  <TabPanel data-testid="policy-functions-tabpanel" lazy>
-                    <ErrorBoundary>
-                      <BaseRuleFormEditorSection type="policy" />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                      <PolicyFormTestSection />
-                    </ErrorBoundary>
-                  </TabPanel>
-                  <TabPanel data-testid="policy-auto-remediation" lazy>
-                    <ErrorBoundary>
-                      <PolicyFormAutoRemediationSection />
-                    </ErrorBoundary>
-                  </TabPanel>
-                </TabPanels>
+                <Box p={6}>
+                  <TabPanels>
+                    <TabPanel data-testid="policy-settings-tabpanel" lazy>
+                      <ErrorBoundary>
+                        <BasePolicyFormCoreSection />
+                      </ErrorBoundary>
+                    </TabPanel>
+                    <TabPanel data-testid="policy-functions-tabpanel" lazy>
+                      <Flex spacing="6" direction="column">
+                        <ErrorBoundary>
+                          <BaseRuleFormEditorSection type="policy" />
+                        </ErrorBoundary>
+                        <ErrorBoundary>
+                          <PolicyFormTestSection />
+                        </ErrorBoundary>
+                      </Flex>
+                    </TabPanel>
+                    <TabPanel data-testid="policy-auto-remediation" lazy>
+                      <ErrorBoundary>
+                        <PolicyFormAutoRemediationSection />
+                      </ErrorBoundary>
+                    </TabPanel>
+                  </TabPanels>
+                </Box>
               </Tabs>
             </Form>
           )}

@@ -121,7 +121,7 @@ const BaseRuleFormTestSection: React.FC<BaseRuleFormTestSectionProps> = ({
         };
 
         return (
-          <Box p={6}>
+          <React.Fragment>
             {testsCount > 0 && (
               <Card variant="dark" p={4}>
                 <SimpleGrid gap={2} columns={9} spacing={2}>
@@ -228,7 +228,7 @@ const BaseRuleFormTestSection: React.FC<BaseRuleFormTestSectionProps> = ({
                 )}
               </Card>
             )}
-          </Box>
+          </React.Fragment>
         );
       }}
     />

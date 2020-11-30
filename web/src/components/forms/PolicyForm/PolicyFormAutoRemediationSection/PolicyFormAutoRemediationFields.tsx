@@ -76,8 +76,8 @@ const PolicyFormAutoRemediationFields: React.FC<PolicyFormAutoRemediationFieldsP
 
   const autoRemediationSelected = !!autoRemediationSelection[0];
   return (
-    <Box p={6} data-testid="auto-remediation">
-      <Flex mb={6}>
+    <React.Fragment>
+      <Flex mb={6} data-testid="auto-remediation">
         <Box ml="auto" minWidth={300}>
           <Combobox<RemediationTuple>
             searchable
@@ -107,7 +107,7 @@ const PolicyFormAutoRemediationFields: React.FC<PolicyFormAutoRemediationFieldsP
           </React.Fragment>
         )}
       </Card>
-    </Box>
+    </React.Fragment>
   );
 };
 

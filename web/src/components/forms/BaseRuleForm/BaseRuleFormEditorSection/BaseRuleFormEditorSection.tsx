@@ -32,7 +32,7 @@ const BaseRuleFormEditorSection: React.FC<BaseRuleFormEditorSectionProps> = ({ t
   const isPolicy = type === 'policy';
 
   return (
-    <Box p={6}>
+    <Box>
       <Card variant="dark" p={4}>
         <Flex align="center" spacing={4}>
           <IconButton

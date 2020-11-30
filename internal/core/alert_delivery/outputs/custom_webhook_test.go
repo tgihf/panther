@@ -19,6 +19,7 @@ package outputs
  */
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
 	"testing"
 	"time"
 

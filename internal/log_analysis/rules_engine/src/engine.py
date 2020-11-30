@@ -101,7 +101,7 @@ class Engine:
         start = default_timer()
         rules = self._get_rules()
         end = default_timer()
-        self.logger.info("Retrieved %d rules in %s seconds", len(rules), end - start)
+        self.logger.info('Retrieved %d rules in %s seconds', len(rules), end - start)
         start = default_timer()
 
         # Clear old rules
@@ -111,7 +111,7 @@ class Engine:
             try:
                 rule = Rule(raw_rule)
             except Exception as err:  # pylint: disable=broad-except
-                self.logger.error("Failed to import rule %s. Error: [%s]", raw_rule.get('id'), err)
+                self.logger.error('Failed to import rule %s. Error: [%s]', raw_rule.get('id'), err)
                 continue
 
             import_count = import_count + 1
@@ -120,7 +120,7 @@ class Engine:
                 self.log_type_to_rules[log_type].append(rule)
 
         end = default_timer()
-        self.logger.info("Imported %d rules in %d seconds", import_count, end - start)
+        self.logger.info('Imported %d rules in %d seconds', import_count, end - start)
         self._last_update = datetime.utcnow()
 
     def _populate_data_models(self) -> None:
@@ -129,7 +129,7 @@ class Engine:
         start = default_timer()
         data_models = self._get_data_models()
         end = default_timer()
-        self.logger.info("Retrieved %d data models in %s seconds", len(data_models), end - start)
+        self.logger.info('Retrieved %d data models in %s seconds', len(data_models), end - start)
         start = default_timer()
 
         # Clear old data models
@@ -139,7 +139,7 @@ class Engine:
             try:
                 data_model = DataModel(raw_data_model)
             except Exception as err:  # pylint: disable=broad-except
-                self.logger.error("Failed to import data model %s. Error: [%s]", raw_data_model.get('id'), err)
+                self.logger.error('Failed to import data model %s. Error: [%s]', raw_data_model.get('id'), err)
                 continue
 
             import_count = import_count + 1
@@ -149,7 +149,7 @@ class Engine:
                 self.log_type_to_data_models[log_type] = data_model
 
         end = default_timer()
-        self.logger.info("Imported %d data models in %d seconds", import_count, end - start)
+        self.logger.info('Imported %d data models in %d seconds', import_count, end - start)
         self._last_update = datetime.utcnow()
 
     def _get_rules(self) -> List[Dict[str, Any]]:

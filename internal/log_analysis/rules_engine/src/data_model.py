@@ -94,11 +94,11 @@ class DataModel:
         """
         path = id_to_path(_DATAMODEL_FOLDER, self.data_model_id)
         mod = import_file_as_module(path, self.data_model_id)
-        self.logger.info("imported module %s from path %s", self.data_model_id, path)
+        self.logger.info('imported module %s from path %s', self.data_model_id, path)
         return mod
 
     def _store_data_models(self) -> None:
         """Stores data models to disk."""
         path = id_to_path(_DATAMODEL_FOLDER, self.data_model_id)
-        self.logger.info("storing data model in path %s", path)
+        self.logger.info('storing data model in path %s', path)
         store_modules(path, self.body)

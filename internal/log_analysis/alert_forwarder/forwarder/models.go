@@ -36,7 +36,6 @@ const (
 	alertTableUpdateTimeAttribute = "updateTime"
 )
 
-// TODO: Update Generated custom fields dynamodbav tags
 // AlertDedupEvent represents the event stored in the alert dedup DDB table by the rules engine
 type AlertDedupEvent struct {
 	RuleID                       string    `dynamodbav:"ruleId"`
@@ -48,24 +47,24 @@ type AlertDedupEvent struct {
 	LogTypes                     []string  `dynamodbav:"logTypes,stringset"`
 	AlertContext                 *string   `dynamodbav:"context,string"`
 	Type                         string    `dynamodbav:"type"`
-	GeneratedTitle               *string   `dynamodbav:"title,string"`                   // The title that was generated dynamically using Python. Might be null.
-	GeneratedDescription         *string   `dynamodbav:"description,string"`             // The description that was generated dynamically using Python. Might be null.
-	GeneratedReference           *string   `dynamodbav:"reference"`                      // The reference that was generated dynamically using Python. Might be null.
-	GeneratedSeverity            *string   `dynamodbav:"severity"`                       // The severity that was generated dynamically using Python. Might be null.
-	GeneratedRunbook             *string   `dynamodbav:"runbook"`                        // The runbook that was generated dynamically using Python. Might be null.
-	GeneratedDestinationOverride []string  `dynamodbav:"destinationOverride,stringset"`  // The destination override that was generated dynamically using Python. Might be null.
-	AlertCount                   int64     `dynamodbav:"-"`                  // There is no need to store this item in DDB
+	GeneratedTitle               *string   `dynamodbav:"title,string"`                  // The title that was generated dynamically using Python. Might be null.
+	GeneratedDescription         *string   `dynamodbav:"description,string"`            // The description that was generated dynamically using Python. Might be null.
+	GeneratedReference           *string   `dynamodbav:"reference"`                     // The reference that was generated dynamically using Python. Might be null.
+	GeneratedSeverity            *string   `dynamodbav:"severity"`                      // The severity that was generated dynamically using Python. Might be null.
+	GeneratedRunbook             *string   `dynamodbav:"runbook"`                       // The runbook that was generated dynamically using Python. Might be null.
+	GeneratedDestinationOverride []string  `dynamodbav:"destinationOverride,stringset"` // The destination override that was generated dynamically using Python. Might be null.
+	AlertCount                   int64     `dynamodbav:"-"`                             // There is no need to store this item in DDB
 }
 
 // Alert contains all the fields associated to the alert stored in DDB
 type Alert struct {
 	ID                  string    `dynamodbav:"id,string"`
 	TimePartition       string    `dynamodbav:"timePartition,string"`
-	Severity            string   `dynamodbav:"severity,string"`
+	Severity            string    `dynamodbav:"severity,string"`
 	RuleDisplayName     *string   `dynamodbav:"ruleDisplayName,string"`
 	FirstEventMatchTime time.Time `dynamodbav:"firstEventMatchTime,string"`
 	LogTypes            []string  `dynamodbav:"logTypes,stringset"`
-	Title               string   `dynamodbav:"title,string"`                  // The alert title. It will be the Python-generated title or a default one if no Python-generated title is available.
+	Title               string    `dynamodbav:"title,string"` // The alert title. It will be the Python-generated title or a default one if no Python-generated title is available.
 	AlertDedupEvent
 }
 

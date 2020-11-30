@@ -194,18 +194,18 @@ func (h *Handler) storeNewAlert(rule *ruleModel.Rule, alertDedup *AlertDedupEven
 
 func (h *Handler) sendAlertNotification(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) error {
 	alertNotification := &alertModel.Alert{
-		AlertID:             aws.String(generateAlertID(alertDedup)),
-		AnalysisID:          alertDedup.RuleID,
-		AnalysisName:        getRuleDisplayName(rule),
+		AlertID:      aws.String(generateAlertID(alertDedup)),
+		AnalysisID:   alertDedup.RuleID,
+		AnalysisName: getRuleDisplayName(rule),
 		// In case a rule has a threshold, we want the alert creation time to be the same time
 		// as the update time -> the time that an update(new event) caused the matched events to exceed threshold
 		// In case the rule doesnt' have a threshold, the two are anyway the same
-		CreatedAt:           alertDedup.UpdateTime,
-		OutputIds:           getOutputIds(rule, alertDedup),
-		Tags:                rule.Tags,
-		Type:                alertDedup.Type,
-		Version:             &alertDedup.RuleVersion,
-		// Custom Fields
+		CreatedAt: alertDedup.UpdateTime,
+		OutputIds: getOutputIds(rule, alertDedup),
+		Tags:      rule.Tags,
+		Type:      alertDedup.Type,
+		Version:   &alertDedup.RuleVersion,
+		// Generated Fields
 		AnalysisDescription: getDescription(rule, alertDedup),
 		Reference:           getReference(rule, alertDedup),
 		Runbook:             getRunbook(rule, alertDedup),

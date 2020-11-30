@@ -31,8 +31,8 @@ _RULE_FOLDER = os.path.join(tempfile.gettempdir(), 'rules')
 # Maximum size for a dedup string
 MAX_DEDUP_STRING_SIZE = 1000
 
-# Maximum size for a custom field
-MAX_CUSTOM_FIELD_SIZE = 1000
+# Maximum size for a generated field
+MAX_GENERATED_FIELD_SIZE = 1000
 
 # Maximum number of destination overrides
 MAX_DESTINATION_OVERRIDE_SIZE = 10
@@ -334,13 +334,13 @@ class Rule:
                 return ''
             raise
 
-        if len(description) > MAX_CUSTOM_FIELD_SIZE:
-            # If custom field exceeds max size, truncate it
+        if len(description) > MAX_GENERATED_FIELD_SIZE:
+            # If generated field exceeds max size, truncate it
             self.logger.warning(
                 "maximum field [description] length is [%d]. [%d] for rule with ID [%s] . Truncating.",
-                MAX_CUSTOM_FIELD_SIZE, len(description), self.rule_id,
+                MAX_GENERATED_FIELD_SIZE, len(description), self.rule_id,
             )
-            num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
+            num_characters_to_keep = MAX_GENERATED_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return description[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
         return description
 
@@ -358,7 +358,7 @@ class Rule:
             raise
 
         if len(destination_override) > MAX_DESTINATION_OVERRIDE_SIZE:
-            # If custom field exceeds max size, truncate it
+            # If generated field exceeds max size, truncate it
             self.logger.warning(
                 "maximum len of destination override is [%d] for rule with ID [%s] is [%d] fields. Truncating.",
                 MAX_DESTINATION_OVERRIDE_SIZE, self.rule_id, len(destination_override)
@@ -380,13 +380,13 @@ class Rule:
                 return ''
             raise
 
-        if len(reference) > MAX_CUSTOM_FIELD_SIZE:
-            # If custom field exceeds max size, truncate it
+        if len(reference) > MAX_GENERATED_FIELD_SIZE:
+            # If generated field exceeds max size, truncate it
             self.logger.warning(
                 "maximum field [reference] length is [%d]. [%d] for rule with ID [%s] . Truncating.",
-                MAX_CUSTOM_FIELD_SIZE, len(reference), self.rule_id,
+                MAX_GENERATED_FIELD_SIZE, len(reference), self.rule_id,
             )
-            num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
+            num_characters_to_keep = MAX_GENERATED_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return reference[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
         return reference
 
@@ -404,13 +404,13 @@ class Rule:
                 return ''
             raise
 
-        if len(runbook) > MAX_CUSTOM_FIELD_SIZE:
-            # If custom field exceeds max size, truncate it
+        if len(runbook) > MAX_GENERATED_FIELD_SIZE:
+            # If generated field exceeds max size, truncate it
             self.logger.warning(
                 "maximum field [runbook] length is [%d]. [%d] for rule with ID [%s] . Truncating.",
-                MAX_CUSTOM_FIELD_SIZE, len(runbook), self.rule_id,
+                MAX_GENERATED_FIELD_SIZE, len(runbook), self.rule_id,
             )
-            num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
+            num_characters_to_keep = MAX_GENERATED_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return runbook[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
         return runbook
 
@@ -430,13 +430,13 @@ class Rule:
                 return 'INFO'
             raise
 
-        if len(severity) > MAX_CUSTOM_FIELD_SIZE:
-            # If custom field exceeds max size, truncate it
+        if len(severity) > MAX_GENERATED_FIELD_SIZE:
+            # If generated field exceeds max size, truncate it
             self.logger.warning(
                 "maximum field [severity] length is [%d]. [%d] for rule with ID [%s] . Truncating.",
-                MAX_CUSTOM_FIELD_SIZE, len(severity), self.rule_id,
+                MAX_GENERATED_FIELD_SIZE, len(severity), self.rule_id,
             )
-            num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
+            num_characters_to_keep = MAX_GENERATED_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return severity[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
         return severity
 
@@ -453,13 +453,13 @@ class Rule:
                 return self.rule_id
             raise
 
-        if len(title) > MAX_CUSTOM_FIELD_SIZE:
-            # If custom field exceeds max size, truncate it
+        if len(title) > MAX_GENERATED_FIELD_SIZE:
+            # If generated field exceeds max size, truncate it
             self.logger.warning(
                 "maximum field [title] length is [%d]. [%d] for rule with ID [%s] . Truncating.",
-                MAX_CUSTOM_FIELD_SIZE, len(title), self.rule_id,
+                MAX_GENERATED_FIELD_SIZE, len(title), self.rule_id,
             )
-            num_characters_to_keep = MAX_CUSTOM_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
+            num_characters_to_keep = MAX_GENERATED_FIELD_SIZE - len(TRUNCATED_STRING_SUFFIX)
             return title[:num_characters_to_keep] + TRUNCATED_STRING_SUFFIX
         return title
 

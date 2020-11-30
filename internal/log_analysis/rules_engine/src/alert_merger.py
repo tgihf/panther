@@ -59,7 +59,7 @@ class MatchingGroupInfo:
     processing_time: datetime
     alert_context: Optional[str]
     is_rule_error: bool = False
-    # custom fields
+    # generated fields
     title: Optional[str] = None
     description: Optional[str] = None
     reference: Optional[str] = None

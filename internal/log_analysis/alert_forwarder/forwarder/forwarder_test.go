@@ -108,16 +108,16 @@ func TestHandleStoreAndSendNotification(t *testing.T) {
 
 	expectedAlertNotification := &alertModel.Alert{
 		CreatedAt:           newAlertDedupEvent.UpdateTime,
-		AnalysisDescription: &testRuleResponse.Description,
+		AnalysisDescription: testRuleResponse.Description,
 		AnalysisID:          newAlertDedupEvent.RuleID,
 		Version:             &newAlertDedupEvent.RuleVersion,
 		AnalysisName:        &testRuleResponse.DisplayName,
-		Runbook:             &testRuleResponse.Runbook,
+		Runbook:             testRuleResponse.Runbook,
 		Severity:            string(testRuleResponse.Severity),
 		Tags:                []string{"Tag"},
 		Type:                alertModel.RuleType,
 		AlertID:             aws.String("b25dc23fb2a0b362da8428dbec1381a8"),
-		Title:               newAlertDedupEvent.GeneratedTitle,
+		Title:               *newAlertDedupEvent.GeneratedTitle,
 	}
 	expectedMarshaledAlertNotification, err := jsoniter.MarshalToString(expectedAlertNotification)
 	require.NoError(t, err)
@@ -201,15 +201,15 @@ func TestHandleStoreAndSendNotificationNoRuleDisplayNameNoTitle(t *testing.T) {
 
 	expectedAlertNotification := &alertModel.Alert{
 		CreatedAt:           newAlertDedupEventWithoutTitle.UpdateTime,
-		AnalysisDescription: &testRuleResponse.Description,
+		AnalysisDescription: testRuleResponse.Description,
 		AnalysisID:          newAlertDedupEventWithoutTitle.RuleID,
 		Version:             &newAlertDedupEventWithoutTitle.RuleVersion,
-		Runbook:             &testRuleResponse.Runbook,
+		Runbook:             testRuleResponse.Runbook,
 		Severity:            string(testRuleResponse.Severity),
 		Tags:                []string{"Tag"},
 		Type:                alertModel.RuleType,
 		AlertID:             aws.String("b25dc23fb2a0b362da8428dbec1381a8"),
-		Title:               aws.String(newAlertDedupEventWithoutTitle.RuleID),
+		Title:               newAlertDedupEventWithoutTitle.RuleID,
 	}
 	expectedMarshaledAlertNotification, err := jsoniter.MarshalToString(expectedAlertNotification)
 	require.NoError(t, err)
@@ -289,16 +289,16 @@ func TestHandleStoreAndSendNotificationNoGeneratedTitle(t *testing.T) {
 
 	expectedAlertNotification := &alertModel.Alert{
 		CreatedAt:           newAlertDedupEvent.UpdateTime,
-		AnalysisDescription: &testRuleResponse.Description,
+		AnalysisDescription: testRuleResponse.Description,
 		AnalysisID:          newAlertDedupEvent.RuleID,
 		Version:             &newAlertDedupEvent.RuleVersion,
 		AnalysisName:        &testRuleResponse.DisplayName,
-		Runbook:             &testRuleResponse.Runbook,
+		Runbook:             testRuleResponse.Runbook,
 		Severity:            string(testRuleResponse.Severity),
 		Tags:                []string{"Tag"},
 		Type:                newAlertDedupEvent.Type,
 		AlertID:             aws.String("b25dc23fb2a0b362da8428dbec1381a8"),
-		Title:               aws.String("DisplayName"),
+		Title:               "DisplayName",
 	}
 	expectedMarshaledAlertNotification, err := jsoniter.MarshalToString(expectedAlertNotification)
 	require.NoError(t, err)
@@ -382,16 +382,16 @@ func TestHandleStoreAndSendNotificationNilOldDedup(t *testing.T) {
 
 	expectedAlertNotification := &alertModel.Alert{
 		CreatedAt:           newAlertDedupEvent.UpdateTime,
-		AnalysisDescription: &testRuleResponse.Description,
+		AnalysisDescription: testRuleResponse.Description,
 		AnalysisID:          newAlertDedupEvent.RuleID,
 		AnalysisName:        &testRuleResponse.DisplayName,
 		Version:             &newAlertDedupEvent.RuleVersion,
-		Runbook:             &testRuleResponse.Runbook,
+		Runbook:             testRuleResponse.Runbook,
 		Severity:            string(testRuleResponse.Severity),
 		Tags:                []string{"Tag"},
 		Type:                alertModel.RuleType,
 		AlertID:             aws.String("b25dc23fb2a0b362da8428dbec1381a8"),
-		Title:               newAlertDedupEvent.GeneratedTitle,
+		Title:               *newAlertDedupEvent.GeneratedTitle,
 	}
 	expectedMarshaledAlertNotification, err := jsoniter.MarshalToString(expectedAlertNotification)
 	require.NoError(t, err)

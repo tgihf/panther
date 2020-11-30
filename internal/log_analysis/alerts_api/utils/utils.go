@@ -72,7 +72,7 @@ func AlertItemToSummary(item *table.AlertItem) *models.AlertSummary {
 // GetAlertTitle - Method required for backwards compatibility
 // In case the alert title is empty, return custom title
 func GetAlertTitle(alert *table.AlertItem) *string {
-	if &alert.Title != nil {
+	if alert.Title != "" {
 		return aws.String(alert.Title)
 	}
 	if alert.RuleDisplayName != nil {

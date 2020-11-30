@@ -185,7 +185,6 @@ func generateDetailedAlertMessage(alert *alertModels.Alert) string {
 		generateURL(alert),
 		alert.Severity,
 		alert.Runbook,
-		alert.Runbook,
 		alert.AnalysisDescription,
 		marshaledContext,
 	)

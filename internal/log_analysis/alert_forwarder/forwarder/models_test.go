@@ -70,7 +70,6 @@ func TestConvertAttributeWithoutOptionalFields(t *testing.T) {
 		EventCount:           100,
 		AlertContext:         aws.String("{}"),
 		LogTypes:             []string{"Log.Type.1", "Log.Type.2"},
-		GeneratedTitle:       aws.String("test title"),
 		GeneratedDescription: aws.String("test description"),
 		GeneratedReference:   aws.String("test reference"),
 		GeneratedSeverity:    aws.String("INFO"),

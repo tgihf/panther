@@ -37,7 +37,11 @@ import (
 
 func TestGetAlerts(t *testing.T) {
 	alertID := aws.String("alert-id")
-	outputIds := []string{"output-id-1", "output-id-2", "output-id-3"}
+	outputIds := []string{
+		"424ccb6b-0e43-4fd3-9c8b-3862a5f0f4c2",
+		"424ccb6b-0e43-4fd3-9c8b-3862a5f0f4c3",
+		"424ccb6b-0e43-4fd3-9c8b-3862a5f0f4c3",
+	}
 
 	alert := &deliveryModels.Alert{
 		AlertID:             alertID,

@@ -79,8 +79,8 @@ class RuleResult:
     runbook_output: Optional[str] = None
     runbook_exception: Optional[Exception] = None
 
-    destination_override_output: Optional[List[str]] = None
-    destination_override_exception: Optional[Exception] = None
+    overrides_output: Optional[List[str]] = None
+    overrides_exception: Optional[Exception] = None
 
     alert_context: Optional[str] = None
     alert_context_exception: Optional[Exception] = None
@@ -130,7 +130,7 @@ class RuleResult:
         return bool(
             self.rule_exception or self.title_exception or self.dedup_exception or self.alert_context_exception or
             self.description_exception or self.reference_exception or self.severity_exception or self.runbook_exception or
-            self.destination_override_exception or self.setup_exception
+            self.overrides_exception or self.setup_exception
         )
 
 
@@ -260,9 +260,9 @@ class Rule:
             rule_result.runbook_exception = err
 
         try:
-            rule_result.destination_override_output = self._get_destination_override(event, use_default_on_exception=batch_mode)
+            rule_result.overrides_output = self._get_destination_override(event, use_default_on_exception=batch_mode)
         except Exception as err:  # pylint: disable=broad-except
-            rule_result.destination_override_exception = err
+            rule_result.overrides_exception = err
 
         try:
             rule_result.dedup_output = self._get_dedup(event, rule_result.title_output, use_default_on_exception=batch_mode)

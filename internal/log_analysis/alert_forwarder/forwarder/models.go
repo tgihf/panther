@@ -55,7 +55,7 @@ type AlertDedupEvent struct {
 	GeneratedReference           *string  `dynamodbav:"reference"`
 	GeneratedSeverity            *string  `dynamodbav:"severity"`
 	GeneratedRunbook             *string  `dynamodbav:"runbook"`
-	GeneratedDestinationOverride []string `dynamodbav:"destinationOverride,stringset"`
+	GeneratedOverrides           []string `dynamodbav:"overrides,stringset"`
 	AlertCount                   int64    `dynamodbav:"-"` // There is no need to store this item in DDB
 }
 
@@ -169,9 +169,9 @@ func FromDynamodDBAttribute(input map[string]events.DynamoDBAttributeValue) (eve
 		result.GeneratedRunbook = aws.String(generatedRunbook.String())
 	}
 
-	generatedDestinationOverride := getOptionalAttribute("destinationOverride", input)
-	if generatedDestinationOverride != nil {
-		result.GeneratedDestinationOverride = generatedDestinationOverride.StringSet()
+	generatedOverride := getOptionalAttribute("overrides", input)
+	if generatedOverride != nil {
+		result.GeneratedOverrides = generatedOverride.StringSet()
 	}
 
 	// End Generated Fields

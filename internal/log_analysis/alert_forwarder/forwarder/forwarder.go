@@ -173,6 +173,12 @@ func (h *Handler) storeNewAlert(rule *ruleModel.Rule, alertDedup *AlertDedupEven
 			EventCount:   alertDedup.EventCount,
 			LogTypes:     alertDedup.LogTypes,
 			Type:         alertDedup.Type,
+			// Generated Fields
+			GeneratedTitle:               aws.String(getTitle(rule, alertDedup)),
+			GeneratedDescription:         aws.String(getDescription(rule, alertDedup)),
+			GeneratedReference:           aws.String(getReference(rule, alertDedup)),
+			GeneratedRunbook:             aws.String(getRunbook(rule, alertDedup)),
+			GeneratedDestinationOverride: getOutputIds(rule, alertDedup),
 		},
 	}
 

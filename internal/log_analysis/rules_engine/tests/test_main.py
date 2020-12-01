@@ -98,6 +98,46 @@ class TestMainDirectAnalysis(TestCase):
         }
         self.assertEqual(expected_response, lambda_handler(payload, None))
 
+    def test_direct_analysis_event_matching_with_generated_fields(self) -> None:
+        rule_body = 'def rule(event):\n\treturn True\n' \
+                    'def title(event):\n\treturn "generated title"\n' \
+                    'def description(event):\n\treturn "generated description"\n' \
+                    'def reference(event):\n\treturn "generated reference"\n' \
+                    'def severity(event):\n\treturn "HIGH"\n' \
+                    'def runbook(event):\n\treturn "generated runbook"\n' \
+                    'def destination_override(event):\n\treturn []'
+        payload = {'rules': [{'id': 'rule_id', 'body': rule_body}], 'events': [{'id': 'event_id', 'data': 'data'}]}
+        expected_response: dict = {
+            'results':
+                [
+                    {
+                        'id': 'event_id',
+                        'ruleId': 'rule_id',
+                        'genericError': None,
+                        'errored': False,
+                        'ruleOutput': True,
+                        'ruleError': None,
+                        'titleOutput': 'generated title',
+                        'titleError': None,
+                        'descriptionOutput': 'generated description',
+                        'descriptionError': None,
+                        'referenceOutput': 'generated reference',
+                        'referenceError': None,
+                        'severityOutput': "HIGH",
+                        'severityError': None,
+                        'runbookOutput': 'generated runbook',
+                        'runbookError': None,
+                        'overridesOutput': [],
+                        'overridesError': None,
+                        'dedupOutput': 'generated title',
+                        'dedupError': None,
+                        'alertContextOutput': None,
+                        'alertContextError': None
+                    }
+                ]
+        }
+        self.assertEqual(expected_response, lambda_handler(payload, None))
+
     def test_direct_analysis_event_not_matching(self) -> None:
         rule_body = 'def rule(event):\n\treturn False'
         payload = {'rules': [{'id': 'rule_id', 'body': rule_body}], 'events': [{'id': 'event_id', 'data': 'data'}]}

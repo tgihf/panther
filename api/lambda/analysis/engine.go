@@ -101,8 +101,8 @@ type RuleResult struct {
 	SeverityError             string `json:"severityError"`
 	RunbookOutput             string `json:"runbookOutput"`
 	RunbookError              string `json:"runbookError"`
-	DestinationOverrideOutput string `json:"destinationOverrideOutput"`
-	DestinationOverrideError  string `json:"destinationOverrideError"`
+	OverridesOutput           string `json:"overridesOutput"`
+	OverridesError            string `json:"overridesError"`
 	DedupOutput               string `json:"dedupOutput"`
 	DedupError                string `json:"dedupError"`
 	AlertContextOutput        string `json:"alertContextOutput"`

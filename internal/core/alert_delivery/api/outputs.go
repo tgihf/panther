@@ -38,7 +38,7 @@ func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, 
 	}
 
 	// If alert has neither outputs IDs or dynamic dest. override specified, return the defaults for the severity
-	if len(alert.OutputIds) == 0 && alert.DestinationOverride == nil {
+	if len(alert.OutputIds) == 0 && alert.Overrides == nil {
 		defaultsForSeverity := []*outputModels.AlertOutput{}
 		for _, output := range outputs {
 			// If `DefaultForSeverity` is nil or empty, this loop will skip
@@ -54,7 +54,7 @@ func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, 
 	// If alert has a dynamically set destination override, return the specified output overrides for the alert
 	alertOutputs := []*outputModels.AlertOutput{}
 	for _, output := range outputs {
-		for _, outputID := range alert.DestinationOverride {
+		for _, outputID := range alert.Overrides {
 			if aws.StringValue(output.OutputID) == outputID {
 				alertOutputs = append(alertOutputs, output)
 			}

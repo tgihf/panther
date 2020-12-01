@@ -178,7 +178,7 @@ func (h *Handler) storeNewAlert(rule *ruleModel.Rule, alertDedup *AlertDedupEven
 			GeneratedDescription:         aws.String(getDescription(rule, alertDedup)),
 			GeneratedReference:           aws.String(getReference(rule, alertDedup)),
 			GeneratedRunbook:             aws.String(getRunbook(rule, alertDedup)),
-			GeneratedDestinationOverride: alertDedup.GeneratedDestinationOverride,
+			GeneratedOverrides:           alertDedup.GeneratedOverrides,
 		},
 	}
 
@@ -286,8 +286,8 @@ func getSeverity(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) string {
 }
 
 func getOutputIds(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) []string {
-	if alertDedup.GeneratedDestinationOverride != nil {
-		return alertDedup.GeneratedDestinationOverride
+	if alertDedup.GeneratedOverrides != nil {
+		return alertDedup.GeneratedOverrides
 	}
 	return rule.OutputIDs
 }

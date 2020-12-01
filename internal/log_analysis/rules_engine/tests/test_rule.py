@@ -214,7 +214,9 @@ class TestRule(TestCase):  # pylint: disable=too-many-public-methods
         rule = Rule({'id': 'test_rule_title_throws_exception', 'body': rule_body, 'versionId': 'versionId'})
 
         expected_result = RuleResult(
-            matched=True, dedup_output='test_rule_title_throws_exception', title_output='test_rule_title_throws_exception',
+            matched=True,
+            dedup_output='test_rule_title_throws_exception',
+            title_output='test_rule_title_throws_exception',
         )
         self.assertEqual(rule.run({}), expected_result)
 

@@ -71,28 +71,28 @@ class TestMainDirectAnalysis(TestCase):
             'results':
                 [
                     {
-                        'genericError': None,
-                        'alertContextError': None,
-                        'alertContextOutput': None,
-                        'dedupError': None,
-                        'dedupOutput': 'defaultDedupString:rule_id',
-                        'errored': False,
                         'id': 'event_id',
-                        'ruleError': None,
                         'ruleId': 'rule_id',
+                        'genericError': None,
+                        'errored': False,
                         'ruleOutput': True,
-                        'titleError': None,
+                        'ruleError': None,
                         'titleOutput': None,
-                        'descriptionError': None,
+                        'titleError': None,
                         'descriptionOutput': None,
-                        'referenceError': None,
+                        'descriptionError': None,
                         'referenceOutput': None,
-                        'severityError': None,
+                        'referenceError': None,
                         'severityOutput': None,
-                        'runbookError': None,
+                        'severityError': None,
                         'runbookOutput': None,
-                        'destinationOverrideError': None,
+                        'runbookError': None,
                         'destinationOverrideOutput': None,
+                        'destinationOverride': None,
+                        'dedupOutput': 'defaultDedupString:rule_id',
+                        'dedupError': None,
+                        'alertContextOutput': None,
+                        'alertContextError': None
                     }
                 ]
         }
@@ -105,28 +105,28 @@ class TestMainDirectAnalysis(TestCase):
             'results':
                 [
                     {
-                        'genericError': None,
-                        'alertContextError': None,
-                        'alertContextOutput': None,
-                        'dedupError': None,
-                        'dedupOutput': 'defaultDedupString:rule_id',
-                        'errored': False,
                         'id': 'event_id',
-                        'ruleError': None,
                         'ruleId': 'rule_id',
+                        'genericError': None,
+                        'errored': False,
                         'ruleOutput': False,
-                        'titleError': None,
+                        'ruleError': None,
                         'titleOutput': None,
-                        'descriptionError': None,
+                        'titleError': None,
                         'descriptionOutput': None,
-                        'referenceError': None,
+                        'descriptionError': None,
                         'referenceOutput': None,
-                        'severityError': None,
+                        'referenceError': None,
                         'severityOutput': None,
-                        'runbookError': None,
+                        'severityError': None,
                         'runbookOutput': None,
-                        'destinationOverrideError': None,
+                        'runbookError': None,
                         'destinationOverrideOutput': None,
+                        'destinationOverride': None,
+                        'dedupOutput': 'defaultDedupString:rule_id',
+                        'dedupError': None,
+                        'alertContextOutput': None,
+                        'alertContextError': None
                     }
                 ]
         }
@@ -147,28 +147,28 @@ class TestMainDirectAnalysis(TestCase):
             'results':
                 [
                     {
-                        'genericError': None,
-                        'alertContextError': None,
-                        'alertContextOutput': None,
-                        'dedupError': None,
-                        'dedupOutput': 'defaultDedupString:rule_id',
-                        'errored': True,
                         'id': 'event_id',
-                        'ruleError': 'Exception: Failure message',
                         'ruleId': 'rule_id',
+                        'genericError': None,
+                        'errored': True,
                         'ruleOutput': None,
-                        'titleError': None,
+                        'ruleError': 'Exception: Failure message',
                         'titleOutput': None,
-                        'descriptionError': None,
+                        'titleError': None,
                         'descriptionOutput': None,
-                        'referenceError': None,
+                        'descriptionError': None,
                         'referenceOutput': None,
-                        'severityError': None,
+                        'referenceError': None,
                         'severityOutput': None,
-                        'runbookError': None,
+                        'severityError': None,
                         'runbookOutput': None,
-                        'destinationOverrideError': None,
+                        'runbookError': None,
                         'destinationOverrideOutput': None,
+                        'destinationOverride': None,
+                        'dedupOutput': 'defaultDedupString:rule_id',
+                        'dedupError': None,
+                        'alertContextOutput': None,
+                        'alertContextError': None
                     }
                 ]
         }
@@ -180,28 +180,28 @@ class TestMainDirectAnalysis(TestCase):
             'results':
                 [
                     {
-                        'genericError': "ModuleNotFoundError: No module named 'stuff'",
-                        'alertContextError': None,
-                        'alertContextOutput': None,
-                        'dedupError': None,
-                        'dedupOutput': None,
-                        'errored': True,
                         'id': 'event_id',
-                        'ruleError': None,
                         'ruleId': 'rule_id',
+                        'genericError': "ModuleNotFoundError: No module named 'stuff'",
+                        'errored': True,
                         'ruleOutput': None,
-                        'titleError': None,
+                        'ruleError': None,
                         'titleOutput': None,
-                        'descriptionError': None,
+                        'titleError': None,
                         'descriptionOutput': None,
-                        'referenceError': None,
+                        'descriptionError': None,
                         'referenceOutput': None,
-                        'severityError': None,
+                        'referenceError': None,
                         'severityOutput': None,
-                        'runbookError': None,
+                        'severityError': None,
                         'runbookOutput': None,
-                        'destinationOverrideError': None,
+                        'runbookError': None,
                         'destinationOverrideOutput': None,
+                        'destinationOverride': None,
+                        'dedupOutput': None,
+                        'dedupError': None,
+                        'alertContextOutput': None,
+                        'alertContextError': None
                     }
                 ]
         }
@@ -223,32 +223,31 @@ class TestMainDirectAnalysis(TestCase):
             'results':
                 [
                     {
-                        'genericError': None,
-                        'alertContextError': None,
-                        'alertContextOutput': None,
-                        'dedupError': 'Exception: dedup error',
-                        'dedupOutput': None,
-                        'errored': True,
                         'id': 'event_id',
-                        'ruleError': None,
                         'ruleId': 'rule_id',
+                        'genericError': None,
+                        'errored': True,
                         'ruleOutput': True,
-                        'titleError': None,
+                        'ruleError': None,
                         'titleOutput': None,
-                        'descriptionError': None,
+                        'titleError': None,
                         'descriptionOutput': None,
-                        'referenceError': None,
+                        'descriptionError': None,
                         'referenceOutput': None,
-                        'severityError': None,
+                        'referenceError': None,
                         'severityOutput': None,
-                        'runbookError': None,
+                        'severityError': None,
                         'runbookOutput': None,
-                        'destinationOverrideError': None,
+                        'runbookError': None,
                         'destinationOverrideOutput': None,
+                        'destinationOverride': None,
+                        'dedupOutput': None,
+                        'dedupError': 'Exception: dedup error',
+                        'alertContextOutput': None,
+                        'alertContextError': None
                     }
                 ]
         }
-
         self.assertEqual(expected_response, lambda_handler(payload, None))
 
     def test_direct_analysis_title_exception_fails_test(self) -> None:
@@ -268,28 +267,28 @@ class TestMainDirectAnalysis(TestCase):
             'results':
                 [
                     {
-                        'genericError': None,
-                        'alertContextError': None,
-                        'alertContextOutput': None,
-                        'dedupError': None,
-                        'dedupOutput': 'defaultDedupString:rule_id',
-                        'errored': True,
                         'id': 'event_id',
-                        'ruleError': None,
                         'ruleId': 'rule_id',
+                        'genericError': None,
+                        'errored': True,
                         'ruleOutput': True,
-                        'titleError': 'Exception: title error',
+                        'ruleError': None,
                         'titleOutput': None,
-                        'descriptionError': None,
+                        'titleError': 'Exception: title error',
                         'descriptionOutput': None,
-                        'referenceError': None,
+                        'descriptionError': None,
                         'referenceOutput': None,
-                        'severityError': None,
+                        'referenceError': None,
                         'severityOutput': None,
-                        'runbookError': None,
+                        'severityError': None,
                         'runbookOutput': None,
-                        'destinationOverrideError': None,
+                        'runbookError': None,
                         'destinationOverrideOutput': None,
+                        'destinationOverride': None,
+                        'dedupOutput': 'defaultDedupString:rule_id',
+                        'dedupError': None,
+                        'alertContextOutput': None,
+                        'alertContextError': None
                     }
                 ]
         }

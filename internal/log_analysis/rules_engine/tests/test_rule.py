@@ -213,14 +213,18 @@ class TestRule(TestCase):  # pylint: disable=too-many-public-methods
         rule_body = 'def rule(event):\n\treturn True\ndef title(event):\n\traise Exception("test")'
         rule = Rule({'id': 'test_rule_title_throws_exception', 'body': rule_body, 'versionId': 'versionId'})
 
-        expected_result = RuleResult(matched=True, dedup_output='defaultDedupString:test_rule_title_throws_exception')
+        expected_result = RuleResult(
+            matched=True, dedup_output='test_rule_title_throws_exception', title_output='test_rule_title_throws_exception',
+        )
         self.assertEqual(rule.run({}), expected_result)
 
     def test_rule_invalid_title_return(self) -> None:
         rule_body = 'def rule(event):\n\treturn True\ndef title(event):\n\treturn {}'
         rule = Rule({'id': 'test_rule_invalid_title_return', 'body': rule_body, 'versionId': 'versionId'})
 
-        expected_result = RuleResult(matched=True, dedup_output='defaultDedupString:test_rule_invalid_title_return')
+        expected_result = RuleResult(
+            matched=True, dedup_output='test_rule_invalid_title_return', title_output='test_rule_invalid_title_return'
+        )
         self.assertEqual(rule.run({}), expected_result)
 
     def test_rule_title_returns_empty_string(self) -> None:

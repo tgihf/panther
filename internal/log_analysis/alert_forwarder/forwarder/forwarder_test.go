@@ -148,6 +148,9 @@ func TestHandleStoreAndSendNotification(t *testing.T) {
 			AlertCount:          newAlertDedupEvent.AlertCount,
 			DeduplicationString: newAlertDedupEvent.DeduplicationString,
 			GeneratedTitle:      newAlertDedupEvent.GeneratedTitle,
+			GeneratedDescription:aws.String(getDescription(testRuleResponse, newAlertDedupEvent)),
+			GeneratedRunbook:    aws.String(getRunbook(testRuleResponse, newAlertDedupEvent)),
+			GeneratedDestinationOverride: newAlertDedupEvent.GeneratedDestinationOverride,
 			UpdateTime:          newAlertDedupEvent.UpdateTime,
 			CreationTime:        newAlertDedupEvent.UpdateTime,
 		},
@@ -246,6 +249,10 @@ func TestHandleStoreAndSendNotificationNoRuleDisplayNameNoTitle(t *testing.T) {
 			AlertCount:          newAlertDedupEventWithoutTitle.AlertCount,
 			DeduplicationString: newAlertDedupEventWithoutTitle.DeduplicationString,
 			GeneratedTitle:      newAlertDedupEventWithoutTitle.GeneratedTitle,
+			GeneratedDescription:aws.String(getDescription(testRuleResponse, newAlertDedupEvent)),
+			GeneratedReference:  aws.String(getReference(testRuleResponse, newAlertDedupEvent)),
+			GeneratedRunbook:    aws.String(getRunbook(testRuleResponse, newAlertDedupEvent)),
+			GeneratedDestinationOverride: newAlertDedupEvent.GeneratedDestinationOverride,
 			UpdateTime:          newAlertDedupEventWithoutTitle.UpdateTime,
 			CreationTime:        newAlertDedupEventWithoutTitle.UpdateTime,
 			Type:                newAlertDedupEventWithoutTitle.Type,
@@ -328,6 +335,9 @@ func TestHandleStoreAndSendNotificationNoGeneratedTitle(t *testing.T) {
 			AlertCount:          newAlertDedupEvent.AlertCount,
 			DeduplicationString: newAlertDedupEvent.DeduplicationString,
 			GeneratedTitle:      newAlertDedupEvent.GeneratedTitle,
+			GeneratedDescription:aws.String(getDescription(testRuleResponse, newAlertDedupEvent)),
+			GeneratedRunbook:    aws.String(getRunbook(testRuleResponse, newAlertDedupEvent)),
+			GeneratedDestinationOverride: newAlertDedupEvent.GeneratedDestinationOverride,
 			UpdateTime:          newAlertDedupEvent.UpdateTime,
 			CreationTime:        newAlertDedupEvent.UpdateTime,
 		},
@@ -422,6 +432,9 @@ func TestHandleStoreAndSendNotificationNilOldDedup(t *testing.T) {
 			AlertCount:          newAlertDedupEvent.AlertCount,
 			DeduplicationString: newAlertDedupEvent.DeduplicationString,
 			GeneratedTitle:      newAlertDedupEvent.GeneratedTitle,
+			GeneratedDescription:aws.String(getDescription(testRuleResponse, newAlertDedupEvent)),
+			GeneratedRunbook:    aws.String(getRunbook(testRuleResponse, newAlertDedupEvent)),
+			GeneratedDestinationOverride: newAlertDedupEvent.GeneratedDestinationOverride,
 			UpdateTime:          newAlertDedupEvent.UpdateTime,
 			CreationTime:        newAlertDedupEvent.UpdateTime,
 		},
@@ -474,6 +487,9 @@ func TestHandleUpdateAlert(t *testing.T) {
 		EventCount:          newAlertDedupEvent.EventCount + 10,
 		LogTypes:            append(newAlertDedupEvent.LogTypes, "New.Log.Type"),
 		GeneratedTitle:      newAlertDedupEvent.GeneratedTitle,
+		GeneratedDescription:newAlertDedupEvent.GeneratedDescription,
+		GeneratedRunbook:    newAlertDedupEvent.GeneratedRunbook,
+		GeneratedDestinationOverride: newAlertDedupEvent.GeneratedDestinationOverride,
 	}
 
 	updateExpression := expression.
@@ -532,6 +548,9 @@ func TestHandleUpdateAlertDDBError(t *testing.T) {
 		EventCount:          newAlertDedupEvent.EventCount + 10,
 		LogTypes:            append(newAlertDedupEvent.LogTypes, "New.Log.Type"),
 		GeneratedTitle:      newAlertDedupEvent.GeneratedTitle,
+		GeneratedDescription:newAlertDedupEvent.GeneratedDescription,
+		GeneratedRunbook:    newAlertDedupEvent.GeneratedRunbook,
+		GeneratedDestinationOverride: newAlertDedupEvent.GeneratedDestinationOverride,
 	}
 
 	ddbMock.On("UpdateItem", mock.Anything).Return(&dynamodb.UpdateItemOutput{}, errors.New("error"))
@@ -614,6 +633,10 @@ func TestHandleShouldCreateAlertIfThresholdNowReached(t *testing.T) {
 		EventCount:          1001,
 		LogTypes:            oldAlertDedupEvent.LogTypes,
 		GeneratedTitle:      oldAlertDedupEvent.GeneratedTitle,
+		GeneratedDescription:newAlertDedupEvent.GeneratedDescription,
+		GeneratedReference:  newAlertDedupEvent.GeneratedReference,
+		GeneratedRunbook:    newAlertDedupEvent.GeneratedRunbook,
+		GeneratedDestinationOverride: newAlertDedupEvent.GeneratedDestinationOverride,
 	}
 
 	ddbMock.On("PutItem", mock.Anything).Return(&dynamodb.PutItemOutput{}, nil).Once()

@@ -38,7 +38,7 @@ func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, 
 	}
 
 	// If alert has neither outputs IDs or dynamic dest. override specified, return the defaults for the severity
-	if len(alert.OutputIds) == 0 && alert.Overrides == nil {
+	if len(alert.OutputIds) == 0 && len(alert.Overrides) == 0 {
 		defaultsForSeverity := []*outputModels.AlertOutput{}
 		for _, output := range outputs {
 			// If `DefaultForSeverity` is nil or empty, this loop will skip

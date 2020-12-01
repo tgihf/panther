@@ -556,6 +556,7 @@ class TestMainDirectAnalysis(TestCase):
         }
         self.assertEqual(expected_response, lambda_handler(payload, None))
 
+
 class TestMainLoadS3Notifications(TestCase):
 
     def test_load_s3_notifications(self) -> None:

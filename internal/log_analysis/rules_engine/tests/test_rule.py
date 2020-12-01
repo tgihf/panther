@@ -279,7 +279,7 @@ class TestRule(TestCase):  # pylint: disable=too-many-public-methods
         )
         self.assertEqual(expected_result, rule.run({}))
 
-    """ Generated Fields Tests """
+    # Generated Fields Tests
     def test_rule_with_all_generated_fields(self) -> None:
         rule_body = 'def rule(event):\n\treturn True\n' \
                     'def alert_context(event):\n\treturn {}\n' \

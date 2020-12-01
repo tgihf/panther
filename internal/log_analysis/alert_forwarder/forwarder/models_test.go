@@ -76,7 +76,8 @@ func TestConvertAttributeWithoutOptionalFields(t *testing.T) {
 		GeneratedSeverity:    aws.String("INFO"),
 		GeneratedRunbook:     aws.String("test runbook"),
 		GeneratedDestinationOverride: []string{
-			"6c59430f-4953-42e7-a47a-64a8ad6ea645", "dde678a9-6a14-4f30-8bb2-9da6ea7b603f"},
+			"6c59430f-4953-42e7-a47a-64a8ad6ea645", "dde678a9-6a14-4f30-8bb2-9da6ea7b603f",
+		},
 	}
 
 	ddbItem := getNewTestCase()

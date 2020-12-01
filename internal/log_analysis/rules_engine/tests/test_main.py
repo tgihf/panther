@@ -294,6 +294,227 @@ class TestMainDirectAnalysis(TestCase):
         }
         self.assertEqual(expected_response, lambda_handler(payload, None))
 
+    def test_direct_analysis_description_exception_fails_test(self) -> None:
+        """If rule description() raises exception while testing a rule (not normal analysis), we should fail the test"""
+        payload = {
+            'rules': [{
+                'id': 'rule_id',
+                'body': "def rule(event):\n\treturn True\n" +
+                        "def description(event):\n\traise Exception('description error')"
+            }],
+            'events': [{
+                'id': 'event_id',
+                'data': 'data'
+            }]
+        }
+
+        expected_response = {
+            'results':
+                [
+                    {
+                        'id': 'event_id',
+                        'ruleId': 'rule_id',
+                        'genericError': None,
+                        'errored': True,
+                        'ruleOutput': True,
+                        'ruleError': None,
+                        'titleOutput': None,
+                        'titleError': None,
+                        'descriptionOutput': None,
+                        'descriptionError': 'Exception: description error',
+                        'referenceOutput': None,
+                        'referenceError': None,
+                        'severityOutput': None,
+                        'severityError': None,
+                        'runbookOutput': None,
+                        'runbookError': None,
+                        'overridesOutput': None,
+                        'overridesError': None,
+                        'dedupOutput': 'defaultDedupString:rule_id',
+                        'dedupError': None,
+                        'alertContextOutput': None,
+                        'alertContextError': None
+                    }
+                ]
+        }
+        self.assertEqual(expected_response, lambda_handler(payload, None))
+
+    def test_direct_analysis_reference_exception_fails_test(self) -> None:
+        """If rule reference() raises exception while testing a rule (not normal analysis), we should fail the test"""
+        payload = {
+            'rules': [{
+                'id': 'rule_id',
+                'body': "def rule(event):\n\treturn True\ndef reference(event):\n\traise Exception('reference error')"
+            }],
+            'events': [{
+                'id': 'event_id',
+                'data': 'data'
+            }]
+        }
+
+        expected_response = {
+            'results':
+                [
+                    {
+                        'id': 'event_id',
+                        'ruleId': 'rule_id',
+                        'genericError': None,
+                        'errored': True,
+                        'ruleOutput': True,
+                        'ruleError': None,
+                        'titleOutput': None,
+                        'titleError': None,
+                        'descriptionOutput': None,
+                        'descriptionError': None,
+                        'referenceOutput': None,
+                        'referenceError': 'Exception: reference error',
+                        'severityOutput': None,
+                        'severityError': None,
+                        'runbookOutput': None,
+                        'runbookError': None,
+                        'overridesOutput': None,
+                        'overridesError': None,
+                        'dedupOutput': 'defaultDedupString:rule_id',
+                        'dedupError': None,
+                        'alertContextOutput': None,
+                        'alertContextError': None
+                    }
+                ]
+        }
+        self.assertEqual(expected_response, lambda_handler(payload, None))
+
+    def test_direct_analysis_severity_exception_fails_test(self) -> None:
+        """If rule severity() raises an exception while testing a rule (not normal analysis), we should fail the test"""
+        payload = {
+            'rules': [{
+                'id': 'rule_id',
+                'body': "def rule(event):\n\treturn True\ndef severity(event):\n\traise Exception('severity error')"
+            }],
+            'events': [{
+                'id': 'event_id',
+                'data': 'data'
+            }]
+        }
+
+        expected_response = {
+            'results':
+                [
+                    {
+                        'id': 'event_id',
+                        'ruleId': 'rule_id',
+                        'genericError': None,
+                        'errored': True,
+                        'ruleOutput': True,
+                        'ruleError': None,
+                        'titleOutput': None,
+                        'titleError': None,
+                        'descriptionOutput': None,
+                        'descriptionError': None,
+                        'referenceOutput': None,
+                        'referenceError': None,
+                        'severityOutput': None,
+                        'severityError': 'Exception: severity error',
+                        'runbookOutput': None,
+                        'runbookError': None,
+                        'overridesOutput': None,
+                        'overridesError': None,
+                        'dedupOutput': 'defaultDedupString:rule_id',
+                        'dedupError': None,
+                        'alertContextOutput': None,
+                        'alertContextError': None
+                    }
+                ]
+        }
+        self.assertEqual(expected_response, lambda_handler(payload, None))
+
+    def test_direct_analysis_runbook_exception_fails_test(self) -> None:
+        """If rule runbook() raises an exception while testing a rule (not normal analysis), we should fail the test"""
+        payload = {
+            'rules': [{
+                'id': 'rule_id',
+                'body': "def rule(event):\n\treturn True\ndef runbook(event):\n\traise Exception('runbook error')"
+            }],
+            'events': [{
+                'id': 'event_id',
+                'data': 'data'
+            }]
+        }
+
+        expected_response = {
+            'results':
+                [
+                    {
+                        'id': 'event_id',
+                        'ruleId': 'rule_id',
+                        'genericError': None,
+                        'errored': True,
+                        'ruleOutput': True,
+                        'ruleError': None,
+                        'titleOutput': None,
+                        'titleError': None,
+                        'descriptionOutput': None,
+                        'descriptionError': None,
+                        'referenceOutput': None,
+                        'referenceError': None,
+                        'severityOutput': None,
+                        'severityError': None,
+                        'runbookOutput': None,
+                        'runbookError': 'Exception: runbook error',
+                        'overridesOutput': None,
+                        'overridesError': None,
+                        'dedupOutput': 'defaultDedupString:rule_id',
+                        'dedupError': None,
+                        'alertContextOutput': None,
+                        'alertContextError': None
+                    }
+                ]
+        }
+        self.assertEqual(expected_response, lambda_handler(payload, None))
+
+    def test_direct_analysis_destination_override_exception_fails_test(self) -> None:
+        """If rule overrides() raises exception while testing a rule (not normal analysis), we should fail the test"""
+        payload = {
+            'rules': [{
+                'id': 'rule_id',
+                'body': "def rule(event):\n\treturn True\n" +
+                        "def destination_override(event):\n\traise Exception('overrides error')"
+            }],
+            'events': [{
+                'id': 'event_id',
+                'data': 'data'
+            }]
+        }
+
+        expected_response = {
+            'results':
+                [
+                    {
+                        'id': 'event_id',
+                        'ruleId': 'rule_id',
+                        'genericError': None,
+                        'errored': True,
+                        'ruleOutput': True,
+                        'ruleError': None,
+                        'titleOutput': None,
+                        'titleError': None,
+                        'descriptionOutput': None,
+                        'descriptionError': None,
+                        'referenceOutput': None,
+                        'referenceError': None,
+                        'severityOutput': None,
+                        'severityError': None,
+                        'runbookOutput': None,
+                        'runbookError': None,
+                        'overridesOutput': None,
+                        'overridesError': 'Exception: overrides error',
+                        'dedupOutput': 'defaultDedupString:rule_id',
+                        'dedupError': None,
+                        'alertContextOutput': None,
+                        'alertContextError': None
+                    }
+                ]
+        }
+        self.assertEqual(expected_response, lambda_handler(payload, None))
 
 class TestMainLoadS3Notifications(TestCase):
 

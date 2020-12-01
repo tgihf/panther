@@ -334,8 +334,9 @@ class Rule:
             description = self._run_command(command, event, str)
         except Exception as err:  # pylint: disable=broad-except
             if use_default_on_exception:
-                self.logger.warning('description method for rule with id [%s] raised exception. Using default Exception: %s',
-                                    self.rule_id, err)
+                self.logger.warning(
+                    'description method for rule with id [%s] raised exception. Using default Exception: %s', self.rule_id, err
+                )
                 return ''
             raise
 

@@ -337,11 +337,13 @@ class TestMainDirectAnalysis(TestCase):
     def test_direct_analysis_description_exception_fails_test(self) -> None:
         """If rule description() raises exception while testing a rule (not normal analysis), we should fail the test"""
         payload = {
-            'rules': [{
-                'id': 'rule_id',
-                'body': "def rule(event):\n\treturn True\n" +
-                        "def description(event):\n\traise Exception('description error')"
-            }],
+            'rules':
+                [
+                    {
+                        'id': 'rule_id',
+                        'body': "def rule(event):\n\treturn True\n" + "def description(event):\n\traise Exception('description error')"
+                    }
+                ],
             'events': [{
                 'id': 'event_id',
                 'data': 'data'
@@ -382,10 +384,11 @@ class TestMainDirectAnalysis(TestCase):
     def test_direct_analysis_reference_exception_fails_test(self) -> None:
         """If rule reference() raises exception while testing a rule (not normal analysis), we should fail the test"""
         payload = {
-            'rules': [{
-                'id': 'rule_id',
-                'body': "def rule(event):\n\treturn True\ndef reference(event):\n\traise Exception('reference error')"
-            }],
+            'rules':
+                [{
+                    'id': 'rule_id',
+                    'body': "def rule(event):\n\treturn True\ndef reference(event):\n\traise Exception('reference error')"
+                }],
             'events': [{
                 'id': 'event_id',
                 'data': 'data'
@@ -426,10 +429,11 @@ class TestMainDirectAnalysis(TestCase):
     def test_direct_analysis_severity_exception_fails_test(self) -> None:
         """If rule severity() raises an exception while testing a rule (not normal analysis), we should fail the test"""
         payload = {
-            'rules': [{
-                'id': 'rule_id',
-                'body': "def rule(event):\n\treturn True\ndef severity(event):\n\traise Exception('severity error')"
-            }],
+            'rules':
+                [{
+                    'id': 'rule_id',
+                    'body': "def rule(event):\n\treturn True\ndef severity(event):\n\traise Exception('severity error')"
+                }],
             'events': [{
                 'id': 'event_id',
                 'data': 'data'
@@ -470,10 +474,12 @@ class TestMainDirectAnalysis(TestCase):
     def test_direct_analysis_runbook_exception_fails_test(self) -> None:
         """If rule runbook() raises an exception while testing a rule (not normal analysis), we should fail the test"""
         payload = {
-            'rules': [{
-                'id': 'rule_id',
-                'body': "def rule(event):\n\treturn True\ndef runbook(event):\n\traise Exception('runbook error')"
-            }],
+            'rules': [
+                {
+                    'id': 'rule_id',
+                    'body': "def rule(event):\n\treturn True\ndef runbook(event):\n\traise Exception('runbook error')"
+                }
+            ],
             'events': [{
                 'id': 'event_id',
                 'data': 'data'
@@ -514,11 +520,14 @@ class TestMainDirectAnalysis(TestCase):
     def test_direct_analysis_destination_override_exception_fails_test(self) -> None:
         """If rule overrides() raises exception while testing a rule (not normal analysis), we should fail the test"""
         payload = {
-            'rules': [{
-                'id': 'rule_id',
-                'body': "def rule(event):\n\treturn True\n" +
-                        "def destination_override(event):\n\traise Exception('overrides error')"
-            }],
+            'rules':
+                [
+                    {
+                        'id': 'rule_id',
+                        'body':
+                            "def rule(event):\n\treturn True\n" + "def destination_override(event):\n\traise Exception('overrides error')"
+                    }
+                ],
             'events': [{
                 'id': 'event_id',
                 'data': 'data'
@@ -555,6 +564,7 @@ class TestMainDirectAnalysis(TestCase):
                 ]
         }
         self.assertEqual(expected_response, lambda_handler(payload, None))
+
 
 class TestMainLoadS3Notifications(TestCase):
 

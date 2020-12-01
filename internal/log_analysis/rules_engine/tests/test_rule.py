@@ -280,6 +280,7 @@ class TestRule(TestCase):  # pylint: disable=too-many-public-methods
         self.assertEqual(expected_result, rule.run({}))
 
     """ Generated Fields Tests """
+
     def test_rule_with_all_generated_fields(self) -> None:
         rule_body = 'def rule(event):\n\treturn True\n' \
                     'def alert_context(event):\n\treturn {}\n' \
@@ -317,8 +318,10 @@ class TestRule(TestCase):  # pylint: disable=too-many-public-methods
             title_output='test_rule_with_invalid_severity',
             dedup_output='test_rule_with_invalid_severity',
             severity_output="CRITICAL-ISH",
-            severity_exception=AssertionError("Expected severity to be any of the following: "
-                                              "[['INFO', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL']], got [CRITICAL-ISH] instead."),
+            severity_exception=AssertionError(
+                "Expected severity to be any of the following: "
+                "[['INFO', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL']], got [CRITICAL-ISH] instead."
+            ),
         )
         # TODO: Fix this to handle Exception error comparison
         # Context: strings are identical, the AssertionError object comparison is likely breaking this

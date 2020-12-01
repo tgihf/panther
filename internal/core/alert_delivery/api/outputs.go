@@ -19,6 +19,7 @@ package api
  */
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
 	"time"
 
 	"go.uber.org/zap"
@@ -54,7 +55,7 @@ func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, 
 	alertOutputs := []*outputModels.AlertOutput{}
 	for _, output := range outputs {
 		for _, outputID := range alert.DestinationOverride {
-			if *output.OutputID == outputID {
+			if aws.StringValue(output.OutputID) == outputID {
 				alertOutputs = append(alertOutputs, output)
 			}
 		}

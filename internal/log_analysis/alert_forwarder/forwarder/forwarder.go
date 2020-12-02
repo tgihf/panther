@@ -156,7 +156,7 @@ func (h *Handler) storeNewAlert(rule *ruleModel.Rule, alertDedup *AlertDedupEven
 	alert := &Alert{
 		ID:                  generateAlertID(alertDedup),
 		TimePartition:       defaultTimePartition,
-		Severity:            getSeverity(rule, alertDedup),
+		Severity:            aws.String(getSeverity(rule, alertDedup)),
 		RuleDisplayName:     getRuleDisplayName(rule),
 		Title:               getTitle(rule, alertDedup),
 		FirstEventMatchTime: alertDedup.CreationTime,
@@ -252,9 +252,9 @@ func getTitle(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) string {
 	}
 	ruleDisplayName := getRuleDisplayName(rule)
 	if ruleDisplayName != nil {
-		return ruleDisplayName
+		return aws.StringValue(ruleDisplayName)
 	}
-	return aws.String(rule.ID)
+	return rule.ID
 }
 
 func getDescription(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) string {
@@ -290,14 +290,6 @@ func getOutputIds(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) []string {
 		return alertDedup.GeneratedOverrides
 	}
 	return rule.OutputIDs
-}
-
-func getDestinationOverride(alertDedup *AlertDedupEvent) []string {
-	if alertDedup.GeneratedDestinationOverride != nil {
-		return alertDedup.GeneratedDestinationOverride
-	} else {
-		return nil
-	}
 }
 
 func getRuleDisplayName(rule *ruleModel.Rule) *string {

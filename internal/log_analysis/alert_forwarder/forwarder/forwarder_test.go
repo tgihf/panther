@@ -134,7 +134,7 @@ func TestHandleStoreAndSendNotification(t *testing.T) {
 	expectedAlert := &Alert{
 		ID:                  "b25dc23fb2a0b362da8428dbec1381a8",
 		TimePartition:       "defaultPartition",
-		Severity:            string(testRuleResponse.Severity),
+		Severity:            aws.String(string(testRuleResponse.Severity)),
 		RuleDisplayName:     &testRuleResponse.DisplayName,
 		Title:               aws.StringValue(newAlertDedupEvent.GeneratedTitle),
 		FirstEventMatchTime: newAlertDedupEvent.CreationTime,
@@ -237,7 +237,7 @@ func TestHandleStoreAndSendNotificationNoRuleDisplayNameNoTitle(t *testing.T) {
 	expectedAlert := &Alert{
 		ID:                  "b25dc23fb2a0b362da8428dbec1381a8",
 		TimePartition:       "defaultPartition",
-		Severity:            string(testRuleResponse.Severity),
+		Severity:            aws.String(string(testRuleResponse.Severity)),
 		Title:               newAlertDedupEventWithoutTitle.RuleID,
 		FirstEventMatchTime: newAlertDedupEventWithoutTitle.CreationTime,
 		LogTypes:            newAlertDedupEvent.LogTypes,
@@ -321,7 +321,7 @@ func TestHandleStoreAndSendNotificationNoGeneratedTitle(t *testing.T) {
 	expectedAlert := &Alert{
 		ID:                  "b25dc23fb2a0b362da8428dbec1381a8",
 		TimePartition:       "defaultPartition",
-		Severity:            string(testRuleResponse.Severity),
+		Severity:            aws.String(string(testRuleResponse.Severity)),
 		RuleDisplayName:     &testRuleResponse.DisplayName,
 		Title:               "DisplayName",
 		FirstEventMatchTime: newAlertDedupEvent.CreationTime,
@@ -418,7 +418,7 @@ func TestHandleStoreAndSendNotificationNilOldDedup(t *testing.T) {
 	expectedAlert := &Alert{
 		ID:                  "b25dc23fb2a0b362da8428dbec1381a8",
 		TimePartition:       "defaultPartition",
-		Severity:            string(testRuleResponse.Severity),
+		Severity:            aws.String(string(testRuleResponse.Severity)),
 		Title:               aws.StringValue(newAlertDedupEvent.GeneratedTitle),
 		RuleDisplayName:     &testRuleResponse.DisplayName,
 		FirstEventMatchTime: newAlertDedupEvent.CreationTime,

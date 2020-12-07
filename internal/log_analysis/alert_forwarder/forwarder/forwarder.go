@@ -156,7 +156,7 @@ func (h *Handler) storeNewAlert(rule *ruleModel.Rule, alertDedup *AlertDedupEven
 	alert := &Alert{
 		ID:                  generateAlertID(alertDedup),
 		TimePartition:       defaultTimePartition,
-		Severity:            getSeverity(rule, alertDedup),
+		Severity:            aws.String(getSeverity(rule, alertDedup)),
 		RuleDisplayName:     getRuleDisplayName(rule),
 		Title:               getTitle(rule, alertDedup),
 		FirstEventMatchTime: alertDedup.CreationTime,
@@ -286,8 +286,8 @@ func getSeverity(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) string {
 }
 
 func getOutputIds(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) []string {
-	if alertDedup.GeneratedDestinationOverride != nil {
-		return alertDedup.GeneratedDestinationOverride
+	if alertDedup.GeneratedDestinations != nil {
+		return alertDedup.GeneratedDestinations
 	}
 	return rule.OutputIDs
 }

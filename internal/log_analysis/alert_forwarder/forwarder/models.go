@@ -63,7 +63,7 @@ type AlertDedupEvent struct {
 type Alert struct {
 	ID                  string    `dynamodbav:"id,string"`
 	TimePartition       string    `dynamodbav:"timePartition,string"`
-	Severity            *string    `dynamodbav:"severity,string"`
+	Severity            *string   `dynamodbav:"severity,string"`
 	RuleDisplayName     *string   `dynamodbav:"ruleDisplayName,string"`
 	FirstEventMatchTime time.Time `dynamodbav:"firstEventMatchTime,string"`
 	LogTypes            []string  `dynamodbav:"logTypes,stringset"`

@@ -478,7 +478,7 @@ func TestHandleUpdateAlert(t *testing.T) {
 		http.StatusOK, nil, testRuleResponse).Once()
 
 	dedupEventWithUpdatedFields := &AlertDedupEvent{
-		RuleID:               newAlertDedupEvent.RuleID,
+		RuleID:                newAlertDedupEvent.RuleID,
 		RuleVersion:           newAlertDedupEvent.RuleVersion,
 		DeduplicationString:   newAlertDedupEvent.DeduplicationString,
 		AlertCount:            newAlertDedupEvent.AlertCount,
@@ -539,7 +539,7 @@ func TestHandleUpdateAlertDDBError(t *testing.T) {
 		http.StatusOK, nil, testRuleResponse).Once()
 
 	dedupEventWithUpdatedFields := &AlertDedupEvent{
-		RuleID:               newAlertDedupEvent.RuleID,
+		RuleID:                newAlertDedupEvent.RuleID,
 		RuleVersion:           newAlertDedupEvent.RuleVersion,
 		DeduplicationString:   newAlertDedupEvent.DeduplicationString,
 		AlertCount:            newAlertDedupEvent.AlertCount,
@@ -664,9 +664,9 @@ func TestHandleShouldCreateAlertIfThresholdNowReached(t *testing.T) {
 	}
 
 	newAlertDedup := &AlertDedupEvent{
-		RuleID:               oldAlertDedupEvent.RuleID,
-		Type:                 oldAlertDedupEvent.Type,
-		RuleVersion:          oldAlertDedupEvent.RuleVersion,
+		RuleID:                oldAlertDedupEvent.RuleID,
+		Type:                  oldAlertDedupEvent.Type,
+		RuleVersion:           oldAlertDedupEvent.RuleVersion,
 		DeduplicationString:   oldAlertDedupEvent.DeduplicationString,
 		AlertCount:            oldAlertDedupEvent.AlertCount + 1,
 		CreationTime:          time.Now().UTC(),

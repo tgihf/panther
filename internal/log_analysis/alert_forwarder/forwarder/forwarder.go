@@ -156,7 +156,7 @@ func (h *Handler) storeNewAlert(rule *ruleModel.Rule, alertDedup *AlertDedupEven
 	alert := &Alert{
 		ID:                  generateAlertID(alertDedup),
 		TimePartition:       defaultTimePartition,
-		Severity:            aws.String(getSeverity(rule, alertDedup)),
+		Severity:            getSeverity(rule, alertDedup),
 		RuleDisplayName:     getRuleDisplayName(rule),
 		Title:               getTitle(rule, alertDedup),
 		FirstEventMatchTime: alertDedup.CreationTime,
@@ -174,11 +174,11 @@ func (h *Handler) storeNewAlert(rule *ruleModel.Rule, alertDedup *AlertDedupEven
 			LogTypes:     alertDedup.LogTypes,
 			Type:         alertDedup.Type,
 			// Generated Fields
-			GeneratedTitle:       aws.String(getTitle(rule, alertDedup)),
-			GeneratedDescription: aws.String(getDescription(rule, alertDedup)),
-			GeneratedReference:   aws.String(getReference(rule, alertDedup)),
-			GeneratedRunbook:     aws.String(getRunbook(rule, alertDedup)),
-			GeneratedOverrides:   alertDedup.GeneratedOverrides,
+			GeneratedTitle:        aws.String(getTitle(rule, alertDedup)),
+			GeneratedDescription:  aws.String(getDescription(rule, alertDedup)),
+			GeneratedReference:    aws.String(getReference(rule, alertDedup)),
+			GeneratedRunbook:      aws.String(getRunbook(rule, alertDedup)),
+			GeneratedDestinations: alertDedup.GeneratedDestinations,
 		},
 	}
 
@@ -252,7 +252,7 @@ func getTitle(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) string {
 	}
 	ruleDisplayName := getRuleDisplayName(rule)
 	if ruleDisplayName != nil {
-		return aws.StringValue(ruleDisplayName)
+		return *ruleDisplayName
 	}
 	return rule.ID
 }
@@ -286,8 +286,8 @@ func getSeverity(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) string {
 }
 
 func getOutputIds(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) []string {
-	if alertDedup.GeneratedOverrides != nil {
-		return alertDedup.GeneratedOverrides
+	if alertDedup.GeneratedDestinationOverride != nil {
+		return alertDedup.GeneratedDestinationOverride
 	}
 	return rule.OutputIDs
 }

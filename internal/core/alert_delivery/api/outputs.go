@@ -21,7 +21,6 @@ package api
 import (
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"go.uber.org/zap"
 
 	deliveryModels "github.com/panther-labs/panther/api/lambda/delivery/models"
@@ -29,7 +28,7 @@ import (
 	"github.com/panther-labs/panther/pkg/genericapi"
 )
 
-// getAlertOutputs - Get output ids for an alert via the specified overrides or the defaults in panther
+// getAlertOutputs - Get output ids for an alert via the specified destinations or the defaults in panther
 func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, error) {
 	// fetch available panther outputs
 	outputs, err := getOutputs()
@@ -37,7 +36,7 @@ func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, 
 		return nil, err
 	}
 
-	// If alert has neither outputs IDs or dynamic dest. override specified, return the defaults for the severity
+	// If alert has neither outputs IDs or dynamic destinations specified, return the defaults for the severity
 	if len(alert.OutputIds) == 0 && len(alert.Destinations) == 0 {
 		defaultsForSeverity := []*outputModels.AlertOutput{}
 		for _, output := range outputs {
@@ -51,7 +50,7 @@ func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, 
 		return defaultsForSeverity, nil
 	}
 
-	// If alert has a dynamically set destination override, return the specified output overrides for the alert
+	// If alert has a dynamically set destinations, return the specified output destinations for the alert
 	alertOutputs := []*outputModels.AlertOutput{}
 	for _, output := range outputs {
 		for _, outputID := range alert.Destinations {

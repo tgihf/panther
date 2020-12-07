@@ -105,7 +105,7 @@ class TestMainDirectAnalysis(TestCase):
                     'def reference(event):\n\treturn "generated reference"\n' \
                     'def severity(event):\n\treturn "HIGH"\n' \
                     'def runbook(event):\n\treturn "generated runbook"\n' \
-                    'def destination_override(event):\n\treturn []'
+                    'def destinations(event):\n\treturn []'
         payload = {'rules': [{'id': 'rule_id', 'body': rule_body}], 'events': [{'id': 'event_id', 'data': 'data'}]}
         expected_response: dict = {
             'results':
@@ -517,15 +517,15 @@ class TestMainDirectAnalysis(TestCase):
         }
         self.assertEqual(expected_response, lambda_handler(payload, None))
 
-    def test_direct_analysis_destination_override_exception_fails_test(self) -> None:
-        """If rule overrides() raises exception while testing a rule (not normal analysis), we should fail the test"""
+    def test_direct_analysis_destinations_exception_fails_test(self) -> None:
+        """If rule destinations() raises exception while testing a rule (not normal analysis), we should fail the test"""
         payload = {
             'rules':
                 [
                     {
                         'id': 'rule_id',
                         'body':
-                            "def rule(event):\n\treturn True\n" + "def destination_override(event):\n\traise Exception('overrides error')"
+                            "def rule(event):\n\treturn True\n" + "def destinations(event):\n\traise Exception('overrides error')"
                     }
                 ],
             'events': [{
@@ -555,7 +555,7 @@ class TestMainDirectAnalysis(TestCase):
                         'runbookOutput': None,
                         'runbookError': None,
                         'destinationsOutput': None,
-                        'destinationsError': 'Exception: overrides error',
+                        'destinationsError': 'Exception: destinations error',
                         'dedupOutput': 'defaultDedupString:rule_id',
                         'dedupError': None,
                         'alertContextOutput': None,

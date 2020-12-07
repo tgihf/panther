@@ -32,21 +32,25 @@ import (
 const (
 	// https://github.com/awslabs/aws-athena-query-federation/tree/master/athena-dynamodb
 
+	// FIXME: Update the description when the DDB connector is GA
 	ResourcesTableDDB         = "panther-resources"
 	ResourcesTable            = "resources"
-	ResourcesTableDescription = "The resources discovered by Panther scanning"
+	ResourcesTableDescription = "(ddb.panther_cloudsecurity.resources) The resources discovered by Panther scanning"
 
 	ComplianceTableDDB         = "panther-compliance"
 	ComplianceTable            = "compliance"
-	ComplianceTableDescription = "The policies and statuses from Panther scanning"
+	ComplianceTableDescription = "(ddb.panther_cloudsecurity.compliance) The policies and statuses from Panther scanning"
 )
 
 var (
-	// FIXME: Remove when the DDB connector and Athena2 are available in all regions
+	// FIXME: Remove when the DDB connector is GA
+	// Available Regions – The Athena federated query feature is available in preview in the US East (N. Virginia),
+	//                     Asia Pacific (Mumbai), Europe (Ireland), and US West (Oregon) Regions.
 	anthenaDDBConnectorRegions = map[string]struct{}{
-		"us-east-1": {},
-		"us-east-2": {},
-		"us-west-2": {},
+		"us-east-1":  {},
+		"ap-south-1": {},
+		"eu-west-1":  {},
+		"us-west-2":  {},
 	}
 )
 

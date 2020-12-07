@@ -66,43 +66,43 @@ func TestPagePoliciesPageOutOfBounds(t *testing.T) {
 
 func TestPagePoliciesDisplayNameSort(t *testing.T) {
 	items := []tableItem{
-		{LowerID: "a", LowerDisplayName: "z"},
-		{LowerID: "h", LowerDisplayName: "b"},
-		{LowerID: "c", LowerDisplayName: "y"},
-		{LowerID: "e", LowerDisplayName: "a"},
-		{LowerID: "g", LowerDisplayName: "b"},
-		{LowerID: "d", LowerDisplayName: ""},
+		{ID: "a", DisplayName: "z"},
+		{ID: "h", DisplayName: "b"},
+		{ID: "c", DisplayName: "y"},
+		{ID: "e", DisplayName: "a"},
+		{ID: "g", DisplayName: "b"},
+		{ID: "d", DisplayName: ""},
 	}
 
 	sortByDisplayName(items, true)
 
 	expected := []tableItem{
-		{LowerID: "e", LowerDisplayName: "a"},
-		{LowerID: "g", LowerDisplayName: "b"},
-		{LowerID: "h", LowerDisplayName: "b"},
-		{LowerID: "d", LowerDisplayName: ""},
-		{LowerID: "c", LowerDisplayName: "y"},
-		{LowerID: "a", LowerDisplayName: "z"},
+		{ID: "e", DisplayName: "a"},
+		{ID: "g", DisplayName: "b"},
+		{ID: "h", DisplayName: "b"},
+		{ID: "d", DisplayName: ""},
+		{ID: "c", DisplayName: "y"},
+		{ID: "a", DisplayName: "z"},
 	}
 	assert.Equal(t, expected, items)
 }
 
 func TestPagePoliciesDisplayNameSortReverse(t *testing.T) {
 	items := []tableItem{
-		{LowerID: "e", LowerDisplayName: "a"},
-		{LowerID: "a", LowerDisplayName: "z"},
-		{LowerID: "c", LowerDisplayName: "y"},
-		{LowerID: "g", LowerDisplayName: "b"},
-		{LowerID: "d", LowerDisplayName: "y"},
+		{ID: "e", DisplayName: "a"},
+		{ID: "a", DisplayName: "z"},
+		{ID: "c", DisplayName: "y"},
+		{ID: "g", DisplayName: "b"},
+		{ID: "d", DisplayName: "y"},
 	}
 	sortByDisplayName(items, false)
 
 	expected := []tableItem{
-		{LowerID: "a", LowerDisplayName: "z"},
-		{LowerID: "d", LowerDisplayName: "y"},
-		{LowerID: "c", LowerDisplayName: "y"},
-		{LowerID: "g", LowerDisplayName: "b"},
-		{LowerID: "e", LowerDisplayName: "a"},
+		{ID: "a", DisplayName: "z"},
+		{ID: "d", DisplayName: "y"},
+		{ID: "c", DisplayName: "y"},
+		{ID: "g", DisplayName: "b"},
+		{ID: "e", DisplayName: "a"},
 	}
 	assert.Equal(t, expected, items)
 }

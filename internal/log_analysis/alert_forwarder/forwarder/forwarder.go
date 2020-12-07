@@ -156,7 +156,7 @@ func (h *Handler) storeNewAlert(rule *ruleModel.Rule, alertDedup *AlertDedupEven
 	alert := &Alert{
 		ID:                  generateAlertID(alertDedup),
 		TimePartition:       defaultTimePartition,
-		Severity:            getSeverity(rule, alertDedup),
+		Severity:            aws.String(getSeverity(rule, alertDedup)),
 		RuleDisplayName:     getRuleDisplayName(rule),
 		Title:               getTitle(rule, alertDedup),
 		FirstEventMatchTime: alertDedup.CreationTime,
@@ -174,11 +174,11 @@ func (h *Handler) storeNewAlert(rule *ruleModel.Rule, alertDedup *AlertDedupEven
 			LogTypes:     alertDedup.LogTypes,
 			Type:         alertDedup.Type,
 			// Generated Fields
-			GeneratedTitle:               aws.String(getTitle(rule, alertDedup)),
-			GeneratedDescription:         aws.String(getDescription(rule, alertDedup)),
-			GeneratedReference:           aws.String(getReference(rule, alertDedup)),
-			GeneratedRunbook:             aws.String(getRunbook(rule, alertDedup)),
-			GeneratedDestinationOverride: alertDedup.GeneratedDestinationOverride,
+			GeneratedTitle:       aws.String(getTitle(rule, alertDedup)),
+			GeneratedDescription: aws.String(getDescription(rule, alertDedup)),
+			GeneratedReference:   aws.String(getReference(rule, alertDedup)),
+			GeneratedRunbook:     aws.String(getRunbook(rule, alertDedup)),
+			GeneratedOverrides:   alertDedup.GeneratedOverrides,
 		},
 	}
 
@@ -252,7 +252,7 @@ func getTitle(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) string {
 	}
 	ruleDisplayName := getRuleDisplayName(rule)
 	if ruleDisplayName != nil {
-		return *ruleDisplayName
+		return aws.StringValue(ruleDisplayName)
 	}
 	return rule.ID
 }
@@ -286,8 +286,8 @@ func getSeverity(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) string {
 }
 
 func getOutputIds(rule *ruleModel.Rule, alertDedup *AlertDedupEvent) []string {
-	if alertDedup.GeneratedDestinationOverride != nil {
-		return alertDedup.GeneratedDestinationOverride
+	if alertDedup.GeneratedOverrides != nil {
+		return alertDedup.GeneratedOverrides
 	}
 	return rule.OutputIDs
 }

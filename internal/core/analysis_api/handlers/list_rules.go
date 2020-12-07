@@ -20,7 +20,6 @@ package handlers
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -69,7 +68,6 @@ func (API) ListRules(input *models.ListRulesInput) *events.APIGatewayProxyRespon
 
 // Set defaults and standardize input request
 func stdRuleListInput(input *models.ListRulesInput) {
-	input.NameContains = strings.ToLower(input.NameContains)
 	if input.Page == 0 {
 		input.Page = defaultPage
 	}
@@ -85,6 +83,6 @@ func stdRuleListInput(input *models.ListRulesInput) {
 }
 
 func ruleScanInput(input *models.ListRulesInput) (*dynamodb.ScanInput, error) {
-	filters := pythonListFilters(input.Enabled, input.NameContains, input.Severity, input.LogTypes, input.Tags)
+	filters := pythonListFilters(input.Enabled, input.NameContains, string(input.Severity), input.LogTypes, input.Tags)
 	return buildScanInput(models.TypeRule, input.Fields, filters...)
 }

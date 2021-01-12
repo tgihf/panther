@@ -87,20 +87,6 @@ const sortingOpts: SortingOptions = [
     },
   },
   {
-    opt: 'Enabled',
-    resolution: {
-      sortBy: 'enabled' as ListRulesSortFieldsEnum,
-      sortDir: 'ascending' as SortDirEnum,
-    },
-  },
-  {
-    opt: 'Disabled',
-    resolution: {
-      sortBy: 'enabled' as ListRulesSortFieldsEnum,
-      sortDir: 'descending' as SortDirEnum,
-    },
-  },
-  {
     opt: 'Log Types Ascending',
     resolution: {
       sortBy: 'logTypes' as ListRulesSortFieldsEnum,

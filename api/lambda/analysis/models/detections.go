@@ -19,8 +19,9 @@ package models
  */
 
 import (
-	"github.com/panther-labs/panther/api/lambda/compliance/models"
 	"time"
+
+	"github.com/panther-labs/panther/api/lambda/compliance/models"
 )
 
 type ListDetectionsInput struct {
@@ -78,7 +79,7 @@ type ListDetectionsInput struct {
 }
 
 type ListDetectionsOutput struct {
-	Paging Paging `json:"paging"`
+	Paging     Paging      `json:"paging"`
 	Detections []Detection `json:"detections"`
 }
 

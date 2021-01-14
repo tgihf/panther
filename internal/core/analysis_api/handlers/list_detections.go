@@ -59,8 +59,8 @@ func (API) ListDetections(input *models.ListDetectionsInput) *events.APIGatewayP
 
 	// Convert to output struct
 	result := models.ListDetectionsOutput{
-		Detections:  make([]models.Detection, 0, len(items)),
-		Paging: paging,
+		Detections: make([]models.Detection, 0, len(items)),
+		Paging:     paging,
 	}
 	for _, item := range items {
 		result.Detections = append(result.Detections, *item.Detection())
@@ -87,6 +87,7 @@ func stdDetectionListInput(input *models.ListDetectionsInput) {
 	}
 }
 
+// TODO: check if we need to copy in any policy logic or new logic
 func detectionScanInput(input *models.ListDetectionsInput) (*dynamodb.ScanInput, error) {
 	listFilters := pythonFilters{
 		CreatedBy:      input.CreatedBy,

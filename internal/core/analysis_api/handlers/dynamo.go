@@ -96,6 +96,36 @@ func (r *tableItem) normalize() {
 	sortCaseInsensitive(r.Tags)
 }
 
+// TODO include policy & shared stuff
+// Rule converts a Dynamo row into a Rule external model.
+func (r *tableItem) Detection() *models.Detection {
+	r.normalize()
+	result := &models.Detection{
+		Body:               r.Body,
+		CreatedAt:          r.CreatedAt,
+		CreatedBy:          r.CreatedBy,
+		DedupPeriodMinutes: r.DedupPeriodMinutes,
+		Description:        r.Description,
+		DisplayName:        r.DisplayName,
+		Enabled:            r.Enabled,
+		ID:                 r.ID,
+		LastModified:       r.LastModified,
+		LastModifiedBy:     r.LastModifiedBy,
+		LogTypes:           r.ResourceTypes,
+		OutputIDs:          r.OutputIDs,
+		Reference:          r.Reference,
+		Reports:            r.Reports,
+		Runbook:            r.Runbook,
+		Severity:           r.Severity,
+		Tags:               r.Tags,
+		Tests:              r.Tests,
+		Threshold:          r.Threshold,
+		VersionID:          r.VersionID,
+	}
+	genericapi.ReplaceMapSliceNils(result)
+	return result
+}
+
 // Policy converts a Dynamo row into a Policy external model.
 func (r *tableItem) Policy(status compliancemodels.ComplianceStatus) *models.Policy {
 	r.normalize()

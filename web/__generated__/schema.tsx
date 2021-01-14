@@ -1478,6 +1478,11 @@ export type TestRuleRecordFunctions = {
   titleFunction?: Maybe<TestDetectionSubRecord>;
   dedupFunction?: Maybe<TestDetectionSubRecord>;
   alertContextFunction?: Maybe<TestDetectionSubRecord>;
+  descriptionFunction?: Maybe<TestDetectionSubRecord>;
+  destinationsFunction?: Maybe<TestDetectionSubRecord>;
+  referenceFunction?: Maybe<TestDetectionSubRecord>;
+  runbookFunction?: Maybe<TestDetectionSubRecord>;
+  severityFunction?: Maybe<TestDetectionSubRecord>;
 };
 
 export type TestRuleResponse = {
@@ -3456,6 +3461,31 @@ export type TestRuleRecordFunctionsResolvers<
     ContextType
   >;
   alertContextFunction?: Resolver<
+    Maybe<ResolversTypes['TestDetectionSubRecord']>,
+    ParentType,
+    ContextType
+  >;
+  descriptionFunction?: Resolver<
+    Maybe<ResolversTypes['TestDetectionSubRecord']>,
+    ParentType,
+    ContextType
+  >;
+  destinationsFunction?: Resolver<
+    Maybe<ResolversTypes['TestDetectionSubRecord']>,
+    ParentType,
+    ContextType
+  >;
+  referenceFunction?: Resolver<
+    Maybe<ResolversTypes['TestDetectionSubRecord']>,
+    ParentType,
+    ContextType
+  >;
+  runbookFunction?: Resolver<
+    Maybe<ResolversTypes['TestDetectionSubRecord']>,
+    ParentType,
+    ContextType
+  >;
+  severityFunction?: Resolver<
     Maybe<ResolversTypes['TestDetectionSubRecord']>,
     ParentType,
     ContextType

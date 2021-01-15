@@ -109,7 +109,7 @@ func stdPolicyListInput(input *models.ListPoliciesInput) {
 		input.PageSize = defaultPageSize
 	}
 	if input.SortBy == "" {
-		input.SortBy = "displayName"
+		input.SortBy = "id"
 	}
 	if input.SortDir == "" {
 		input.SortDir = defaultSortDir

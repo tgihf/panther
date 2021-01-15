@@ -20,14 +20,16 @@ import React from 'react';
 import queryString from 'query-string';
 import {
   buildAlertSummary,
+  buildAlertSummaryRuleInfo,
   buildListAlertsResponse,
-  buildRuleDetails,
+  buildRule,
   fireClickAndMouseEvents,
   fireEvent,
   render,
   waitFor,
   waitForElementToBeRemoved,
   waitMs,
+  within,
 } from 'test-utils';
 import { DEFAULT_LARGE_PAGE_SIZE, DEFAULT_SMALL_PAGE_SIZE } from 'Source/constants';
 import {
@@ -40,7 +42,7 @@ import { Route } from 'react-router-dom';
 import urls from 'Source/urls';
 import { mockUpdateAlertStatus } from 'Source/graphql/queries';
 import RuleDetails from './RuleDetails';
-import { mockRuleDetails } from './graphql/ruleDetails.generated';
+import { mockGetRuleDetails } from './graphql/getRuleDetails.generated';
 import { mockListAlertsForRule } from './graphql/listAlertsForRule.generated';
 
 const queryStringOptions = {
@@ -66,14 +68,14 @@ beforeEach(() => {
 
 describe('RuleDetails', () => {
   it('renders the rule details page', async () => {
-    const rule = buildRuleDetails({
+    const rule = buildRule({
       id: '123',
       displayName: 'This is an amazing rule',
       description: 'This is an amazing description',
       runbook: 'Panther labs runbook',
     });
     const mocks = [
-      mockRuleDetails({
+      mockGetRuleDetails({
         data: { rule },
         variables: {
           input: {
@@ -100,7 +102,7 @@ describe('RuleDetails', () => {
     // Rule info
     expect(getByText('This is an amazing rule')).toBeTruthy();
     expect(getByText('DISABLED')).toBeTruthy();
-    expect(getByText('LOW')).toBeTruthy();
+    expect(getByText('HIGH')).toBeTruthy();
     expect(getByText('This is an amazing description')).toBeTruthy();
     expect(getByText('Panther labs runbook')).toBeTruthy();
     // Tabs
@@ -110,14 +112,14 @@ describe('RuleDetails', () => {
   });
 
   it('shows the tabs as disabled when no alerts are in place', async () => {
-    const rule = buildRuleDetails({
+    const rule = buildRule({
       id: '123',
       displayName: 'This is an amazing rule',
       description: 'This is an amazing description',
       runbook: 'Panther labs runbook',
     });
     const mocks = [
-      mockRuleDetails({
+      mockGetRuleDetails({
         data: { rule },
         variables: {
           input: {
@@ -135,7 +137,7 @@ describe('RuleDetails', () => {
         variables: {
           input: {
             ruleId: '123',
-            type: AlertTypesEnum.RuleError,
+            types: [AlertTypesEnum.RuleError],
             pageSize: DEFAULT_SMALL_PAGE_SIZE,
           },
         },
@@ -146,7 +148,9 @@ describe('RuleDetails', () => {
             ...buildListAlertsResponse(),
             alertSummaries: [
               buildAlertSummary({
-                ruleId: '123',
+                detection: buildAlertSummaryRuleInfo({
+                  ruleId: '123',
+                }),
                 title: `Alert 1`,
                 alertId: `alert_1`,
                 type: AlertTypesEnum.Rule,
@@ -157,7 +161,7 @@ describe('RuleDetails', () => {
         variables: {
           input: {
             ruleId: '123',
-            type: AlertTypesEnum.Rule,
+            types: [AlertTypesEnum.Rule],
             pageSize: DEFAULT_SMALL_PAGE_SIZE,
           },
         },
@@ -189,14 +193,14 @@ describe('RuleDetails', () => {
   });
 
   it('allows URL matching of tab navigation', async () => {
-    const rule = buildRuleDetails({
+    const rule = buildRule({
       id: '123',
       displayName: 'This is an amazing rule',
       description: 'This is an amazing description',
       runbook: 'Panther labs runbook',
     });
     const mocks = [
-      mockRuleDetails({
+      mockGetRuleDetails({
         data: { rule },
         variables: {
           input: {
@@ -228,14 +232,14 @@ describe('RuleDetails', () => {
   });
 
   it('fetches the alerts matching the rule', async () => {
-    const rule = buildRuleDetails({
+    const rule = buildRule({
       id: '123',
       displayName: 'This is an amazing rule',
       description: 'This is an amazing description',
       runbook: 'Panther labs runbook',
     });
     const mocks = [
-      mockRuleDetails({
+      mockGetRuleDetails({
         data: { rule },
         variables: {
           input: {
@@ -249,7 +253,9 @@ describe('RuleDetails', () => {
             ...buildListAlertsResponse(),
             alertSummaries: [
               buildAlertSummary({
-                ruleId: '123',
+                detection: buildAlertSummaryRuleInfo({
+                  ruleId: '123',
+                }),
                 title: `Alert 1`,
                 alertId: `alert_1`,
                 type: AlertTypesEnum.Rule,
@@ -260,14 +266,14 @@ describe('RuleDetails', () => {
         variables: {
           input: {
             ruleId: '123',
-            type: AlertTypesEnum.Rule,
+            types: [AlertTypesEnum.Rule],
             pageSize: DEFAULT_LARGE_PAGE_SIZE,
           },
         },
       }),
     ];
 
-    const { getByText, getByTestId, getByAriaLabel, getAllByText } = render(
+    const { getByText, getByTestId } = render(
       <Route exact path={urls.logAnalysis.rules.details(':id')}>
         <RuleDetails />
       </Route>,
@@ -283,26 +289,25 @@ describe('RuleDetails', () => {
     fireEvent.click(getByText('Rule Matches'));
 
     const loadingListingInterfaceElement = getByTestId('rule-alerts-listing-loading');
-    expect(loadingListingInterfaceElement).toBeTruthy();
     await waitForElementToBeRemoved(loadingListingInterfaceElement);
-    expect(getByText('Alert 1')).toBeInTheDocument();
-    expect(getByText('Rule Match')).toBeInTheDocument();
+    const withinTabPanel = within(getByTestId('rule-matches-tabpanel'));
+    expect(withinTabPanel.getByText('Alert 1')).toBeInTheDocument();
+    expect(withinTabPanel.getByText('Rule Match')).toBeInTheDocument();
 
-    expect(getAllByText('Destinations').length).toEqual(2);
-    expect(getByText('Log Types')).toBeInTheDocument();
-    expect(getByText('Events')).toBeInTheDocument();
-    expect(getByAriaLabel('Change Alert Status')).toBeInTheDocument();
+    expect(withinTabPanel.getByText('Destinations')).toBeInTheDocument();
+    expect(withinTabPanel.getByText('Log Types')).toBeInTheDocument();
+    expect(withinTabPanel.getByText('Events')).toBeInTheDocument();
   });
 
   it('fetches the alerts matching the rule errors', async () => {
-    const rule = buildRuleDetails({
+    const rule = buildRule({
       id: '123',
       displayName: 'This is an amazing rule',
       description: 'This is an amazing description',
       runbook: 'Panther labs runbook',
     });
     const mocks = [
-      mockRuleDetails({
+      mockGetRuleDetails({
         data: { rule },
         variables: {
           input: {
@@ -316,7 +321,9 @@ describe('RuleDetails', () => {
             ...buildListAlertsResponse(),
             alertSummaries: [
               buildAlertSummary({
-                ruleId: '123',
+                detection: buildAlertSummaryRuleInfo({
+                  ruleId: '123',
+                }),
                 title: `Error 1`,
                 alertId: `error_1`,
                 type: AlertTypesEnum.RuleError,
@@ -327,14 +334,14 @@ describe('RuleDetails', () => {
         variables: {
           input: {
             ruleId: '123',
-            type: AlertTypesEnum.RuleError,
+            types: [AlertTypesEnum.RuleError],
             pageSize: DEFAULT_LARGE_PAGE_SIZE,
           },
         },
       }),
     ];
 
-    const { getByText, getByTestId, getByAriaLabel, getAllByText } = render(
+    const { getByText, getByTestId } = render(
       <Route exact path={urls.logAnalysis.rules.details(':id')}>
         <RuleDetails />
       </Route>,
@@ -350,26 +357,24 @@ describe('RuleDetails', () => {
     fireEvent.click(getByText('Rule Errors'));
 
     const loadingListingInterfaceElement = getByTestId('rule-alerts-listing-loading');
-    expect(loadingListingInterfaceElement).toBeTruthy();
     await waitForElementToBeRemoved(loadingListingInterfaceElement);
-    expect(getByText('Error 1')).toBeInTheDocument();
-    expect(getByText('Rule Error')).toBeInTheDocument();
-
-    expect(getAllByText('Destinations').length).toEqual(2);
-    expect(getByText('Log Types')).toBeInTheDocument();
-    expect(getByText('Events')).toBeInTheDocument();
-    expect(getByAriaLabel('Change Alert Status')).toBeInTheDocument();
+    const withinTabPanel = within(getByTestId('rule-errors-tabpanel'));
+    expect(withinTabPanel.getByText('Error 1')).toBeInTheDocument();
+    expect(withinTabPanel.getByText('Rule Error')).toBeInTheDocument();
+    expect(withinTabPanel.getByText('Destinations')).toBeInTheDocument();
+    expect(withinTabPanel.getByText('Log Types')).toBeInTheDocument();
+    expect(withinTabPanel.getByText('Events')).toBeInTheDocument();
   });
 
   it('fetches the alerts matching the rule & shows an empty fallback if no alerts exist', async () => {
-    const rule = buildRuleDetails({
+    const rule = buildRule({
       id: '123',
       displayName: 'This is an amazing rule',
       description: 'This is an amazing description',
       runbook: 'Panther labs runbook',
     });
     const mocks = [
-      mockRuleDetails({
+      mockGetRuleDetails({
         data: { rule },
         variables: {
           input: {
@@ -386,7 +391,7 @@ describe('RuleDetails', () => {
         },
         variables: {
           input: {
-            type: AlertTypesEnum.Rule,
+            types: [AlertTypesEnum.Rule],
             ruleId: rule.id,
             pageSize: DEFAULT_LARGE_PAGE_SIZE,
           },
@@ -418,11 +423,11 @@ describe('RuleDetails', () => {
   });
 
   it('shows an empty illustration if filtering returns no results', async () => {
-    const rule = buildRuleDetails();
+    const rule = buildRule();
     const alert = buildAlertSummary();
 
     const mocks = [
-      mockRuleDetails({
+      mockGetRuleDetails({
         data: { rule },
         variables: {
           input: {
@@ -439,7 +444,7 @@ describe('RuleDetails', () => {
         },
         variables: {
           input: {
-            type: AlertTypesEnum.Rule,
+            types: [AlertTypesEnum.Rule],
             ruleId: rule.id,
             pageSize: DEFAULT_LARGE_PAGE_SIZE,
           },
@@ -455,7 +460,7 @@ describe('RuleDetails', () => {
         variables: {
           input: {
             nameContains: 'test',
-            type: AlertTypesEnum.Rule,
+            types: [AlertTypesEnum.Rule],
             ruleId: rule.id,
             pageSize: DEFAULT_LARGE_PAGE_SIZE,
           },
@@ -482,7 +487,7 @@ describe('RuleDetails', () => {
   });
 
   it('allows conditionally filtering the alerts matching the rule rule', async () => {
-    const rule = buildRuleDetails({
+    const rule = buildRule({
       id: '123',
     });
 
@@ -495,7 +500,9 @@ describe('RuleDetails', () => {
             ...buildListAlertsResponse(),
             alertSummaries: [
               buildAlertSummary({
-                ruleId: '123',
+                detection: buildAlertSummaryRuleInfo({
+                  ruleId: '123',
+                }),
                 title: `Unique alert ${counter}`,
                 alertId: `alert_${counter}`,
                 type: AlertTypesEnum.Rule,
@@ -506,7 +513,7 @@ describe('RuleDetails', () => {
         variables: {
           input: {
             ruleId: '123',
-            type: AlertTypesEnum.Rule,
+            types: [AlertTypesEnum.Rule],
             pageSize: DEFAULT_LARGE_PAGE_SIZE,
             ...overrides,
           },
@@ -515,7 +522,7 @@ describe('RuleDetails', () => {
     };
 
     const mocks = [
-      mockRuleDetails({
+      mockGetRuleDetails({
         data: { rule },
         variables: {
           input: {
@@ -585,7 +592,7 @@ describe('RuleDetails', () => {
   });
 
   it('can select and bulk update status for rule matches', async () => {
-    const rule = buildRuleDetails({
+    const rule = buildRule({
       id: '123',
       displayName: 'This is an amazing rule',
       description: 'This is an amazing description',
@@ -593,20 +600,24 @@ describe('RuleDetails', () => {
     });
     const alertSummaries = [
       buildAlertSummary({
-        ruleId: '123',
+        detection: buildAlertSummaryRuleInfo({
+          ruleId: '123',
+        }),
         title: `Alert 1`,
         alertId: `alert_1`,
         type: AlertTypesEnum.Rule,
       }),
       buildAlertSummary({
-        ruleId: '123',
+        detection: buildAlertSummaryRuleInfo({
+          ruleId: '123',
+        }),
         title: `Alert 2`,
         alertId: `alert_2`,
         type: AlertTypesEnum.Rule,
       }),
     ];
     const mocks = [
-      mockRuleDetails({
+      mockGetRuleDetails({
         data: { rule },
         variables: {
           input: {
@@ -624,7 +635,7 @@ describe('RuleDetails', () => {
         variables: {
           input: {
             ruleId: '123',
-            type: AlertTypesEnum.Rule,
+            types: [AlertTypesEnum.Rule],
             pageSize: DEFAULT_LARGE_PAGE_SIZE,
           },
         },
@@ -741,7 +752,7 @@ describe('RuleDetails', () => {
   });
 
   it('can select and bulk update status for rule errors', async () => {
-    const rule = buildRuleDetails({
+    const rule = buildRule({
       id: '123',
       displayName: 'This is an amazing rule',
       description: 'This is an amazing description',
@@ -749,20 +760,24 @@ describe('RuleDetails', () => {
     });
     const alertSummaries = [
       buildAlertSummary({
-        ruleId: '123',
+        detection: buildAlertSummaryRuleInfo({
+          ruleId: '123',
+        }),
         title: `Error 1`,
         alertId: `error_1`,
         type: AlertTypesEnum.RuleError,
       }),
       buildAlertSummary({
-        ruleId: '123',
+        detection: buildAlertSummaryRuleInfo({
+          ruleId: '123',
+        }),
         title: `Error 2`,
         alertId: `error_2`,
         type: AlertTypesEnum.RuleError,
       }),
     ];
     const mocks = [
-      mockRuleDetails({
+      mockGetRuleDetails({
         data: { rule },
         variables: {
           input: {
@@ -780,7 +795,7 @@ describe('RuleDetails', () => {
         variables: {
           input: {
             ruleId: '123',
-            type: AlertTypesEnum.RuleError,
+            types: [AlertTypesEnum.RuleError],
             pageSize: DEFAULT_LARGE_PAGE_SIZE,
           },
         },

@@ -19,9 +19,9 @@ package outputs
  */
 
 import (
+	"context"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
 	jsoniter "github.com/json-iterator/go"
 
 	alertModels "github.com/panther-labs/panther/api/lambda/delivery/models"
@@ -36,11 +36,11 @@ const (
 
 // Github alert send an issue.
 func (client *OutputClient) Github(
-	alert *alertModels.Alert, config *outputModels.GithubConfig) *AlertDeliveryResponse {
+	ctx context.Context, alert *alertModels.Alert, config *outputModels.GithubConfig) *AlertDeliveryResponse {
 
-	description := "**Description:** " + aws.StringValue(alert.AnalysisDescription)
+	description := "**Description:** " + alert.AnalysisDescription
 	link := "\n [Click here to view in the Panther UI](" + generateURL(alert) + ")"
-	runBook := "\n **Runbook:** " + aws.StringValue(alert.Runbook)
+	runBook := "\n **Runbook:** " + alert.Runbook
 	severity := "\n **Severity:** " + alert.Severity
 	tags := "\n **Tags:** " + strings.Join(alert.Tags, ", ")
 	// Best effort attempt to marshal Alert Context
@@ -63,5 +63,5 @@ func (client *OutputClient) Github(
 		body:    githubRequest,
 		headers: requestHeader,
 	}
-	return client.httpWrapper.post(postInput)
+	return client.httpWrapper.post(ctx, postInput)
 }

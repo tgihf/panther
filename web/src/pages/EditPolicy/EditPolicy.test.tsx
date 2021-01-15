@@ -24,12 +24,12 @@ import {
   waitFor,
   fireClickAndMouseEvents,
   buildDetectionTestDefinition,
-  buildPolicyDetails,
+  buildPolicy,
 } from 'test-utils';
 import urls from 'Source/urls';
 import { Route } from 'react-router-dom';
 import { mockListRemediations } from 'Components/forms/PolicyForm/PolicyFormAutoRemediationSection/graphql/listRemediations.generated';
-import { mockPolicyDetails } from './graphql/policyDetails.generated';
+import { mockGetPolicyDetails } from './graphql/getPolicyDetails.generated';
 import EditPolicy from './EditPolicy';
 
 describe('EditPolicy', () => {
@@ -40,10 +40,10 @@ describe('EditPolicy', () => {
         resource: '{"CreateDate":"2019-01-01T00:00:00Z"}',
       }),
     ];
-    const policy = buildPolicyDetails({ tests });
+    const policy = buildPolicy({ tests });
 
     const mocks = [
-      mockPolicyDetails({
+      mockGetPolicyDetails({
         data: { policy },
         variables: {
           input: {
@@ -101,10 +101,10 @@ describe('EditPolicy', () => {
         resource: '{"CreateDate":"2019-01-01T00:00:00Z"}',
       }),
     ];
-    const policy = buildPolicyDetails({ tests });
+    const policy = buildPolicy({ tests });
 
     const mocks = [
-      mockPolicyDetails({
+      mockGetPolicyDetails({
         data: { policy },
         variables: {
           input: {
@@ -148,14 +148,14 @@ describe('EditPolicy', () => {
         resource: '{"CreateDate":"2019-01-01T00:00:00Z"}',
       }),
     ];
-    const policy = buildPolicyDetails({
+    const policy = buildPolicy({
       tests,
       autoRemediationId: '',
       autoRemediationParameters: '{}',
     });
 
     const mocks = [
-      mockPolicyDetails({
+      mockGetPolicyDetails({
         data: { policy },
         variables: {
           input: {

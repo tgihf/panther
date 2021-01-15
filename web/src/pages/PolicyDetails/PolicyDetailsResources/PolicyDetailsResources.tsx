@@ -30,14 +30,13 @@ import {
 import {
   extendResourceWithIntegrationLabel,
   getComplianceItemsTotalCount,
-  convertObjArrayValuesToCsv,
   extractErrorMessage,
 } from 'Helpers/utils';
 import ErrorBoundary from 'Components/ErrorBoundary';
 import { DEFAULT_SMALL_PAGE_SIZE } from 'Source/constants';
 import pick from 'lodash/pick';
-import PolicyDetailsTable from '../PolicyDetailsTable';
-import { usePolicyResources } from '../graphql/policyResources.generated';
+import { useGetPolicyResources } from './graphql/getPolicyResources.generated';
+import PolicyDetailsTable from './PolicyDetailsTable';
 import PolicyResourcesSkeleton from './Skeleton';
 
 const acceptedRequestParams = ['page', 'status', 'pageSize', 'suppressed'] as const;
@@ -53,14 +52,14 @@ const PolicyDetailsResources: React.FC = () => {
     Pick<ResourcesForPolicyInput, typeof acceptedRequestParams[number]>
   >();
 
-  const { error, data, loading } = usePolicyResources({
+  const { error, data, loading } = useGetPolicyResources({
     fetchPolicy: 'cache-and-network',
     variables: {
-      resourcesForPolicyInput: convertObjArrayValuesToCsv({
+      resourcesForPolicyInput: {
         ...pick(requestParams, acceptedRequestParams),
         policyId: match.params.id,
         pageSize: DEFAULT_SMALL_PAGE_SIZE,
-      }),
+      },
     },
   });
 

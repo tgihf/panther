@@ -20,6 +20,11 @@ package logtypesapi
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/pkg/errors"
+
+	"github.com/panther-labs/panther/internal/log_analysis/log_processor/logschema"
 )
 
 const LambdaName = "panther-logtypes-api"
@@ -33,12 +38,103 @@ const LambdaName = "panther-logtypes-api"
 
 // LogTypesAPI handles the business logic of log types LogTypesAPI
 type LogTypesAPI struct {
-	NativeLogTypes func() []string
-	Database       LogTypesDatabase
+	NativeLogTypes    func() []string
+	Database          LogTypesDatabase
+	UpdateDataCatalog func(ctx context.Context, logType string, from, to []logschema.FieldSchema) error
+	// FIXME: Rename to LogTypesInUse
+	LogTypeInUse func(ctx context.Context) ([]string, error)
 }
 
 // LogTypesDatabase handles the external actions required for LogTypesAPI to be implemented
 type LogTypesDatabase interface {
 	// Return an index of available log types
 	IndexLogTypes(ctx context.Context) ([]string, error)
+	// Create a new custom log record
+	CreateCustomLog(ctx context.Context, id string, params *CustomLog) (*CustomLogRecord, error)
+	// Get a single custom log record
+	GetCustomLog(ctx context.Context, id string, revision int64) (*CustomLogRecord, error)
+	// Update a custom log record
+	UpdateCustomLog(ctx context.Context, id string, currentRevision int64, params *CustomLog) (*CustomLogRecord, error)
+	// Delete a custom log record
+	DeleteCustomLog(ctx context.Context, id string, currentRevision int64) error
+	// Get multiple custom log records at their latest revision
+	BatchGetCustomLogs(ctx context.Context, ids ...string) ([]*CustomLogRecord, error)
+	// List deleted log types
+	ListDeletedLogTypes(ctx context.Context) ([]string, error)
+}
+
+const (
+	// ErrRevisionConflict is the error code to use when there is a revision conflict
+	ErrRevisionConflict = "RevisionConflict"
+	ErrAlreadyExists    = "AlreadyExists"
+	ErrNotFound         = "NotFound"
+	ErrInUse            = "InUse"
+	ErrInvalidUpdate    = "InvalidUpdate"
+	ErrInvalidMetadata  = "InvalidMetadata"
+	ErrInvalidSyntax    = "InvalidSyntax"
+	ErrInvalidLogSchema = "InvalidLogSchema"
+	ErrServerError      = "ServerError"
+)
+
+// APIError is an error that has a code and a message and is returned as part of the API response
+type APIError struct {
+	Code    string `json:"code" validate:"required"`
+	Message string `json:"message" validate:"required"`
+	reason  error
+}
+
+func (e *APIError) Unwrap() error {
+	return e.reason
+}
+
+// Error implements error interface
+func (e *APIError) Error() string {
+	return fmt.Sprintf("%s: %s", e.Code, e.Message)
+}
+
+// NewAPIError creates a new API error
+func NewAPIError(code, message string) *APIError {
+	return &APIError{
+		Code:    code,
+		Message: message,
+	}
+}
+
+type ErrorReply struct {
+	Error *APIError `json:"error"`
+}
+
+func WrapAPIError(err error) *APIError {
+	if err == nil {
+		return nil
+	}
+	if apiErr := AsAPIError(err); apiErr != nil {
+		return apiErr
+	}
+	// AWS errors implement this interface
+	// We use their code to help with identifying the error but we keep the input error message.
+	var errWithCode interface {
+		Code() string
+	}
+	if errors.As(err, &errWithCode) {
+		return &APIError{
+			Code:    errWithCode.Code(),
+			Message: err.Error(),
+			reason:  err,
+		}
+	}
+	// Return all unknown errors as 'ServerError'
+	return &APIError{
+		Code:    ErrServerError,
+		Message: err.Error(),
+		reason:  err,
+	}
+}
+
+func AsAPIError(err error) *APIError {
+	apiErr := &APIError{}
+	if errors.As(err, &apiErr) {
+		return apiErr
+	}
+	return nil
 }

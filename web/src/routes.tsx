@@ -61,6 +61,13 @@ import ListGlobalPythonModulesPage from 'Pages/ListGlobalPythonModules';
 import CreateGlobalPythonModulePage from 'Pages/CreateGlobalPythonModule';
 import EditGlobalPythonModulePage from 'Pages/EditGlobalPythonModule';
 import EditSqsLogSource from 'Pages/EditSqsLogSource';
+import CreateCustomLogPage from 'Pages/CreateCustomLog';
+import ListCustomLogsPage from 'Pages/ListCustomLogs';
+import CustomLogDetailsPage from 'Pages/CustomLogDetails';
+import CreateDataModelPage from 'Pages/CreateDataModel';
+import EditDataModelPage from 'Pages/EditDataModel';
+import ListDataModelsPage from 'Pages/ListDataModels';
+import EditCustomLogPage from 'Pages/EditCustomLog';
 
 // Main page container for the web application, Navigation bar and Content body goes here
 const PrimaryPageLayout: React.FunctionComponent = () => {
@@ -176,6 +183,26 @@ const PrimaryPageLayout: React.FunctionComponent = () => {
                   path={urls.logAnalysis.sources.edit(':id', 'sqs')}
                   component={EditSqsLogSource}
                 />
+                <Route
+                  exact
+                  path={urls.logAnalysis.dataModels.list()}
+                  component={ListDataModelsPage}
+                />
+                <Route
+                  exact
+                  path={urls.logAnalysis.dataModels.create()}
+                  component={CreateDataModelPage}
+                />
+                <Route
+                  exact
+                  path={urls.logAnalysis.dataModels.edit(':id')}
+                  component={EditDataModelPage}
+                />
+                <Redirect
+                  exact
+                  from={urls.logAnalysis.dataModels.details(':id')}
+                  to={urls.logAnalysis.dataModels.edit(':id')}
+                />
                 <Redirect
                   exact
                   from={`${urls.logAnalysis.sources.list()}:type`}
@@ -221,6 +248,26 @@ const PrimaryPageLayout: React.FunctionComponent = () => {
                   exact
                   path={urls.settings.destinations.list()}
                   component={ListDestinationsPage}
+                />
+                <Route
+                  exact
+                  path={urls.logAnalysis.customLogs.create()}
+                  component={CreateCustomLogPage}
+                />
+                <Route
+                  exact
+                  path={urls.logAnalysis.customLogs.details(':logType')}
+                  component={CustomLogDetailsPage}
+                />
+                <Route
+                  exact
+                  path={urls.logAnalysis.customLogs.edit(':logType')}
+                  component={EditCustomLogPage}
+                />
+                <Route
+                  exact
+                  path={urls.logAnalysis.customLogs.list()}
+                  component={ListCustomLogsPage}
                 />
                 <Route exact path={urls.account.support()} component={SupportPage} />
                 <Route component={Page404} />

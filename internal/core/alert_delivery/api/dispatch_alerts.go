@@ -19,6 +19,8 @@ package api
  */
 
 import (
+	"context"
+
 	"github.com/go-playground/validator"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/pkg/errors"
@@ -28,7 +30,7 @@ import (
 )
 
 // DispatchAlerts - Sends an alert to sends a specific alert to the specified destinations.
-func (API) DispatchAlerts(input []*deliveryModels.DispatchAlertsInput) (interface{}, error) {
+func (API) DispatchAlerts(ctx context.Context, input []*deliveryModels.DispatchAlertsInput) (interface{}, error) {
 	zap.L().Debug("Dispatching alerts", zap.Int("num_alerts", len(input)))
 
 	// Extract alerts from the input payload
@@ -43,7 +45,7 @@ func (API) DispatchAlerts(input []*deliveryModels.DispatchAlertsInput) (interfac
 	}
 
 	// Send alerts to the specified destination(s) and obtain each response status
-	dispatchStatuses := sendAlerts(alertOutputMap)
+	dispatchStatuses := sendAlerts(ctx, alertOutputMap, outputClient)
 
 	// Record the delivery statuses to ddb. Ignore the returned output.
 	updateAlerts(dispatchStatuses)
@@ -82,7 +84,7 @@ func getAlerts(input []*deliveryModels.DispatchAlertsInput) []*deliveryModels.Al
 	return alerts
 }
 
-// getAlertOutputMap - maps a list of alerts to their specified override outputs or defaults
+// getAlertOutputMap - maps a list of alerts to their specified destinations or defaults
 func getAlertOutputMap(alerts []*deliveryModels.Alert) (AlertOutputMap, error) {
 	// Create our Alert -> Output mappings
 	alertOutputMap := make(AlertOutputMap)
@@ -91,7 +93,8 @@ func getAlertOutputMap(alerts []*deliveryModels.Alert) (AlertOutputMap, error) {
 		if err != nil {
 			return alertOutputMap, errors.Wrapf(err, "Failed to fetch outputIds")
 		}
-		alertOutputMap[alert] = validOutputIds
+		uniqueOutputs := getUniqueOutputs(validOutputIds)
+		alertOutputMap[alert] = uniqueOutputs
 	}
 	return alertOutputMap, nil
 }
@@ -112,7 +115,7 @@ func filterDispatches(dispatchStatuses []DispatchStatus) ([]DispatchStatus, []Di
 
 // getAlertsToRetry - finds failed deliveries and generates a list of alerts that need to be retried.
 //
-// Note: If a single alert had 10 outputs (overrides -or- default outputs) and
+// Note: If a single alert had 10 outputs (destinations -or- default outputs) and
 // failed to be delivered to 3 of them, this function will return a list
 // containing 3 alerts (in this case, the same alert) each with its outputIds
 // list containing only the specific failed outputId.

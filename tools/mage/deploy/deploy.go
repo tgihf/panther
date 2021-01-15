@@ -73,24 +73,19 @@ func Deploy() error {
 		return err
 	}
 
-	if function := os.Getenv("LAMBDA"); function != "" {
-		function = strings.ToLower(strings.TrimSpace(function))
-		if !strings.HasPrefix(function, "panther-") {
-			function = "panther-" + function
-		}
-		return deploySingleLambda(function)
+	// Deploy 1 or more stacks with STACK="name1 name2" (white space delimited)
+	callStackErrors := CallForEachString("STACK", PantherNames(os.Getenv("STACK")), deploySingleStack)
+
+	// Deploy 1 or more lambdas with LAMBDA="name1 name2..." (white space delimited)
+	callLambdaErrors := CallForEachString("LAMBDA", PantherNames(os.Getenv("LAMBDA")), deploySingleLambda)
+
+	if len(callStackErrors) > 0 || len(callLambdaErrors) > 0 {
+		// Already deployed individual STACKs or LAMBDA functions, skip the full deploy process
+		return nil
 	}
 
-	if stack := os.Getenv("STACK"); stack != "" {
-		stack = strings.ToLower(strings.TrimSpace(stack))
-		if !strings.HasPrefix(stack, "panther-") {
-			stack = "panther-" + stack
-		}
-		return deploySingleStack(stack)
-	}
-
-	log.Infof("deploying Panther %s to account %s (%s)",
-		util.RepoVersion(), clients.AccountID(), clients.Region())
+	log.Infof("deploying Panther %s (%s) to account %s (%s)",
+		util.Semver(), util.CommitSha(), clients.AccountID(), clients.Region())
 
 	settings, err := Settings()
 	if err != nil {
@@ -130,8 +125,8 @@ func PreCheck() error {
 	if err != nil {
 		return fmt.Errorf("failed to check node version: %v", err)
 	}
-	if !strings.HasPrefix(strings.TrimSpace(nodeVersion), "v12") {
-		return fmt.Errorf("node version must be v12.x.x, found %s", nodeVersion)
+	if !strings.HasPrefix(strings.TrimSpace(nodeVersion), "v14") {
+		return fmt.Errorf("node version must be v14.x.x, found %s", nodeVersion)
 	}
 
 	// Make sure docker is running
@@ -449,6 +444,8 @@ func deployBootstrapStack(settings *PantherConfig) (map[string]string, error) {
 		"LoadBalancerSecurityGroupCidr": settings.Infra.LoadBalancerSecurityGroupCidr,
 		"LogSubscriptionPrincipals":     strings.Join(settings.Setup.LogSubscriptions.PrincipalARNs, ","),
 		"SecurityGroupID":               settings.Infra.SecurityGroupID,
+		"SubnetOneID":                   settings.Infra.SubnetOneID,
+		"SubnetTwoID":                   settings.Infra.SubnetTwoID,
 		"SubnetOneIPRange":              settings.Infra.SubnetOneIPRange,
 		"SubnetTwoIPRange":              settings.Infra.SubnetTwoIPRange,
 		"TracingMode":                   settings.Monitoring.TracingMode,
@@ -498,6 +495,7 @@ func deployCloudSecurityStack(settings *PantherConfig, outputs map[string]string
 		"CloudWatchLogRetentionDays": strconv.Itoa(settings.Monitoring.CloudWatchLogRetentionDays),
 		"CustomResourceVersion":      customResourceVersion(),
 		"Debug":                      strconv.FormatBool(settings.Monitoring.Debug),
+		"InputDataBucket":            outputs["InputDataBucket"],
 		"LayerVersionArns":           settings.Infra.BaseLayerVersionArns,
 		"ProcessedDataBucket":        outputs["ProcessedDataBucket"],
 		"ProcessedDataTopicArn":      outputs["ProcessedDataTopicArn"],
@@ -523,6 +521,8 @@ func deployCoreStack(settings *PantherConfig, outputs map[string]string) error {
 		"InputDataTopicArn":          outputs["InputDataTopicArn"],
 		"LayerVersionArns":           settings.Infra.BaseLayerVersionArns,
 		"OutputsKeyId":               outputs["OutputsEncryptionKeyId"],
+		"PantherVersion":             util.Semver(),
+		"KvTableBillingMode":         settings.Infra.KvTableBillingMode,
 		"SqsKeyId":                   outputs["QueueEncryptionKeyId"],
 		"TracingMode":                settings.Monitoring.TracingMode,
 		"UserPoolId":                 outputs["UserPoolId"],
@@ -583,7 +583,36 @@ func customResourceVersion() string {
 		return v
 	}
 
-	// By default, just use the major release version so developers do not have to trigger every
-	// custom resource on every deploy.
-	return strings.Split(util.RepoVersion(), "-")[0]
+	// This is the same format as the version shown in the general settings page,
+	// and also the same format used by the master stack.
+	return fmt.Sprintf("%s (%s)", util.Semver(), util.CommitSha())
+}
+
+// Takes a string  and returns the panther- prefixed, lowercased slice of words(strings) (separated by spaces).
+// e.g "oRg-ApI" -> []string{"panther-org-api"}
+// e.g "one two THREE" -> []string{"panther-one", "panther-two", "panther-three"}
+func PantherNames(setString string) []string {
+	set := strings.Fields(setString)
+	for i, entry := range set {
+		entry = strings.ToLower(entry)
+		if !strings.HasPrefix(entry, "panther-") {
+			entry = "panther-" + entry
+		}
+		set[i] = entry
+	}
+	return set
+}
+
+// Call a method for every string in the callOnSet string slice. Return a slice of errors where the
+// index of the error is the index of the callOnSet string used as the argument in the function call.
+func CallForEachString(label string, callOnSet []string, callFn func(string) error) (callErrors []error) {
+	for _, setEntry := range callOnSet {
+		log.Infof("%s: %v", label, setEntry)
+		err := callFn(setEntry)
+		if err != nil {
+			log.Errorf("%s: %s %v", label, setEntry, err)
+		}
+		callErrors = append(callErrors, err)
+	}
+	return callErrors
 }

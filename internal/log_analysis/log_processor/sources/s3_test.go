@@ -19,9 +19,7 @@ package sources
  */
 
 import (
-	"bufio"
 	"bytes"
-	"compress/gzip"
 	"context"
 	"io/ioutil"
 	"testing"
@@ -103,6 +101,7 @@ func TestParseUnknownMessage(t *testing.T) {
 }
 
 func TestHandleUnsupportedFileType(t *testing.T) {
+	t.Skip("test not relevant anymore")
 	resetCaches()
 	// if we encounter an unsupported file type, we should just skip the object
 	lambdaMock := &testutils.LambdaMock{}
@@ -234,21 +233,8 @@ func TestHandleUnregisteredSource(t *testing.T) {
 	s3Mock.AssertExpectations(t)
 }
 
-func Test_detectContentType_gzip(t *testing.T) {
-	//nolint:lll
-	data := []byte("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
-	var buf []byte
-	gzippedBuf := bytes.NewBuffer(buf)
-	gzipWriter := gzip.NewWriter(gzippedBuf)
-	defer gzipWriter.Close()
-	_, err := gzipWriter.Write(data)
-	require.NoError(t, err)
-	err = gzipWriter.Flush()
-	require.NoError(t, err)
-
-	br := bufio.NewReader(gzippedBuf)
-	ct, err := detectContentType(br)
-
-	require.NoError(t, err)
-	require.Equal(t, "application/x-gzip", ct)
+//nolint:lll
+func TestIsCloudTrailLog(t *testing.T) {
+	require.True(t, isCloudTrailLog("AWSLogs/342363560528/CloudTrail/eu-west-1/2020/12/17/342363560528_CloudTrail_eu-west-1_20201217T1535Z_ZUnDvAcFwNysSIsp.json.gz"))
+	require.True(t, isCloudTrailLog("AWSLogs/342363560528/CloudTrail/eu-west-1/2020/12/17/342363560528_CloudTrail_us-west-2-lax-1a_20201217T1535Z_ZUnDvAcFwNysSIsp.json.gz"))
 }

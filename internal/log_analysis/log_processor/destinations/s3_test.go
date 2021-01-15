@@ -23,6 +23,7 @@ import (
 	"compress/gzip"
 	"io/ioutil"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -36,7 +37,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/multierr"
 
-	"github.com/panther-labs/panther/api/lambda/core/log_analysis/log_processor/models"
+	"github.com/panther-labs/panther/internal/compliance/snapshotlogs"
 	"github.com/panther-labs/panther/internal/log_analysis/log_processor/common"
 	"github.com/panther-labs/panther/internal/log_analysis/log_processor/pantherlog"
 	"github.com/panther-labs/panther/internal/log_analysis/log_processor/pantherlog/null"
@@ -213,7 +214,7 @@ func TestSendDataToS3BeforeTerminating(t *testing.T) {
 		TopicArn: aws.String("arn:aws:sns:us-west-2:123456789012:test"),
 		MessageAttributes: map[string]*sns.MessageAttributeValue{
 			"type": {
-				StringValue: aws.String(models.LogData.String()),
+				StringValue: aws.String("LogData"),
 				DataType:    aws.String("String"),
 			},
 			"id": {
@@ -282,23 +283,29 @@ func TestSendDataIfTimeLimitHasBeenReached(t *testing.T) {
 	t.Parallel()
 
 	destination := mockDestination()
-	destination.maxDuration = 200 * time.Millisecond
+	destination.maxDuration = 50 * time.Millisecond
 
 	const nevents = 4
+	var wg sync.WaitGroup
+
 	eventChannel := make(chan *parsers.Result, nevents)
 	go func() {
 		defer close(eventChannel)
 		for i := 0; i < nevents; i++ {
+			wg.Add(1)
 			eventChannel <- newSimpleTestEvent().Result()
 			// The destination writes events to S3 every 'maxDuration' time.
-			// While we sleep here, the destination should write to S3
-			// the event we just wrote to the eventChannel
-			time.Sleep(2 * destination.maxDuration)
+			// Wait until it has published the message to SNS to send the next message
+			wg.Wait()
 		}
 	}()
 
 	destination.mockS3Uploader.On("Upload", mock.Anything, mock.Anything).Return(&s3manager.UploadOutput{}, nil).Times(nevents)
-	destination.mockSns.On("Publish", mock.Anything).Return(&sns.PublishOutput{}, nil).Times(nevents)
+	destination.mockSns.On("Publish", mock.Anything).Return(&sns.PublishOutput{}, nil).Run(func(args mock.Arguments) {
+		// Every time we publish a message to SNS,
+		// unblock the loop that sends messages to the eventsChannel
+		wg.Done()
+	}).Times(nevents)
 
 	assert.NoError(t, runDestination(destination, eventChannel))
 
@@ -475,6 +482,51 @@ func TestBufferSetLargest(t *testing.T) {
 	}
 	assert.Equal(t, size, len(bs.set))
 	require.Same(t, bs.removeLargestBuffer(), expectedLargest)
+}
+
+func TestSendDataToCloudSecurity(t *testing.T) {
+	t.Parallel()
+
+	destination := mockDestination()
+
+	cloudsecEvent := newTestEvent(snapshotlogs.TypeCompliance, refTime)
+
+	eventChannel := make(chan *parsers.Result, 1)
+	// sending event to buffered channel
+	eventChannel <- cloudsecEvent.Result()
+	close(eventChannel)
+
+	destination.mockS3Uploader.On("Upload", mock.Anything, mock.Anything).Return(&s3manager.UploadOutput{}, nil).Once()
+	destination.mockSns.On("Publish", mock.Anything).Return(&sns.PublishOutput{}, nil).Once()
+
+	assert.NoError(t, runDestination(destination, eventChannel))
+
+	destination.mockS3Uploader.AssertExpectations(t)
+	destination.mockSns.AssertExpectations(t)
+
+	// I am fetching it from the actual request performed to S3 and:
+	//1. Verifying the S3 object key is of the correct format
+	//2. Verifying the rest of the fields are as expected
+	uploadInput := destination.mockS3Uploader.Calls[0].Arguments.Get(0).(*s3manager.UploadInput)
+
+	assert.Equal(t, aws.String("testbucket"), uploadInput.Bucket)
+	expectedPrefix := "cloud_security/compliance_history/year=2020/month=01/day=01/hour=00/20200101T000000Z"
+
+	assert.True(t, strings.HasPrefix(*uploadInput.Key, expectedPrefix))
+
+	// Verifying the SNS notification has the correct DataType
+	publishInput := destination.mockSns.Calls[0].Arguments.Get(0).(*sns.PublishInput)
+	expectedMessageAttributes := map[string]*sns.MessageAttributeValue{
+		"type": {
+			StringValue: aws.String("CloudSecurity"),
+			DataType:    aws.String("String"),
+		},
+		"id": {
+			StringValue: aws.String(snapshotlogs.TypeCompliance),
+			DataType:    aws.String("String"),
+		},
+	}
+	assert.Equal(t, expectedMessageAttributes, publishInput.MessageAttributes)
 }
 
 // Runs the destination "SendEvents" function in a goroutine and returns the errors

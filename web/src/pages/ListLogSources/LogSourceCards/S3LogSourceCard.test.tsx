@@ -19,6 +19,7 @@
 import { render, buildS3LogIntegration } from 'test-utils';
 import React from 'react';
 import { formatDatetime } from 'Helpers/utils';
+import flatten from 'lodash/flatten';
 import { S3LogSourceCard } from './index';
 
 describe('S3LogSourceCard', () => {
@@ -29,11 +30,10 @@ describe('S3LogSourceCard', () => {
     expect(getByAltText(/Logo/i)).toBeInTheDocument();
     expect(getByAriaLabel(/Toggle Options/i)).toBeInTheDocument();
     expect(getByText(source.integrationLabel)).toBeInTheDocument();
-    expect(getByText(source.s3Prefix)).toBeInTheDocument();
     expect(getByText(source.s3Bucket)).toBeInTheDocument();
     expect(getByText(source.kmsKey)).toBeInTheDocument();
     expect(getByText(formatDatetime(source.createdAtTime, true))).toBeInTheDocument();
-    source.logTypes.forEach(logType => {
+    flatten(source.s3PrefixLogTypes.map(({ logTypes }) => logTypes)).forEach(logType => {
       expect(getByText(logType)).toBeInTheDocument();
     });
   });

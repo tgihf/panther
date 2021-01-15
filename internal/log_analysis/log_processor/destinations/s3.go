@@ -36,12 +36,12 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 
-	"github.com/panther-labs/panther/api/lambda/core/log_analysis/log_processor/models"
 	"github.com/panther-labs/panther/internal/log_analysis/awsglue"
 	"github.com/panther-labs/panther/internal/log_analysis/log_processor/common"
 	"github.com/panther-labs/panther/internal/log_analysis/log_processor/parsers"
 	"github.com/panther-labs/panther/internal/log_analysis/log_processor/sources"
 	"github.com/panther-labs/panther/internal/log_analysis/notify"
+	"github.com/panther-labs/panther/internal/log_analysis/pantherdb"
 	pq "github.com/panther-labs/panther/pkg/priorityq"
 )
 
@@ -152,14 +152,9 @@ func (d *S3Destination) SendEvents(parsedEventChannel chan *parsers.Result, errC
 	// accumulate results gzip'd in a buffer
 	failed := false // set to true on error and loop will drain channel
 	bufferSet := d.newS3EventBufferSet()
-	eventsProcessed := 0
 	zap.L().Debug("starting to read events from channel")
-	for event := range parsedEventChannel {
-		if failed { // drain channel
-			continue
-		}
-
-		// Check if any buffer has held data for longer than maxDuration
+	run := true
+	for run {
 		select {
 		case <-flushExpired.C:
 			now := time.Now() // NOTE: not the same as the tick time which can be older
@@ -170,34 +165,44 @@ func (d *S3Destination) SendEvents(parsedEventChannel chan *parsers.Result, errC
 				}
 				sendChan <- tooOldBuffer
 			}
-		default: // makes select non-blocking
-		}
-		sendBuffers, err := bufferSet.writeEvent(event)
-		if err != nil {
-			failed = true
-			zap.L().Debug(`aborting log processing: failed to write event`, zap.Error(err), zap.String(`logType`, event.PantherLogType))
-			errChan <- errors.Wrapf(err, "failed to write event %s", event.PantherLogType)
-			continue
-		}
-		// buffers needs flushing
-		for _, buf := range sendBuffers {
-			sendChan <- buf
-		}
+		case event, ok := <-parsedEventChannel:
+			if !ok {
+				// If channel has been closed,
+				// stop the loop
+				run = false
+				break
+			}
 
-		eventsProcessed++
+			if failed {
+				// If we have encountered already a failure just ignore the messages
+				// Note that we don't stop when we encounter a failure but use this control variable
+				// since we want to make sure we drain the `parsedEventChannel`
+				break
+			}
+
+			sendBuffers, err := bufferSet.writeEvent(event)
+			if err != nil {
+				failed = true
+				zap.L().Debug(`aborting log processing: failed to write event`, zap.Error(err), zap.String(`logType`, event.PantherLogType))
+				errChan <- errors.Wrapf(err, "failed to write event %s", event.PantherLogType)
+				continue
+			}
+			// buffers needs flushing
+			for _, buf := range sendBuffers {
+				sendChan <- buf
+			}
+		}
 	}
 
-	if failed {
-		zap.L().Debug("failed, returning after draining parsedEventsChannel")
+	if !failed {
+		zap.L().Debug("output channel closed, sending last events")
+		// If the channel has been closed send the buffered messages before terminating
+		_ = bufferSet.apply(func(buffer *s3EventBuffer) (bool, error) {
+			bufferSet.removeBuffer(buffer) // bufferSet is not thread safe, do this here
+			sendChan <- buffer
+			return false, nil
+		})
 	}
-
-	zap.L().Debug("output channel closed, sending last events")
-	// If the channel has been closed send the buffered messages before terminating
-	_ = bufferSet.apply(func(buffer *s3EventBuffer) (bool, error) {
-		bufferSet.removeBuffer(buffer) // bufferSet is not thread safe, do this here
-		sendChan <- buffer
-		return false, nil
-	})
 
 	// FIXME: closing the channel here is appropriate but we risk a panic leaving the write goroutine open forever.
 	// causing a memory leak. To fix this we need to have the reading of results in a goroutine and keep the writing here.
@@ -206,7 +211,7 @@ func (d *S3Destination) SendEvents(parsedEventChannel chan *parsers.Result, errC
 	close(sendChan)
 	sendWaitGroup.Wait() // wait until all writes to s3 are done
 
-	zap.L().Debug("finished sending s3 files", zap.Int("events", eventsProcessed))
+	zap.L().Debug("finished sending s3 files")
 }
 
 // sendData puts data in S3 and sends notification to SNS
@@ -231,7 +236,7 @@ func (d *S3Destination) sendData(buffer *s3EventBuffer, errChan chan error) {
 			zap.String("key", key))
 	}()
 
-	key = getS3ObjectKey(buffer.logType, buffer.hour)
+	key = getS3ObjectKey(buffer)
 	if err != nil {
 		errChan <- err
 		return
@@ -280,10 +285,11 @@ func (d *S3Destination) sendSNSNotification(key string, buffer *s3EventBuffer) e
 		return err
 	}
 
+	dataType := pantherdb.GetDataType(buffer.logType)
 	input := &sns.PublishInput{
 		TopicArn:          &d.snsTopicArn,
 		Message:           &marshalledNotification,
-		MessageAttributes: notify.NewLogAnalysisSNSMessageAttributes(models.LogData, buffer.logType),
+		MessageAttributes: notify.NewLogAnalysisSNSMessageAttributes(dataType, buffer.logType),
 	}
 	if _, err = d.snsClient.Publish(input); err != nil {
 		err = errors.Wrap(err, "failed to send notification to topic")
@@ -294,15 +300,16 @@ func (d *S3Destination) sendSNSNotification(key string, buffer *s3EventBuffer) e
 }
 
 // getS3ObjectKey builds the S3 object key for storing a partition file of processed logs.
-func getS3ObjectKey(logType string, timestamp time.Time) string {
-	dbPrefix := awsglue.GetDataPrefix(awsglue.LogProcessingDatabaseName)
-	tblName := awsglue.GetTableName(logType)
-	partitionPrefix := awsglue.GlueTableHourly.PartitionPathS3(timestamp)
+func getS3ObjectKey(buf *s3EventBuffer) string {
+	typ := pantherdb.GetDataType(buf.logType)
+	db := pantherdb.DatabaseName(typ)
+	table := pantherdb.TableName(buf.logType)
+	partitionPrefix := awsglue.PartitionPrefix(db, table, awsglue.GlueTableHourly, buf.hour)
 	filename := fmt.Sprintf("%s-%s.json.gz",
-		timestamp.Format(S3ObjectTimestampLayout),
+		buf.hour.Format(S3ObjectTimestampLayout),
 		uuid.New(),
 	)
-	return path.Join(dbPrefix, tblName, partitionPrefix, filename)
+	return path.Join(partitionPrefix, filename)
 }
 
 // s3BufferSet is a group of buffers associated with hour time bins, pointing to maps logtype->s3EventBuffer

@@ -19,6 +19,7 @@ package outputs
  */
 
 import (
+	"context"
 	"encoding/base64"
 	"strings"
 
@@ -35,19 +36,21 @@ const (
 
 // Jira alert send an issue.
 func (client *OutputClient) Jira(
-	alert *alertModels.Alert, config *outputModels.JiraConfig) *AlertDeliveryResponse {
+	ctx context.Context, alert *alertModels.Alert, config *outputModels.JiraConfig) *AlertDeliveryResponse {
 
-	description := "*Description:* " + aws.StringValue(alert.AnalysisDescription)
-	link := "\n [Click here to view in the Panther UI](" + generateURL(alert) + ")"
-	runBook := "\n *Runbook:* " + aws.StringValue(alert.Runbook)
+	description := "*Description:* " + alert.AnalysisDescription
+	link := "\n [Click here to view in the Panther UI|" + generateURL(alert) + "]"
+	runBook := "\n *Runbook:* " + alert.Runbook
 	severity := "\n *Severity:* " + alert.Severity
 	tags := "\n *Tags:* " + strings.Join(alert.Tags, ", ")
 	// Best effort attempt to marshal Alert Context
 	marshaledContext, _ := jsoniter.MarshalToString(alert.Context)
 	alertContext := "\n *AlertContext:* " + marshaledContext
 
+	summary := removeNewLines(generateAlertTitle(alert))
+
 	fields := map[string]interface{}{
-		"summary":     generateAlertTitle(alert),
+		"summary":     summary,
 		"description": description + link + runBook + severity + tags + alertContext,
 		"project": map[string]*string{
 			"key": aws.String(config.ProjectKey),
@@ -55,6 +58,7 @@ func (client *OutputClient) Jira(
 		"issuetype": map[string]*string{
 			"name": aws.String(config.Type),
 		},
+		"labels": aws.StringSlice(config.Labels),
 	}
 
 	if config.AssigneeID != "" {
@@ -79,5 +83,5 @@ func (client *OutputClient) Jira(
 		body:    jiraRequest,
 		headers: requestHeader,
 	}
-	return client.httpWrapper.post(postInput)
+	return client.httpWrapper.post(ctx, postInput)
 }

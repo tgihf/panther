@@ -25,15 +25,22 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-lambda-go/lambdacontext"
 	"go.uber.org/zap"
+	"gopkg.in/go-playground/validator.v9"
 
+	"github.com/panther-labs/panther/internal/compliance/snapshotlogs"
+	"github.com/panther-labs/panther/internal/core/logtypesapi"
 	"github.com/panther-labs/panther/internal/log_analysis/log_processor/common"
+	"github.com/panther-labs/panther/internal/log_analysis/log_processor/logtypes"
 	"github.com/panther-labs/panther/internal/log_analysis/log_processor/processor"
 	"github.com/panther-labs/panther/internal/log_analysis/log_processor/registry"
 	"github.com/panther-labs/panther/pkg/lambdalogger"
 )
 
-// How often we check if we need to scale (controls responsiveness).
-const defaultScalingDecisionInterval = 30 * time.Second
+const (
+	// How often we check if we need to scale (controls responsiveness).
+	defaultScalingDecisionInterval = 30 * time.Second
+	logTypeMaxAge                  = time.Minute
+)
 
 func main() {
 	common.Setup()
@@ -60,9 +67,19 @@ func process(ctx context.Context, scalingDecisionInterval time.Duration) (err er
 		operation.Stop().Log(err, zap.Int("sqsMessageCount", sqsMessageCount))
 	}()
 
-	logTypesResolver := registry.NativeLogTypesResolver()
+	// Chain default registry and customlogs resolver
+	logTypesResolver := logtypes.ChainResolvers(
+		registry.NativeLogTypesResolver(),
+		snapshotlogs.Resolver(),
+		logtypes.NewCachedResolver(logTypeMaxAge, &logtypesapi.Resolver{
+			LogTypesAPI: &logtypesapi.LogTypesAPILambdaClient{
+				LambdaName: logtypesapi.LambdaName,
+				LambdaAPI:  common.LambdaClient,
+				Validate:   validator.New().Struct,
+			},
+		}),
+	)
 
 	sqsMessageCount, err = processor.PollEvents(ctx, common.SqsClient, logTypesResolver)
-
 	return err
 }

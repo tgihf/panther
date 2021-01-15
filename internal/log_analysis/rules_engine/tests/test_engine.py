@@ -59,6 +59,94 @@ class TestEngine(TestCase):
         self.assertEqual(len(engine.log_type_to_rules['log']), 1)
         self.assertEqual(engine.log_type_to_rules['log'][0].rule_id, 'rule_id')
 
+    def test_analyze_single_rule_with_udm(self) -> None:
+        analysis_api = mock.MagicMock()
+        analysis_api.get_enabled_data_models.return_value = [
+            {
+                'id': 'data_model_id',
+                'logTypes': ['log'],
+                'versionId': 'version',
+                'mappings': [{
+                    'name': 'destination',
+                    'path': 'is_dst'
+                }]
+            }
+        ]
+        rule_body = 'def rule(event):\n\treturn event.udm("destination")'
+        event = {'id': 'event_id', 'data': {'is_dst': True, 'p_log_type': 'log'}}
+        rule = {'id': 'rule_id', 'body': rule_body}
+        expected_response = {
+            'id': 'event_id',
+            'ruleId': 'rule_id',
+            'genericError': None,
+            'errored': False,
+            'ruleOutput': True,
+            'ruleError': None,
+            'titleOutput': None,
+            'titleError': None,
+            'descriptionOutput': None,
+            'descriptionError': None,
+            'referenceOutput': None,
+            'referenceError': None,
+            'severityOutput': None,
+            'severityError': None,
+            'runbookOutput': None,
+            'runbookError': None,
+            'destinationsOutput': None,
+            'destinationsError': None,
+            'dedupOutput': 'defaultDedupString:rule_id',
+            'dedupError': None,
+            'alertContextOutput': None,
+            'alertContextError': None
+        }
+        engine = Engine(analysis_api)
+        result = engine.analyze_single_rule(rule, event)
+        self.assertEqual(expected_response, result)
+
+    def test_analyze_single_rule_with_udm_missing_log_type(self) -> None:
+        analysis_api = mock.MagicMock()
+        analysis_api.get_enabled_data_models.return_value = [
+            {
+                'id': 'data_model_id',
+                'logTypes': ['log'],
+                'versionId': 'version',
+                'mappings': [{
+                    'name': 'destination',
+                    'path': 'is_dst'
+                }]
+            }
+        ]
+        rule_body = 'def rule(event):\n\treturn event.udm("destination")'
+        event = {'id': 'event_id', 'data': {'is_dst': True}}
+        rule = {'id': 'rule_id', 'body': rule_body}
+        expected_response = {
+            'id': 'event_id',
+            'ruleId': 'rule_id',
+            'genericError': None,
+            'errored': True,
+            'ruleOutput': None,
+            'ruleError': 'Exception: a data model hasn\'t been specified',
+            'titleOutput': None,
+            'titleError': None,
+            'descriptionOutput': None,
+            'descriptionError': None,
+            'referenceOutput': None,
+            'referenceError': None,
+            'severityOutput': None,
+            'severityError': None,
+            'runbookOutput': None,
+            'runbookError': None,
+            'destinationsOutput': None,
+            'destinationsError': None,
+            'dedupOutput': 'defaultDedupString:rule_id',
+            'dedupError': None,
+            'alertContextOutput': None,
+            'alertContextError': None
+        }
+        engine = Engine(analysis_api)
+        result = engine.analyze_single_rule(rule, event)
+        self.assertEqual(expected_response, result)
+
     def test_analyze_rule_with_udm(self) -> None:
         analysis_api = mock.MagicMock()
         analysis_api.get_enabled_rules.return_value = [
@@ -171,7 +259,7 @@ class TestEngine(TestCase):
                 log_type='log',
                 dedup='Exception',
                 event={},
-                dedup_period_mins=1440,
+                dedup_period_mins=60,
                 error_message='Found an issue: rule_id_2.py, line 2, in rule    raise Exception("Found an issue")',
                 title="Exception('Found an issue')"
             ),
@@ -182,6 +270,37 @@ class TestEngine(TestCase):
                 dedup='defaultDedupString:rule_id_3',
                 event={},
                 dedup_period_mins=60
+            )
+        ]
+
+        self.assertEqual(result, expected_event_matches)
+
+    def test_modify_event(self) -> None:
+        analysis_api = mock.MagicMock()
+        analysis_api.get_enabled_rules.return_value = [
+            {
+                'id': 'rule_id_1',
+                'logTypes': ['log'],
+                'body': 'def rule(event):\n\tevent["key"]["nested_key"] = "not_value"\n\treturn True',
+                'versionId': 'version'
+            }
+        ]
+        engine = Engine(analysis_api)
+        result = engine.analyze('log', {'key': {'nested_key': 'value'}})
+
+        expected_event_matches = [
+            EngineResult(
+                rule_id='rule_id_1',
+                rule_version='version',
+                log_type='log',
+                dedup='TypeError',
+                error_message='\'ImmutableDict\' object does not support item assignment: rule_id_1.py, '
+                'line 2, in rule    event["key"]["nested_key"] = "not_value"',
+                event={'key': {
+                    'nested_key': 'value'
+                }},
+                dedup_period_mins=60,
+                title='TypeError("\'ImmutableDict\' object does not support item assignment")'
             )
         ]
 

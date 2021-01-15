@@ -19,6 +19,7 @@ package api
  */
 
 import (
+	"sort"
 	"time"
 
 	"go.uber.org/zap"
@@ -28,7 +29,9 @@ import (
 	"github.com/panther-labs/panther/pkg/genericapi"
 )
 
-// getAlertOutputs - Get output ids for an alert via the specified overrides or the defaults in panther
+const alertOutputSkip = "SKIP"
+
+// getAlertOutputs - Get output ids for an alert by dynmaic destinations, destination overrides, or default severity
 func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, error) {
 	// fetch available panther outputs
 	outputs, err := getOutputs()
@@ -36,30 +39,25 @@ func getAlertOutputs(alert *deliveryModels.Alert) ([]*outputModels.AlertOutput, 
 		return nil, err
 	}
 
-	// If alert doesn't have outputs IDs specified, return the defaults for the severity
-	if len(alert.OutputIds) == 0 {
-		defaultsForSeverity := []*outputModels.AlertOutput{}
-		for _, output := range outputs {
-			// If `DefaultForSeverity` is nil or empty, this loop will skip
-			for _, outputSeverity := range output.DefaultForSeverity {
-				if alert.Severity == *outputSeverity {
-					defaultsForSeverity = append(defaultsForSeverity, output)
-				}
-			}
-		}
-		return defaultsForSeverity, nil
+	alertOutputs := []*outputModels.AlertOutput{}
+
+	// First, check if we have an override to SKIP dispatching this alert
+	if shouldSkip(alert) {
+		return alertOutputs, nil
 	}
 
-	// Otherwise, return the specified output overrides for the alert
-	overrideOutputs := []*outputModels.AlertOutput{}
-	for _, output := range outputs {
-		for _, outputID := range alert.OutputIds {
-			if *output.OutputID == outputID {
-				overrideOutputs = append(overrideOutputs, output)
-			}
-		}
+	// Next, prioritize dynamic destinations (set in the detection's python body)
+	if alertOutputs, ok := getDynamicDestinations(alert, outputs); ok {
+		return alertOutputs, nil
 	}
-	return overrideOutputs, nil
+
+	// Then, destination overrides (set in the detection's form)
+	if alertOutputs, ok := getDestinationOverrides(alert, outputs); ok {
+		return alertOutputs, nil
+	}
+
+	// Finally, the use the severity rating (default)
+	return getDefaultOutputs(alert, outputs), nil
 }
 
 // getOutputs - Gets a list of outputs from panther (using a cache)
@@ -75,6 +73,61 @@ func getOutputs() ([]*outputModels.AlertOutput, error) {
 	return outputsCache.getOutputs(), nil
 }
 
+func shouldSkip(alert *deliveryModels.Alert) bool {
+	for _, outputID := range alert.OutputIds {
+		if outputID == alertOutputSkip {
+			return true
+		}
+	}
+	return false
+}
+
+func getDynamicDestinations(alert *deliveryModels.Alert, outputs []*outputModels.AlertOutput) ([]*outputModels.AlertOutput, bool) {
+	alertOutputs := []*outputModels.AlertOutput{}
+	if len(alert.Destinations) == 0 {
+		return alertOutputs, false
+	}
+
+	for _, output := range outputs {
+		for _, outputID := range alert.Destinations {
+			if *output.OutputID == outputID {
+				alertOutputs = append(alertOutputs, output)
+			}
+		}
+	}
+
+	return alertOutputs, len(alertOutputs) > 0
+}
+
+func getDestinationOverrides(alert *deliveryModels.Alert, outputs []*outputModels.AlertOutput) ([]*outputModels.AlertOutput, bool) {
+	alertOutputs := []*outputModels.AlertOutput{}
+	if len(alert.OutputIds) == 0 {
+		return alertOutputs, false
+	}
+
+	for _, output := range outputs {
+		for _, outputID := range alert.OutputIds {
+			if *output.OutputID == outputID {
+				alertOutputs = append(alertOutputs, output)
+			}
+		}
+	}
+
+	return alertOutputs, len(alertOutputs) > 0
+}
+
+func getDefaultOutputs(alert *deliveryModels.Alert, outputs []*outputModels.AlertOutput) []*outputModels.AlertOutput {
+	alertOutputs := []*outputModels.AlertOutput{}
+	for _, output := range outputs {
+		for _, outputSeverity := range output.DefaultForSeverity {
+			if alert.Severity == *outputSeverity {
+				alertOutputs = append(alertOutputs, output)
+			}
+		}
+	}
+	return alertOutputs
+}
+
 // fetchOutputs - performs an API query to get a list of outputs
 func fetchOutputs() ([]*outputModels.AlertOutput, error) {
 	zap.L().Debug("getting default outputs")
@@ -84,4 +137,24 @@ func fetchOutputs() ([]*outputModels.AlertOutput, error) {
 		return nil, err
 	}
 	return outputs, nil
+}
+
+// getUniqueOutputs - Get a list of unique output entries
+func getUniqueOutputs(outputs []*outputModels.AlertOutput) []*outputModels.AlertOutput {
+	uniqMap := make(map[string]*outputModels.AlertOutput)
+	for _, output := range outputs {
+		uniqMap[*output.OutputID] = output
+	}
+
+	// turn the map keys into a slice
+	uniqSlice := make([]*outputModels.AlertOutput, 0, len(uniqMap))
+	for _, output := range uniqMap {
+		uniqSlice = append(uniqSlice, output)
+	}
+	// Sort by OutputID string. This is not functionally necessary, but it makes
+	// testing easier and the overhead is relatively small.
+	sort.Slice(uniqSlice, func(i, j int) bool {
+		return *(uniqSlice[i]).OutputID < *(uniqSlice[j]).OutputID
+	})
+	return uniqSlice
 }

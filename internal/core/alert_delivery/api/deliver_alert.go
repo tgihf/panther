@@ -19,9 +19,11 @@ package api
  */
 
 import (
+	"context"
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 
@@ -36,7 +38,7 @@ import (
 const genericErrorMessage = "Could not find the rule associated with this alert!"
 
 // DeliverAlert sends a specific alert to the specified destinations.
-func (API) DeliverAlert(input *deliveryModels.DeliverAlertInput) (*deliveryModels.DeliverAlertOutput, error) {
+func (API) DeliverAlert(ctx context.Context, input *deliveryModels.DeliverAlertInput) (*deliveryModels.DeliverAlertOutput, error) {
 	// First, fetch the alert
 	zap.L().Debug("Fetching alert", zap.String("AlertID", input.AlertID))
 
@@ -53,12 +55,13 @@ func (API) DeliverAlert(input *deliveryModels.DeliverAlertInput) (*deliveryModel
 
 	// Get our Alert -> Output mappings. We determine which destinations an alert should be sent.
 	alertOutputMap, err := getAlertOutputMapping(alert, input.OutputIds)
+
 	if err != nil {
 		return nil, err
 	}
 
 	// Send alerts to the specified destination(s) and obtain each response status
-	dispatchStatuses := sendAlerts(alertOutputMap)
+	dispatchStatuses := sendAlerts(ctx, alertOutputMap, outputClient)
 
 	// Record the delivery statuses to ddb
 	alertSummaries := updateAlerts(dispatchStatuses)
@@ -84,8 +87,59 @@ func getAlert(input *deliveryModels.DeliverAlertInput) (*alertTable.AlertItem, e
 	return alertItem, nil
 }
 
-// populateAlertData - queries the rule or policy associated and merges in the details to the alert
+// populateAlertData - queries the rule associated and merges in the details to the alert
 func populateAlertData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, error) {
+	switch alertItem.Type {
+	case deliveryModels.PolicyType:
+		return populateAlertWithPolicyData(alertItem)
+	case deliveryModels.RuleType, deliveryModels.RuleErrorType:
+		return populateAlertWithRuleData(alertItem)
+	default:
+		return nil, errors.Errorf("unknown alert type %s", alertItem.Type)
+	}
+}
+
+func populateAlertWithPolicyData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, error) {
+	commonFields := []zap.Field{
+		zap.String("alertId", alertItem.AlertID),
+		zap.String("policyId", alertItem.PolicyID),
+		zap.String("policyVersion", alertItem.PolicyVersion),
+	}
+
+	getPolicyInput := analysismodels.LambdaInput{
+		GetPolicy: &analysismodels.GetPolicyInput{
+			ID:        alertItem.PolicyID,
+			VersionID: alertItem.PolicyVersion,
+		},
+	}
+	var policy analysismodels.Policy
+	if _, err := analysisClient.Invoke(&getPolicyInput, &policy); err != nil {
+		zap.L().Error("Error retrieving policy", append(commonFields, zap.Error(err))...)
+		return nil, &genericapi.InternalError{Message: genericErrorMessage}
+	}
+
+	return &deliveryModels.Alert{
+		AnalysisID:          policy.ID,
+		Type:                deliveryModels.PolicyType,
+		CreatedAt:           alertItem.CreationTime,
+		Severity:            alertItem.Severity,
+		OutputIds:           []string{}, // We do not pay attention to this field
+		AnalysisDescription: aws.StringValue(alertItem.Description),
+		AnalysisName:        aws.String(policy.DisplayName),
+		Version:             &alertItem.PolicyVersion,
+		Reference:           aws.StringValue(alertItem.Reference),
+		Runbook:             aws.StringValue(alertItem.Runbook),
+		Destinations:        alertItem.Destinations,
+		Tags:                policy.Tags,
+		AlertID:             &alertItem.AlertID,
+		Title:               alertItem.Title,
+		RetryCount:          0,
+		IsTest:              false,
+		IsResent:            true,
+	}, nil
+}
+
+func populateAlertWithRuleData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, error) {
 	commonFields := []zap.Field{
 		zap.String("alertId", alertItem.AlertID),
 		zap.String("ruleId", alertItem.RuleID),
@@ -110,10 +164,12 @@ func populateAlertData(alertItem *alertTable.AlertItem) (*deliveryModels.Alert, 
 		CreatedAt:           alertItem.CreationTime,
 		Severity:            alertItem.Severity,
 		OutputIds:           []string{}, // We do not pay attention to this field
-		AnalysisDescription: &rule.Description,
-		AnalysisName:        &rule.DisplayName,
+		AnalysisDescription: aws.StringValue(alertItem.Description),
+		AnalysisName:        aws.String(rule.DisplayName),
 		Version:             &alertItem.RuleVersion,
-		Runbook:             &rule.Runbook,
+		Reference:           aws.StringValue(alertItem.Reference),
+		Runbook:             aws.StringValue(alertItem.Runbook),
+		Destinations:        alertItem.Destinations,
 		Tags:                rule.Tags,
 		AlertID:             &alertItem.AlertID,
 		Title:               alertItem.Title,

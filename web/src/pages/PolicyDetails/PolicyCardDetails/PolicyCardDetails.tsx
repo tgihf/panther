@@ -21,7 +21,7 @@ import { Link as RRLink } from 'react-router-dom';
 import { Box, SimpleGrid, Text, Link, Flex, Card } from 'pouncejs';
 import { formatDatetime } from 'Helpers/utils';
 import Linkify from 'Components/Linkify';
-import { PolicyDetails } from 'Generated/schema';
+import { PolicyDetails } from 'Source/graphql/fragments/PolicyDetails.generated';
 import urls from 'Source/urls';
 
 interface ResourceDetailsInfoProps {

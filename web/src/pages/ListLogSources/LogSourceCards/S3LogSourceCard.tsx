@@ -17,9 +17,10 @@
  */
 
 import React from 'react';
+import flatten from 'lodash/flatten';
 import { S3LogIntegration } from 'Generated/schema';
 import GenericItemCard from 'Components/GenericItemCard';
-import BulletedLogTypeList from 'Components/BulletedLogTypeList';
+import BulletedValueList from 'Components/BulletedValueList';
 import { formatDatetime } from 'Helpers/utils';
 import s3Logo from 'Assets/s3-minimal-logo.svg';
 import LogSourceCard from './LogSourceCard';
@@ -29,11 +30,14 @@ interface S3LogSourceCardProps {
 }
 
 const S3LogSourceCard: React.FC<S3LogSourceCardProps> = ({ source }) => {
+  const logTypesFlat = React.useMemo(() => {
+    return flatten(source.s3PrefixLogTypes.map(({ logTypes }) => logTypes));
+  }, [source.s3PrefixLogTypes]);
+
   return (
     <LogSourceCard logo={s3Logo} source={source}>
       <GenericItemCard.Value label="AWS Account ID" value={source.awsAccountId} />
       <GenericItemCard.Value label="S3 Bucket" value={source.s3Bucket} />
-      <GenericItemCard.Value label="S3 Prefix" value={source.s3Prefix} />
       <GenericItemCard.Value label="KMS Key" value={source.kmsKey} />
       <GenericItemCard.LineBreak />
       <GenericItemCard.Value
@@ -43,7 +47,7 @@ const S3LogSourceCard: React.FC<S3LogSourceCardProps> = ({ source }) => {
       <GenericItemCard.LineBreak />
       <GenericItemCard.Value
         label="Log Types"
-        value={<BulletedLogTypeList logTypes={source.logTypes} limit={4} />}
+        value={<BulletedValueList values={logTypesFlat} limit={4} />}
       />
     </LogSourceCard>
   );

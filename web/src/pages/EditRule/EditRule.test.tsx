@@ -23,11 +23,11 @@ import {
   waitForElementToBeRemoved,
   waitFor,
   buildDetectionTestDefinition,
-  buildRuleDetails,
+  buildRule,
 } from 'test-utils';
 import urls from 'Source/urls';
 import { Route } from 'react-router-dom';
-import { mockRuleDetails } from './graphql/ruleDetails.generated';
+import { mockGetRuleDetails } from './graphql/getRuleDetails.generated';
 import EditRule from './EditRule';
 
 describe('EditRule', () => {
@@ -38,10 +38,10 @@ describe('EditRule', () => {
         resource: '{"CreateDate":"2019-01-01T00:00:00Z"}',
       }),
     ];
-    const rule = buildRuleDetails({ tests });
+    const rule = buildRule({ tests });
 
     const mocks = [
-      mockRuleDetails({
+      mockGetRuleDetails({
         data: { rule },
         variables: {
           input: {
@@ -94,10 +94,10 @@ describe('EditRule', () => {
         resource: '{"CreateDate":"2019-01-01T00:00:00Z"}',
       }),
     ];
-    const rule = buildRuleDetails({ tests });
+    const rule = buildRule({ tests });
 
     const mocks = [
-      mockRuleDetails({
+      mockGetRuleDetails({
         data: { rule },
         variables: {
           input: {

@@ -23,14 +23,14 @@ import useRouter from 'Hooks/useRouter';
 import { extractErrorMessage, formatJSON } from 'Helpers/utils';
 import withSEO from 'Hoc/withSEO';
 import Skeleton from './Skeleton';
-import { useRuleDetails } from './graphql/ruleDetails.generated';
+import { useGetRuleDetails } from './graphql/getRuleDetails.generated';
 import { useUpdateRule } from './graphql/updateRule.generated';
 
 const EditRulePage: React.FC = () => {
   const { match } = useRouter<{ id: string }>();
   const { pushSnackbar } = useSnackbar();
 
-  const { error: fetchRuleError, data: queryData, loading: isFetchingRule } = useRuleDetails({
+  const { error: fetchRuleError, data: queryData, loading: isFetchingRule } = useGetRuleDetails({
     variables: {
       input: {
         id: match.params.id,

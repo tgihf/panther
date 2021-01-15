@@ -19,6 +19,7 @@ package outputs
  */
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -47,12 +48,14 @@ func TestSendSns(t *testing.T) {
 
 	createdAtTime := time.Now()
 	alert := &alertModels.Alert{
+		AlertID:             aws.String("alertId"),
 		AnalysisName:        aws.String("policyName"),
 		Type:                alertModels.PolicyType,
 		AnalysisID:          "policyId",
-		AnalysisDescription: aws.String("policyDescription"),
+		AnalysisDescription: "policyDescription",
 		Severity:            "severity",
-		Runbook:             aws.String("runbook"),
+		Runbook:             "runbook",
+		Reference:           "reference",
 		CreatedAt:           createdAtTime,
 		Context: map[string]interface{}{
 			"key": "value",
@@ -61,13 +64,14 @@ func TestSendSns(t *testing.T) {
 
 	defaultMessage := Notification{
 		ID:          "policyId",
+		AlertID:     aws.String("alertId"),
 		Type:        alertModels.PolicyType,
 		Name:        aws.String("policyName"),
 		Description: aws.String("policyDescription"),
 		Severity:    "severity",
 		Runbook:     aws.String("runbook"),
 		CreatedAt:   createdAtTime,
-		Link:        "https://panther.io/policies/policyId",
+		Link:        "https://panther.io/alerts/alertId",
 		Title:       "Policy Failure: policyName",
 		Tags:        []string{},
 		AlertContext: map[string]interface{}{
@@ -80,8 +84,8 @@ func TestSendSns(t *testing.T) {
 
 	expectedSnsMessage := &snsMessage{
 		DefaultMessage: defaultSerializedMessage,
-		EmailMessage: "policyName failed on new resources\nFor more details please visit: https://panther.io/policies/policyId\n" +
-			"Severity: severity\nRunbook: runbook\nDescription: policyDescription\nAlertContext: {\"key\":\"value\"}",
+		EmailMessage: "policyName failed on new resources\nFor more details please visit: https://panther.io/alerts/alertId\n" +
+			"Severity: severity\nRunbook: runbook\nReference: reference\nDescription: policyDescription\nAlertContext: {\"key\":\"value\"}",
 	}
 	expectedSerializedSnsMessage, err := jsoniter.MarshalToString(expectedSnsMessage)
 	require.NoError(t, err)
@@ -91,13 +95,17 @@ func TestSendSns(t *testing.T) {
 		MessageStructure: aws.String("json"),
 		Subject:          aws.String("Policy Failure: policyName"),
 	}
-
-	client.On("Publish", expectedSnsPublishInput).Return(&sns.PublishOutput{MessageId: aws.String("messageId")}, nil).Once()
+	ctx := context.Background()
+	client.On("PublishWithContext",
+		ctx,
+		expectedSnsPublishInput,
+		mock.Anything,
+	).Return(&sns.PublishOutput{MessageId: aws.String("messageId")}, nil).Once()
 	getSnsClient = func(*session.Session, string) (snsiface.SNSAPI, error) {
 		return client, nil
 	}
 
-	result := outputClient.Sns(alert, snsOutputConfig)
+	result := outputClient.Sns(ctx, alert, snsOutputConfig)
 	assert.NotNil(t, result)
 	assert.Equal(t, &AlertDeliveryResponse{
 		Message:    "messageId",
@@ -139,11 +147,12 @@ func TestTruncateSnsTitle(t *testing.T) {
 		AnalysisName:        aws.String("ruleName"),
 		Type:                alertModels.RuleType,
 		AnalysisID:          "ruleId",
-		AnalysisDescription: aws.String("ruleDescription"),
+		AnalysisDescription: "ruleDescription",
 		Severity:            "severity",
-		Runbook:             aws.String("runbook"),
+		Runbook:             "runbook",
+		Reference:           "reference",
 		CreatedAt:           createdAtTime,
-		Title:               &title,
+		Title:               title,
 		Tags:                []string{},
 		Context: map[string]interface{}{
 			"key": "value",
@@ -155,9 +164,9 @@ func TestTruncateSnsTitle(t *testing.T) {
 		AlertID:     alert.AlertID,
 		Type:        alert.Type,
 		Name:        alert.AnalysisName,
-		Description: alert.AnalysisDescription,
+		Description: aws.String(alert.AnalysisDescription),
 		Severity:    alert.Severity,
-		Runbook:     alert.Runbook,
+		Runbook:     aws.String(alert.Runbook),
 		CreatedAt:   alert.CreatedAt,
 		Title:       "New Alert: " + title,
 		Link:        "https://panther.io/alerts/alertID",
@@ -173,7 +182,7 @@ func TestTruncateSnsTitle(t *testing.T) {
 	expectedSnsMessage := &snsMessage{
 		DefaultMessage: defaultSerializedMessage,
 		EmailMessage: "ruleName triggered\nFor more details please visit: https://panther.io/alerts/alertID\nSeverity: severity\n" +
-			"Runbook: runbook\nDescription: ruleDescription\nAlertContext: {\"key\":\"value\"}",
+			"Runbook: runbook\nReference: reference\nDescription: ruleDescription\nAlertContext: {\"key\":\"value\"}",
 	}
 	expectedSerializedSnsMessage, err := jsoniter.MarshalToString(expectedSnsMessage)
 	require.NoError(t, err)
@@ -184,12 +193,16 @@ func TestTruncateSnsTitle(t *testing.T) {
 		MessageStructure: aws.String("json"),
 		Subject:          aws.String(expectedEmailSubject),
 	}
-
-	client.On("Publish", expectedSnsPublishInput).Return(&sns.PublishOutput{MessageId: aws.String("messageId")}, nil).Once()
+	ctx := context.Background()
+	client.On("PublishWithContext",
+		ctx,
+		expectedSnsPublishInput,
+		mock.Anything,
+	).Return(&sns.PublishOutput{MessageId: aws.String("messageId")}, nil).Once()
 	getSnsClient = func(*session.Session, string) (snsiface.SNSAPI, error) {
 		return client, nil
 	}
-	result := outputClient.Sns(alert, snsOutputConfig)
+	result := outputClient.Sns(ctx, alert, snsOutputConfig)
 	assert.NotNil(t, result)
 	assert.Equal(t, &AlertDeliveryResponse{
 		Message:    "messageId",
@@ -217,11 +230,12 @@ func TestResendEmailSubject(t *testing.T) {
 		AnalysisName:        aws.String("ruleName"),
 		Type:                alertModels.RuleType,
 		AnalysisID:          "ruleId",
-		AnalysisDescription: aws.String("ruleDescription"),
+		AnalysisDescription: "ruleDescription",
 		Severity:            "severity",
-		Runbook:             aws.String("runbook"),
+		Runbook:             "runbook",
+		Reference:           "reference",
 		CreatedAt:           createdAtTime,
-		Title:               aws.String("title"),
+		Title:               "title",
 		Tags:                []string{},
 		Context: map[string]interface{}{
 			"key": "value",
@@ -233,11 +247,11 @@ func TestResendEmailSubject(t *testing.T) {
 		AlertID:     alert.AlertID,
 		Type:        alert.Type,
 		Name:        alert.AnalysisName,
-		Description: alert.AnalysisDescription,
+		Description: aws.String(alert.AnalysisDescription),
 		Severity:    alert.Severity,
-		Runbook:     alert.Runbook,
+		Runbook:     aws.String(alert.Runbook),
 		CreatedAt:   alert.CreatedAt,
-		Title:       "New Alert: " + *alert.Title,
+		Title:       "New Alert: " + alert.Title,
 		Link:        "https://panther.io/alerts/alertID",
 		Tags:        []string{},
 		AlertContext: map[string]interface{}{
@@ -251,7 +265,7 @@ func TestResendEmailSubject(t *testing.T) {
 	expectedSnsMessage := &snsMessage{
 		DefaultMessage: defaultSerializedMessage,
 		EmailMessage: "ruleName triggered\nFor more details please visit: https://panther.io/alerts/alertID\nSeverity: severity\n" +
-			"Runbook: runbook\nDescription: ruleDescription\nAlertContext: {\"key\":\"value\"}",
+			"Runbook: runbook\nReference: reference\nDescription: ruleDescription\nAlertContext: {\"key\":\"value\"}",
 	}
 	expectedSerializedSnsMessage, err := jsoniter.MarshalToString(expectedSnsMessage)
 	require.NoError(t, err)
@@ -265,12 +279,21 @@ func TestResendEmailSubject(t *testing.T) {
 		Subject: aws.String("New Panther Alert"),
 	}
 
+	ctx := context.Background()
 	// First invocation returns "InvalidParameterError"
-	client.On("Publish", mock.Anything).Return(&sns.PublishOutput{}, awserr.New(sns.ErrCodeInvalidParameterException, "", nil)).Once()
+	client.On("PublishWithContext",
+		ctx,
+		mock.Anything,
+		mock.Anything,
+	).Return(&sns.PublishOutput{}, awserr.New(sns.ErrCodeInvalidParameterException, "", nil)).Once()
 	// We retry second time, this time with the default title
-	client.On("Publish", expectedSnsPublishInput).Return(&sns.PublishOutput{MessageId: aws.String("messageId")}, nil)
+	client.On("PublishWithContext",
+		ctx,
+		expectedSnsPublishInput,
+		mock.Anything,
+	).Return(&sns.PublishOutput{MessageId: aws.String("messageId")}, nil)
 
-	result := outputClient.Sns(alert, snsOutputConfig)
+	result := outputClient.Sns(ctx, alert, snsOutputConfig)
 	assert.NotNil(t, result)
 	assert.Equal(t, &AlertDeliveryResponse{
 		Message:    "messageId",

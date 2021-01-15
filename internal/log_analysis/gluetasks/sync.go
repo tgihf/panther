@@ -21,6 +21,7 @@ package gluetasks
 import (
 	"context"
 	"reflect"
+	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -35,13 +36,12 @@ import (
 )
 
 type SyncDatabaseTables struct {
-	Start                time.Time
-	MatchPrefix          string
-	DatabaseName         string
-	NumWorkers           int
-	Stats                SyncStats
-	DryRun               bool
-	AfterTableCreateTime bool
+	Start        time.Time
+	MatchPrefix  string
+	DatabaseName string
+	NumWorkers   int
+	Stats        SyncStats
+	DryRun       bool
 }
 
 func (s *SyncDatabaseTables) Run(ctx context.Context, api glueiface.GlueAPI, log *zap.Logger) error {
@@ -86,11 +86,10 @@ func (s *SyncDatabaseTables) Run(ctx context.Context, api glueiface.GlueAPI, log
 			for i, tbl := range page {
 				i, tbl := i, tbl
 				task := &SyncTablePartitions{
-					DatabaseName:         s.DatabaseName,
-					AfterTableCreateTime: s.AfterTableCreateTime,
-					TableName:            aws.StringValue(tbl.Name),
-					NumWorkers:           s.NumWorkers,
-					DryRun:               s.DryRun,
+					DatabaseName: s.DatabaseName,
+					TableName:    aws.StringValue(tbl.Name),
+					NumWorkers:   s.NumWorkers,
+					DryRun:       s.DryRun,
 				}
 				tasks[i] = task
 				childGroup.Go(func() error {
@@ -113,13 +112,12 @@ func (s *SyncDatabaseTables) Run(ctx context.Context, api glueiface.GlueAPI, log
 }
 
 type SyncTablePartitions struct {
-	DatabaseName         string
-	TableName            string
-	NumWorkers           int
-	NextToken            string
-	Stats                SyncStats
-	AfterTableCreateTime bool
-	DryRun               bool
+	DatabaseName string
+	TableName    string
+	NumWorkers   int
+	NextToken    string
+	Stats        SyncStats
+	DryRun       bool
 }
 
 func (s *SyncTablePartitions) Run(ctx context.Context, api glueiface.GlueAPI, log *zap.Logger) error {
@@ -153,10 +151,6 @@ func (s *SyncTablePartitions) syncTable(ctx context.Context, api glueiface.GlueA
 			DatabaseName: tbl.DatabaseName,
 			CatalogId:    tbl.CatalogId,
 			TableName:    tbl.Name,
-		}
-		if s.AfterTableCreateTime && tbl.CreateTime != nil {
-			expr := daily.PartitionsAfter(*tbl.CreateTime)
-			input.Expression = &expr
 		}
 		if s.NextToken != "" {
 			input.NextToken = &s.NextToken
@@ -234,10 +228,15 @@ func findTable(ctx context.Context, api glueiface.GlueAPI, dbName, tblName strin
 	}
 	return reply.Table, nil
 }
+
 func isSynced(tbl *glue.TableData, p *glue.Partition) bool {
 	want := tbl.StorageDescriptor.Columns
 	have := p.StorageDescriptor.Columns
 	//s.Logger.Debug("diff", zap.Any("colsWant", want), zap.Any("colsHave", have))
+	// FIXME: remove this in the future, this is for backward compatibility (we used to have 4 partitions, we now have 5)
+	if len(p.Values) != 5 {
+		return false
+	}
 	if len(want) != len(have) {
 		return false
 	}
@@ -304,6 +303,17 @@ func syncPartition(ctx context.Context, api glueiface.GlueAPI, tbl *glue.TableDa
 		},
 		PartitionValueList: p.Values,
 		TableName:          tbl.Name,
+	}
+	// FIXME: remove this in the future, this is for backward compatibility (we used to have 4 partitions, we now have 5)
+	if len(p.Values) < 5 {
+		partitionTime, err := awsglue.PartitionTimeFromValues(p.Values)
+		if err != nil {
+			return err
+		}
+		updatedPartitionValues := make([]*string, 5)
+		copy(updatedPartitionValues, p.Values)
+		updatedPartitionValues[4] = aws.String(strconv.Itoa(int(partitionTime.Unix())))
+		input.PartitionInput.Values = updatedPartitionValues
 	}
 	_, err := api.UpdatePartitionWithContext(ctx, &input)
 	return err

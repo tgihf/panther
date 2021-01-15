@@ -20,32 +20,44 @@ import React from 'react';
 import useRouter from 'Hooks/useRouter';
 import { Alert, Box, Flex, Card, TabList, TabPanel, TabPanels, Tabs } from 'pouncejs';
 import { BorderedTab, BorderTabDivider } from 'Components/BorderedTab';
-
-import {
-  getComplianceItemsTotalCount,
-  convertObjArrayValuesToCsv,
-  extractErrorMessage,
-} from 'Helpers/utils';
+import { getComplianceItemsTotalCount, extractErrorMessage } from 'Helpers/utils';
+import invert from 'lodash/invert';
 import withSEO from 'Hoc/withSEO';
+import useUrlParams from 'Hooks/useUrlParams';
 import ErrorBoundary from 'Components/ErrorBoundary';
-import PolicyCardDetails from './PolicyCardDetails';
 import PolicyDetailsInfo from './PolicyDetailsInfo';
+import PolicyDetailsBanner from './PolicyDetailsBanner';
 import PolicyDetailsResources from './PolicyDetailsResources';
 import PolicyDetailsPageSkeleton from './Skeleton';
-import { usePolicyDetails } from './graphql/policyDetails.generated';
+import { useGetPolicyDetails } from './graphql/getPolicyDetails.generated';
+
+export interface PolicyDetailsPageUrlParams {
+  section?: 'details' | 'resources';
+}
+
+const sectionToTabIndex: Record<PolicyDetailsPageUrlParams['section'], number> = {
+  details: 0,
+  resources: 1,
+};
+
+const tabIndexToSection = invert(sectionToTabIndex) as Record<
+  number,
+  PolicyDetailsPageUrlParams['section']
+>;
 
 const PolicyDetailsPage = () => {
   const { match } = useRouter<{ id: string }>();
+  const { urlParams, setUrlParams } = useUrlParams<PolicyDetailsPageUrlParams>();
 
-  const { error, data, loading } = usePolicyDetails({
+  const { error, data, loading } = useGetPolicyDetails({
     fetchPolicy: 'cache-and-network',
     variables: {
       policyDetailsInput: {
         id: match.params.id,
       },
-      resourcesForPolicyInput: convertObjArrayValuesToCsv({
+      resourcesForPolicyInput: {
         policyId: match.params.id,
-      }),
+      },
     },
   });
 
@@ -77,10 +89,13 @@ const PolicyDetailsPage = () => {
     <Box as="article">
       <Flex direction="column" spacing={6} my={6}>
         <ErrorBoundary>
-          <PolicyDetailsInfo policy={data.policy} />
+          <PolicyDetailsBanner policy={data.policy} />
         </ErrorBoundary>
         <Card position="relative">
-          <Tabs>
+          <Tabs
+            index={sectionToTabIndex[urlParams.section] || 0}
+            onChange={index => setUrlParams({ section: tabIndexToSection[index] })}
+          >
             <Box px={2}>
               <TabList>
                 <BorderedTab>Details</BorderedTab>
@@ -89,7 +104,7 @@ const PolicyDetailsPage = () => {
               <BorderTabDivider />
               <TabPanels>
                 <TabPanel data-testid="policy-details-tabpanel" lazy unmountWhenInactive>
-                  <PolicyCardDetails policy={data.policy} />
+                  <PolicyDetailsInfo policy={data.policy} />
                 </TabPanel>
                 <TabPanel data-testid="policy-resources-tabpanel" lazy unmountWhenInactive>
                   <PolicyDetailsResources />

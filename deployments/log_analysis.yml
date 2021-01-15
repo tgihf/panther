@@ -60,7 +60,7 @@ Parameters:
     Type: Number
     Description: Log processor Lambda memory allocation
     MinValue: 256 # 128 is too small, risks OOM errors
-    MaxValue: 3008
+    MaxValue: 10240
   LogProcessorLambdaSQSReadBatchSize:
     Type: Number
     Description: How many SQS messsage the log processor reads per SQS read. If the log processor is timing out, reduce this number.
@@ -220,6 +220,12 @@ Resources:
                 - s3:ListBucket
                 - s3:GetObject
               Resource: !Sub arn:${AWS::Partition}:s3:::${ProcessedDataBucket}*
+        - Id: GetRules
+          Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action: lambda:InvokeFunction
+              Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:panther-analysis-api
 
   AlertsApiAlarms:
     Type: Custom::LambdaAlarms
@@ -505,7 +511,9 @@ Resources:
           Statement:
             - Effect: Allow
               Action: s3:PutObject
-              Resource: !Sub arn:${AWS::Partition}:s3:::${ProcessedDataBucket}/logs*
+              Resource:
+                - !Sub arn:${AWS::Partition}:s3:::${ProcessedDataBucket}/logs*
+                - !Sub arn:${AWS::Partition}:s3:::${ProcessedDataBucket}/cloud_security*
         - Id: NotifySns
           Version: 2012-10-17
           Statement:
@@ -530,6 +538,7 @@ Resources:
               Action: lambda:InvokeFunction
               Resource:
                 - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:panther-source-api
+                - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:panther-logtypes-api
                 - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:panther-log-processor
         - Id: AccessSqsKms
           Version: 2012-10-17
@@ -565,6 +574,7 @@ Resources:
           - LogData
           - RuleMatches
           - RuleErrors
+          - CloudSecurity
 
   UpdaterQueuePolicy:
     Type: AWS::SQS::QueuePolicy
@@ -673,7 +683,8 @@ Resources:
           Type: SQS
           Properties:
             Queue: !GetAtt UpdaterQueue.Arn
-            BatchSize: 10
+            BatchSize: 10000 # Max
+            MaximumBatchingWindowInSeconds: 30
       Tracing: !If [TracingEnabled, !Ref TracingMode, !Ref AWS::NoValue]
       Policies:
         - Id: AccessSqsKms
@@ -708,8 +719,8 @@ Resources:
           Statement:
             - Effect: Allow
               Action: sqs:SendMessage
-              # send messages to updater queue (defer tasks)
-              Resource: !GetAtt UpdaterQueue.Arn
+              Resource:
+                - !GetAtt UpdaterQueue.Arn # send messages to updater queue (defer tasks)
         - Id: AthenaPermissions # to create views over Glue tables
           Version: 2012-10-17
           Statement:
@@ -731,10 +742,9 @@ Resources:
           Statement:
             - Effect: Allow
               Action: lambda:InvokeFunction
-              Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:panther-logtypes-api
-            - Effect: Allow
-              Action: s3:List*
-              Resource: !Sub arn:${AWS::Partition}:s3:::${ProcessedDataBucket}*
+              Resource:
+                - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:panther-source-api
+                - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:panther-logtypes-api
 
   UpdaterAlarms:
     Type: Custom::LambdaAlarms
@@ -759,6 +769,7 @@ Resources:
       FilterPolicy:
         type:
           - LogData
+          - CloudSecurity
 
   RulesEngineQueuePolicy:
     Type: AWS::SQS::QueuePolicy
@@ -915,16 +926,16 @@ Resources:
           Version: 2012-10-17
           Statement:
             - Effect: Allow
-              Action: s3:GetObject
-              Resource: !Sub arn:${AWS::Partition}:s3:::${ProcessedDataBucket}/logs/*
+              Action: s3:GetObject # reading from
+              Resource:
+                - !Sub arn:${AWS::Partition}:s3:::${ProcessedDataBucket}/cloud_security/*
+                - !Sub arn:${AWS::Partition}:s3:::${ProcessedDataBucket}/logs/*
+                - !Sub arn:${AWS::Partition}:s3:::${ProcessedDataBucket}/rules/*
             - Effect: Allow
-              Action:
-                - s3:GetObject
-                - s3:PutObject
-              Resource: !Sub arn:${AWS::Partition}:s3:::${ProcessedDataBucket}/rules/*
-            - Effect: Allow
-              Action: s3:PutObject
-              Resource: !Sub arn:${AWS::Partition}:s3:::${ProcessedDataBucket}/rule_errors/*
+              Action: s3:PutObject # writing to
+              Resource:
+                - !Sub arn:${AWS::Partition}:s3:::${ProcessedDataBucket}/rules/*
+                - !Sub arn:${AWS::Partition}:s3:::${ProcessedDataBucket}/rule_errors/*
         - Id: DDBUpdate
           Version: 2012-10-17
           Statement:

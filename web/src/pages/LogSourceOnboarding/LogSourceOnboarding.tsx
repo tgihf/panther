@@ -16,20 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/**
- * Copyright (C) 2020 Panther Labs Inc
- *
- * Panther Enterprise is licensed under the terms of a commercial license available from
- * Panther Labs Inc ("Panther Commercial License") by contacting contact@runpanther.com.
- * All use, distribution, and/or modification of this software, whether commercial or non-commercial,
- * falls under the Panther Commercial License to the extent it is permitted.
- */
-
 import React from 'react';
 import { Box, Card, FadeIn, SimpleGrid } from 'pouncejs';
 import urls from 'Source/urls';
 import s3Logo from 'Assets/s3-minimal-logo.svg';
 import sqsLogo from 'Assets/sqs-minimal-logo.svg';
+import duoLogo from 'Assets/duo-minimal-logo.svg';
 import eventBridgeLogo from 'Assets/eventbridge-minimal-logo.svg';
 import oktaLogo from 'Assets/okta-minimal-logo.svg';
 import gsuiteLogo from 'Assets/gsuite-minimal-logo.svg';
@@ -79,6 +71,12 @@ const logSourcesConfig = [
     logo: slackLogo,
     title: 'Slack',
     type: 'slack',
+    disabled: true,
+  },
+  {
+    logo: duoLogo,
+    title: 'Duo',
+    type: 'duo',
     disabled: true,
   },
   {

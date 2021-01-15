@@ -26,15 +26,15 @@ import (
 	"github.com/aws/aws-sdk-go/service/athena/athenaiface"
 	"github.com/pkg/errors"
 
-	"github.com/panther-labs/panther/api/lambda/core/log_analysis/log_processor/models"
 	"github.com/panther-labs/panther/internal/log_analysis/awsglue"
 	"github.com/panther-labs/panther/internal/log_analysis/awsglue/glueschema"
 	"github.com/panther-labs/panther/internal/log_analysis/log_processor/parsers"
+	"github.com/panther-labs/panther/internal/log_analysis/pantherdb"
 	"github.com/panther-labs/panther/pkg/awsathena"
 )
 
-// CreateOrReplaceViews will update Athena with all views for the tables provided
-func CreateOrReplaceViews(athenaClient athenaiface.AthenaAPI, workgroup string, deployedLogTables []*awsglue.GlueTableMetadata) error {
+// CreateOrReplaceLogViews will update Athena with all views for the tables provided
+func CreateOrReplaceLogViews(athenaClient athenaiface.AthenaAPI, workgroup string, deployedLogTables []*awsglue.GlueTableMetadata) error {
 	if len(deployedLogTables) == 0 { // nothing to do
 		return nil
 	}
@@ -44,9 +44,9 @@ func CreateOrReplaceViews(athenaClient athenaiface.AthenaAPI, workgroup string, 
 		return err
 	}
 	for _, sql := range sqlStatements {
-		_, err := awsathena.RunQuery(athenaClient, workgroup, awsglue.ViewsDatabaseName, sql)
+		_, err := awsathena.RunQuery(athenaClient, workgroup, pantherdb.ViewsDatabase, sql)
 		if err != nil {
-			return errors.Wrap(err, "CreateOrReplaceViews() failed")
+			return errors.Wrapf(err, "CreateOrReplaceViews() failed for WorkGroup %s for: %s", workgroup, sql)
 		}
 	}
 	return err
@@ -57,69 +57,127 @@ func GenerateLogViews(tables []*awsglue.GlueTableMetadata) (sqlStatements []stri
 	if len(tables) == 0 {
 		return nil, errors.New("no tables specified for GenerateLogViews()")
 	}
-	sqlStatement, err := generateViewAllLogs(tables)
+
+	var allTables []*awsglue.GlueTableMetadata
+	sqlStatement, logTables, err := generateViewAllLogs(tables)
 	if err != nil {
 		return nil, err
 	}
-	sqlStatements = append(sqlStatements, sqlStatement)
-	sqlStatement, err = generateViewAllRuleMatches(tables)
+	if sqlStatement != "" {
+		sqlStatements = append(sqlStatements, sqlStatement)
+	}
+	allTables = append(allTables, logTables...)
+
+	sqlStatement, cloudSecurityTables, err := generateViewAllCloudSecurity(tables)
 	if err != nil {
 		return nil, err
 	}
-	sqlStatements = append(sqlStatements, sqlStatement)
-	sqlStatement, err = generateViewAllRuleErrors(tables)
+	if sqlStatement != "" {
+		sqlStatements = append(sqlStatements, sqlStatement)
+	}
+	allTables = append(allTables, cloudSecurityTables...)
+
+	sqlStatement, ruleMatchTables, err := generateViewAllRuleMatches(tables)
 	if err != nil {
 		return nil, err
 	}
-	sqlStatements = append(sqlStatements, sqlStatement)
+	if sqlStatement != "" {
+		sqlStatements = append(sqlStatements, sqlStatement)
+	}
+	allTables = append(allTables, ruleMatchTables...)
+
+	sqlStatement, ruleErrorTables, err := generateViewAllRuleErrors(tables)
+	if err != nil {
+		return nil, err
+	}
+	if sqlStatement != "" {
+		sqlStatements = append(sqlStatements, sqlStatement)
+	}
+	allTables = append(allTables, ruleErrorTables...)
+
+	sqlStatement, err = generateViewAllDatabases(allTables)
+	if err != nil {
+		return nil, err
+	}
+	if sqlStatement != "" {
+		sqlStatements = append(sqlStatements, sqlStatement)
+	}
+
 	// add future views here
 	return sqlStatements, nil
 }
 
 // generateViewAllLogs creates a view over all log sources in log db using "panther" fields
-func generateViewAllLogs(tables []*awsglue.GlueTableMetadata) (sql string, err error) {
-	return generateViewAllHelper("all_logs", tables, []awsglue.Column{})
+func generateViewAllLogs(tables []*awsglue.GlueTableMetadata) (sql string, logTables []*awsglue.GlueTableMetadata, err error) {
+	// some logTypes are under different databases and we want a view per database
+	for _, table := range tables {
+		if table.DatabaseName() == pantherdb.LogProcessingDatabase {
+			logTables = append(logTables, table)
+		}
+	}
+	sql, err = generateViewAllHelper("all_logs", logTables, []awsglue.Column{})
+	return sql, logTables, err
+}
+
+// generateViewAllCloudSecurity creates a view over all log sources in cloudsecurity db using "panther" fields
+func generateViewAllCloudSecurity(tables []*awsglue.GlueTableMetadata) (sql string, cloudsecTables []*awsglue.GlueTableMetadata,
+	err error) {
+
+	// some logTypes are under different databases and we want a view per database
+	for _, table := range tables {
+		if table.DatabaseName() == pantherdb.CloudSecurityDatabase {
+			cloudsecTables = append(cloudsecTables, table)
+		}
+	}
+	sql, err = generateViewAllHelper("all_cloudsecurity", cloudsecTables, []awsglue.Column{})
+	return sql, cloudsecTables, err
 }
 
 // generateViewAllRuleMatches creates a view over all log sources in rule match db the using "panther" fields
-func generateViewAllRuleMatches(tables []*awsglue.GlueTableMetadata) (sql string, err error) {
+func generateViewAllRuleMatches(tables []*awsglue.GlueTableMetadata) (sql string, ruleTables []*awsglue.GlueTableMetadata, err error) {
 	// the rule match tables share the same structure as the logs with some extra columns
-	var ruleTables []*awsglue.GlueTableMetadata
 	for _, table := range tables {
 		ruleTable := awsglue.NewGlueTableMetadata(
-			models.RuleData, table.LogType(), table.Description(), awsglue.GlueTableHourly, table.EventStruct())
+			pantherdb.RuleMatchDatabase, table.TableName(), table.Description(), awsglue.GlueTableHourly, table.EventStruct())
 		ruleTables = append(ruleTables, ruleTable)
 	}
-	return generateViewAllHelper("all_rule_matches", ruleTables, awsglue.RuleMatchColumns)
+	sql, err = generateViewAllHelper("all_rule_matches", ruleTables, awsglue.RuleMatchColumns)
+	return sql, ruleTables, err
 }
 
 // generateViewAllRuleErrors creates a view over all log sources in rule error db the using "panther" fields
-func generateViewAllRuleErrors(tables []*awsglue.GlueTableMetadata) (sql string, err error) {
+func generateViewAllRuleErrors(tables []*awsglue.GlueTableMetadata) (sql string, ruleErrorTables []*awsglue.GlueTableMetadata, err error) {
 	// the rule match tables share the same structure as the logs with some extra columns
-	var ruleErrorTables []*awsglue.GlueTableMetadata
 	for _, table := range tables {
 		ruleTable := awsglue.NewGlueTableMetadata(
-			models.RuleErrors, table.LogType(), table.Description(), awsglue.GlueTableHourly, table.EventStruct())
+			pantherdb.RuleErrorsDatabase, table.TableName(), table.Description(), awsglue.GlueTableHourly, table.EventStruct())
 		ruleErrorTables = append(ruleErrorTables, ruleTable)
 	}
-	return generateViewAllHelper("all_rule_errors", ruleErrorTables, awsglue.RuleErrorColumns)
+	sql, err = generateViewAllHelper("all_rule_errors", ruleErrorTables, awsglue.RuleErrorColumns)
+	return sql, ruleErrorTables, err
+}
+
+// generateViewAllDatabases() creates a view over all data by taking all tables created in previous views
+func generateViewAllDatabases(tables []*awsglue.GlueTableMetadata) (sql string, err error) {
+	return generateViewAllHelper("all_databases", tables, []awsglue.Column{})
 }
 
 func generateViewAllHelper(viewName string, tables []*awsglue.GlueTableMetadata, extraColumns []awsglue.Column) (sql string, err error) {
+	if len(tables) == 0 {
+		return "", nil
+	}
+
 	// validate they all have the same partition keys
-	if len(tables) > 1 {
-		// create string of partition for comparison
-		genKey := func(partitions []awsglue.PartitionKey) (key string) {
-			for _, p := range partitions {
-				key += p.Name + p.Type
-			}
-			return key
+	genKey := func(partitions []awsglue.PartitionKey) (key string) { // create string of partition for comparison
+		for _, p := range partitions {
+			key += p.Name + p.Type
 		}
-		referenceKey := genKey(tables[0].PartitionKeys())
-		for _, table := range tables[1:] {
-			if referenceKey != genKey(table.PartitionKeys()) {
-				return "", errors.New("all tables do not share same partition keys for generateViewAllHelper()")
-			}
+		return key
+	}
+	referenceKey := genKey(tables[0].PartitionKeys())
+	for _, table := range tables[1:] {
+		if referenceKey != genKey(table.PartitionKeys()) {
+			return "", errors.New("all tables do not share same partition keys for generateViewAllHelper()")
 		}
 	}
 
@@ -130,7 +188,7 @@ func generateViewAllHelper(viewName string, tables []*awsglue.GlueTableMetadata,
 	}
 
 	var sqlLines []string
-	sqlLines = append(sqlLines, fmt.Sprintf("create or replace view %s.%s as", awsglue.ViewsDatabaseName, viewName))
+	sqlLines = append(sqlLines, fmt.Sprintf("create or replace view %s.%s as", pantherdb.ViewsDatabase, viewName))
 
 	for i, table := range tables {
 		sqlLines = append(sqlLines, fmt.Sprintf("select %s from %s.%s",
@@ -205,7 +263,9 @@ func (pvc *pantherViewColumns) inferViewColumns(table *awsglue.GlueTableMetadata
 
 func (pvc *pantherViewColumns) viewColumns(table *awsglue.GlueTableMetadata) string {
 	tableColumns := pvc.columnsByTable[table.TableName()]
-	selectColumns := make([]string, 0, len(pvc.allColumns))
+	selectColumns := make([]string, 0, len(pvc.allColumns)+1)
+	// tag each with database name
+	selectColumns = append(selectColumns, fmt.Sprintf("'%s' AS p_db_name", table.DatabaseName()))
 	for _, column := range pvc.allColumns {
 		selectColumn := column
 		if _, exists := tableColumns[column]; !exists { // fill in missing columns with NULL

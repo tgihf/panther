@@ -125,8 +125,12 @@ func stdDetectionListInput(input *models.ListDetectionsInput) bool {
 	}
 
 	// If we need to filter or project based on complianceStatus, we must ensure that id and type are
-	// also within the projection. If fields is empty they're already included.
-	idPresent, typePresent, statusProjection := len(input.Fields) == 0, len(input.Fields) == 0, len(input.Fields) == 0
+	// also within the projection. If fields is empty they're already included and we can just return.
+	if len(input.Fields) == 0 {
+		return true
+	}
+
+	idPresent, typePresent, statusProjection := false, false, false
 	for _, field := range input.Fields {
 		if field == "complianceStatus" {
 			statusProjection = true
@@ -148,13 +152,11 @@ func stdDetectionListInput(input *models.ListDetectionsInput) bool {
 		if !typePresent {
 			input.Fields = append(input.Fields, "type")
 		}
-		zap.L().Info("compliance is required")
 	}
 
 	return statusProjection
 }
 
-// TODO: check if we need to copy in any policy logic or new logic
 func detectionScanInput(input *models.ListDetectionsInput) (*dynamodb.ScanInput, error) {
 	listFilters := pythonFilters{
 		CreatedBy:      input.CreatedBy,

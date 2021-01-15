@@ -26,60 +26,53 @@ import (
 
 type ListDetectionsInput struct {
 	// ----- Filtering -----
-	// Only include policies with a specific compliance status
-	// ONLY POLICIES
+
+	// Only include policies with a specific compliance status. Only applies to policies.
 	ComplianceStatus models.ComplianceStatus `json:"complianceStatus" validate:"omitempty,oneof=PASS FAIL ERROR"`
 
-	// Only include policies with or without auto-remediation enabled
+	// Only include policies with or without auto-remediation enabled. Only applies to policies.
 	HasRemediation *bool `json:"hasRemediation"`
 
-	// Only include policies which apply to one of these resource types
-	// should we change this to just type?
-	// ResourceTypes []string `json:"resourceTypes" validate:"max=500,dive,required,max=500"`
-
-	// ONLY RULE
-	// Only include rules which apply to one of these log types
-	// LogTypes []string `json:"logTypes" validate:"max=500,dive,required,max=500"`
+	// Only include detections which apply to one of these resource or log types
 	Types []string `json:"types" validate:"max=500,dive,required,max=500"`
 
-	// BOTH
 	// Only include detections with the following type
-	AnalysisTypes []DetectionType `json:"analysisTypes" validate:"omitempty,dive,oneof=RULE POLICY GLOBAL"`
+	AnalysisTypes []DetectionType `json:"analysisTypes" validate:"omitempty,dive,oneof=RULE POLICY"`
 
-	// Only include policies whose ID or display name contains this case-insensitive substring
+	// Only include detections whose ID or display name contains this case-insensitive substring
 	NameContains string `json:"nameContains" validate:"max=1000"`
 
-	// Only include policies which are enabled or disabled
+	// Only include detections which are enabled or disabled
 	Enabled *bool `json:"enabled"`
 
-	// Only include policies with this severity
+	// Only include detections with this severity
 	Severity []models.Severity `json:"severity" validate:"dive,oneof=INFO LOW MEDIUM HIGH CRITICAL"`
 
-	// Only include policies with all of these tags (case-insensitive)
+	// Only include detections with all of these tags (case-insensitive)
 	Tags []string `json:"tags" validate:"max=500,dive,required,max=500"`
 
-	// If True, include only rules which were created by the system during the initial deployment
-	// If False, include only rules where were NOT created by the system during the initial deployment
+	// Only include detections whose creator matches this user ID (which need not be a uuid)
+	CreatedBy string `json:"createdBy"`
+
+	// Only include detections which were last modified by this user ID
+	LastModifiedBy string `json:"lastModifiedBy"`
+
+	// If True, include only detections which were created by the system during the initial deployment
+	// If False, include only detections where were NOT created by the system during the initial deployment
 	InitialSet *bool `json:"initialSet"`
+
 	// ----- Projection -----
 
-	// Policy fields to return in the response (default: all)
+	// Detection fields to return in the response (default: all)
 	Fields []string `json:"fields" validate:"max=20,dive,required,max=100"`
 
 	// ----- Sorting -----
-	// Need to add displayName filtering
-	SortBy  string `json:"sortBy" validate:"omitempty,oneof=displayName complianceStatus enabled id lastModified severity"`
+	SortBy  string `json:"sortBy" validate:"omitempty,oneof=displayName enabled id lastModified types severity"`
 	SortDir string `json:"sortDir" validate:"omitempty,oneof=ascending descending"`
 
 	// ----- Paging -----
 	PageSize int `json:"pageSize" validate:"min=0,max=1000"`
 	Page     int `json:"page" validate:"min=0"`
-
-	// Only include policies whose creator matches this user ID (which need not be a uuid)
-	CreatedBy string `json:"createdBy"`
-
-	// Only include policies which were last modified by this user ID
-	LastModifiedBy string `json:"lastModifiedBy"`
 }
 
 type ListDetectionsOutput struct {
@@ -87,8 +80,6 @@ type ListDetectionsOutput struct {
 	Detections []Detection `json:"detections"`
 }
 
-// TODO include policy & shared stuff
-// Align this to also includue policy settings and type
 type Detection struct {
 	// Policy only
 	AutoRemediationID         string                  `json:"autoRemediationId" validate:"max=1000"`

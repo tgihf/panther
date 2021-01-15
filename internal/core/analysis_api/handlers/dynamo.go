@@ -88,7 +88,7 @@ func (r *tableItem) addExtraFields() {
 	r.LowerTags = lowerSet(r.Tags)
 }
 
-// Sort string sets before converting to an external Rule/Policy model.
+// Sort string sets before converting to an external Rule/Policy/Detection model.
 func (r *tableItem) normalize() {
 	sortCaseInsensitive(r.OutputIDs)
 	sortCaseInsensitive(r.ResourceTypes)
@@ -96,8 +96,7 @@ func (r *tableItem) normalize() {
 	sortCaseInsensitive(r.Tags)
 }
 
-// TODO include policy & shared stuff
-// Rule converts a Dynamo row into a Rule external model.
+// Detection converts a Dynamo row into a Detection external model.
 func (r *tableItem) Detection(status *compliancemodels.ComplianceStatus) *models.Detection {
 	r.normalize()
 	result := &models.Detection{

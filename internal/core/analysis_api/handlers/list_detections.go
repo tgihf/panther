@@ -31,7 +31,6 @@ import (
 	"github.com/panther-labs/panther/pkg/gatewayapi"
 )
 
-// TODO include policy & shared stuff
 func (API) ListDetections(input *models.ListDetectionsInput) *events.APIGatewayProxyResponse {
 	projectComplianceStatus := stdDetectionListInput(input)
 
@@ -45,23 +44,18 @@ func (API) ListDetections(input *models.ListDetectionsInput) *events.APIGatewayP
 	var items []tableItem
 	compliance := make(map[string]complianceStatus)
 
-	// We need to include compliance status in the response if the user asked for it
-	// (or if they left the input.Fields blank, which defaults to all fields)
-
 	err = scanPages(scanInput, func(item tableItem) error {
-		zap.L().Info("considering item", zap.Any("item", item))
 		// Fetch the compliance status if we need it for the filter or projection
 		if item.Type == models.TypePolicy && (projectComplianceStatus || input.ComplianceStatus != "") {
-			status, err := getComplianceStatus(item.ID) // compliance-api
+			status, err := getComplianceStatus(item.ID)
 			if err != nil {
 				return err
 			}
-			zap.L().Info("adding status", zap.String("policy", item.ID), zap.Any("status", *status))
 			compliance[item.ID] = *status
 		}
 
+		// If the ComplianceStatus filter is set, we know we already filtered to just policies
 		if input.ComplianceStatus != "" && input.ComplianceStatus != compliance[item.ID].Status {
-			zap.L().Info("compliance status does not pass projection", zap.String("policy", item.ID))
 			return nil // compliance status does not match filter: skip
 		}
 
@@ -74,7 +68,6 @@ func (API) ListDetections(input *models.ListDetectionsInput) *events.APIGatewayP
 	}
 
 	// Sort and page
-	// TODO make sure this includes policy & new
 	sortItems(items, input.SortBy, input.SortDir, nil)
 	var paging models.Paging
 	paging, items = pageItems(items, input.Page, input.PageSize)
@@ -88,6 +81,7 @@ func (API) ListDetections(input *models.ListDetectionsInput) *events.APIGatewayP
 		if projectComplianceStatus && item.Type == models.TypePolicy {
 			status := compliance[item.ID].Status
 			result.Detections = append(result.Detections, *item.Detection(&status))
+			continue
 		}
 		result.Detections = append(result.Detections, *item.Detection(nil))
 	}
@@ -107,6 +101,15 @@ func stdDetectionListInput(input *models.ListDetectionsInput) bool {
 	if input.SortBy == "" {
 		input.SortBy = "displayName"
 	}
+	// If we are going to sort by displayName, we must include lowerId and lowerDisplayName in the
+	// projection. If Fields is empty they're included already.
+	if input.SortBy == "displayName" && len(input.Fields) > 0 {
+		input.Fields = append(input.Fields, "lowerId", "lowerDisplayName")
+	}
+	// Similar idea as displayName
+	if input.SortBy == "id" && len(input.Fields) > 0 {
+		input.Fields = append(input.Fields, "lowerId")
+	}
 	if input.SortDir == "" {
 		input.SortDir = defaultSortDir
 	}
@@ -117,13 +120,13 @@ func stdDetectionListInput(input *models.ListDetectionsInput) bool {
 	// This is a unique field because we look it up from another table. For other fields (such as
 	// suppressions for policies or dedup period for rules) we don't need this logic because if the
 	// user filters on this field it will automatically exclude everything of the wrong type.
-	if input.ComplianceStatus != "" {
-		zap.L().Info("setting analysis type filter to policies only since compliance status filter is set")
+	if input.ComplianceStatus != "" || input.HasRemediation != nil {
 		input.AnalysisTypes = []models.DetectionType{models.TypePolicy}
 	}
 
-	idPresent, typePresent := false, false
-	statusProjection := len(input.Fields) == 0
+	// If we need to filter or project based on complianceStatus, we must ensure that id and type are
+	// also within the projection. If fields is empty they're already included.
+	idPresent, typePresent, statusProjection := len(input.Fields) == 0, len(input.Fields) == 0, len(input.Fields) == 0
 	for _, field := range input.Fields {
 		if field == "complianceStatus" {
 			statusProjection = true

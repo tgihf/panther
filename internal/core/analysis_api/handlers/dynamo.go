@@ -97,11 +97,12 @@ func (r *tableItem) normalize() {
 }
 
 // Detection converts a Dynamo row into a Detection external model.
-func (r *tableItem) Detection(status *compliancemodels.ComplianceStatus) *models.Detection {
+func (r *tableItem) Detection(status compliancemodels.ComplianceStatus) *models.Detection {
 	r.normalize()
 	result := &models.Detection{
 		AutoRemediationID:         r.AutoRemediationID,
 		AutoRemediationParameters: r.AutoRemediationParameters,
+		ComplianceStatus:          status,
 		Suppressions:              r.Suppressions,
 		DedupPeriodMinutes:        r.DedupPeriodMinutes,
 		Threshold:                 r.Threshold,
@@ -124,9 +125,6 @@ func (r *tableItem) Detection(status *compliancemodels.ComplianceStatus) *models
 		Tags:                      r.Tags,
 		Tests:                     r.Tests,
 		VersionID:                 r.VersionID,
-	}
-	if status != nil {
-		result.ComplianceStatus = *status
 	}
 	genericapi.ReplaceMapSliceNils(result)
 	return result

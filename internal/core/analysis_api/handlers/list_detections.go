@@ -80,10 +80,10 @@ func (API) ListDetections(input *models.ListDetectionsInput) *events.APIGatewayP
 	for _, item := range items {
 		if projectComplianceStatus && item.Type == models.TypePolicy {
 			status := compliance[item.ID].Status
-			result.Detections = append(result.Detections, *item.Detection(&status))
+			result.Detections = append(result.Detections, *item.Detection(status))
 			continue
 		}
-		result.Detections = append(result.Detections, *item.Detection(nil))
+		result.Detections = append(result.Detections, *item.Detection(""))
 	}
 
 	return gatewayapi.MarshalResponse(&result, http.StatusOK)

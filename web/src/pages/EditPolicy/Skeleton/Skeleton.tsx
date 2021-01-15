@@ -40,8 +40,16 @@ const EditPolicyPageSkeleton: React.FC = () => {
                 <TablePlaceholder rowCount={5} />
               </Box>
             </TabPanel>
-            <TabPanel data-testid="policy-functions-tabpanel"></TabPanel>
-            <TabPanel data-testid="policy-auto-remediation"></TabPanel>
+            <TabPanel data-testid="policy-functions-tabpanel">
+              <Box p={6}>
+                <TablePlaceholder rowCount={5} />
+              </Box>
+            </TabPanel>
+            <TabPanel data-testid="policy-auto-remediation">
+              <Box p={6}>
+                <TablePlaceholder rowCount={5} />
+              </Box>
+            </TabPanel>
           </TabPanels>
         </Tabs>
       </Card>

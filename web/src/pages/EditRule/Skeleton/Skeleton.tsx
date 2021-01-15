@@ -34,12 +34,16 @@ const EditRulePageSkeleton: React.FC = () => {
           </Box>
           <BorderTabDivider />
           <TabPanels>
-            <TabPanel data-testid="policy-settings-tabpanel">
+            <TabPanel data-testid="rule-settings-tabpanel">
               <Box p={6}>
                 <TablePlaceholder rowCount={5} />
               </Box>
             </TabPanel>
-            <TabPanel data-testid="policy-functions-tabpanel"></TabPanel>
+            <TabPanel data-testid="rule-functions-tabpanel">
+              <Box p={6}>
+                <TablePlaceholder rowCount={5} />
+              </Box>
+            </TabPanel>
           </TabPanels>
         </Tabs>
       </Card>

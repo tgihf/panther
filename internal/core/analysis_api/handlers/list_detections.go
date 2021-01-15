@@ -24,6 +24,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 	"go.uber.org/zap"
 
 	"github.com/panther-labs/panther/api/lambda/analysis/models"
@@ -32,7 +33,7 @@ import (
 
 // TODO include policy & shared stuff
 func (API) ListDetections(input *models.ListDetectionsInput) *events.APIGatewayProxyResponse {
-	stdDetectionListInput(input)
+	projectComplianceStatus := stdDetectionListInput(input)
 
 	// Scan dynamo
 	scanInput, err := detectionScanInput(input)
@@ -42,12 +43,33 @@ func (API) ListDetections(input *models.ListDetectionsInput) *events.APIGatewayP
 	}
 
 	var items []tableItem
+	compliance := make(map[string]complianceStatus)
+
+	// We need to include compliance status in the response if the user asked for it
+	// (or if they left the input.Fields blank, which defaults to all fields)
+
 	err = scanPages(scanInput, func(item tableItem) error {
+		zap.L().Info("considering item", zap.Any("item", item))
+		// Fetch the compliance status if we need it for the filter or projection
+		if item.Type == models.TypePolicy && (projectComplianceStatus || input.ComplianceStatus != "") {
+			status, err := getComplianceStatus(item.ID) // compliance-api
+			if err != nil {
+				return err
+			}
+			zap.L().Info("adding status", zap.String("policy", item.ID), zap.Any("status", *status))
+			compliance[item.ID] = *status
+		}
+
+		if input.ComplianceStatus != "" && input.ComplianceStatus != compliance[item.ID].Status {
+			zap.L().Info("compliance status does not pass projection", zap.String("policy", item.ID))
+			return nil // compliance status does not match filter: skip
+		}
+
 		items = append(items, item)
 		return nil
 	})
 	if err != nil {
-		zap.L().Error("failed to scan rules", zap.Error(err))
+		zap.L().Error("failed to scan detections", zap.Error(err))
 		return &events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}
 	}
 
@@ -63,15 +85,18 @@ func (API) ListDetections(input *models.ListDetectionsInput) *events.APIGatewayP
 		Paging:     paging,
 	}
 	for _, item := range items {
-		result.Detections = append(result.Detections, *item.Detection())
+		if projectComplianceStatus && item.Type == models.TypePolicy {
+			status := compliance[item.ID].Status
+			result.Detections = append(result.Detections, *item.Detection(&status))
+		}
+		result.Detections = append(result.Detections, *item.Detection(nil))
 	}
 
 	return gatewayapi.MarshalResponse(&result, http.StatusOK)
 }
 
 // Set defaults and standardize input request
-// TODO: check if we need to copy in any policy standardizing logic or new standardizing logic
-func stdDetectionListInput(input *models.ListDetectionsInput) {
+func stdDetectionListInput(input *models.ListDetectionsInput) bool {
 	input.NameContains = strings.ToLower(input.NameContains)
 	if input.Page == 0 {
 		input.Page = defaultPage
@@ -85,6 +110,45 @@ func stdDetectionListInput(input *models.ListDetectionsInput) {
 	if input.SortDir == "" {
 		input.SortDir = defaultSortDir
 	}
+	if len(input.AnalysisTypes) == 0 {
+		input.AnalysisTypes = []models.DetectionType{models.TypePolicy, models.TypeRule}
+	}
+	// If a compliance status was specified, we can only query policies.
+	// This is a unique field because we look it up from another table. For other fields (such as
+	// suppressions for policies or dedup period for rules) we don't need this logic because if the
+	// user filters on this field it will automatically exclude everything of the wrong type.
+	if input.ComplianceStatus != "" {
+		zap.L().Info("setting analysis type filter to policies only since compliance status filter is set")
+		input.AnalysisTypes = []models.DetectionType{models.TypePolicy}
+	}
+
+	idPresent, typePresent := false, false
+	statusProjection := len(input.Fields) == 0
+	for _, field := range input.Fields {
+		if field == "complianceStatus" {
+			statusProjection = true
+		}
+		if field == "id" {
+			idPresent = true
+		}
+		if field == "type" {
+			typePresent = true
+		}
+		if idPresent && typePresent && statusProjection {
+			break
+		}
+	}
+	if statusProjection || input.ComplianceStatus != "" {
+		if !idPresent {
+			input.Fields = append(input.Fields, "id")
+		}
+		if !typePresent {
+			input.Fields = append(input.Fields, "type")
+		}
+		zap.L().Info("compliance is required")
+	}
+
+	return statusProjection
 }
 
 // TODO: check if we need to copy in any policy logic or new logic
@@ -96,9 +160,20 @@ func detectionScanInput(input *models.ListDetectionsInput) (*dynamodb.ScanInput,
 		LastModifiedBy: input.LastModifiedBy,
 		NameContains:   input.NameContains,
 		Severity:       input.Severity,
+		ResourceTypes:  input.Types,
 		Tags:           input.Tags,
 	}
 
 	filters := pythonListFilters(&listFilters)
-	return buildScanInput(models.TypeRule, input.Fields, filters...)
+	if input.HasRemediation != nil {
+		if *input.HasRemediation {
+			// We only want policies with a remediation specified
+			filters = append(filters, expression.AttributeExists(expression.Name("autoRemediationId")))
+		} else {
+			// We only want policies without a remediation id
+			filters = append(filters, expression.AttributeNotExists(expression.Name("autoRemediationId")))
+		}
+	}
+
+	return buildScanInput(input.AnalysisTypes, input.Fields, filters...)
 }

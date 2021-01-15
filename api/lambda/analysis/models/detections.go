@@ -29,19 +29,23 @@ type ListDetectionsInput struct {
 	// Only include policies with a specific compliance status
 	// ONLY POLICIES
 	ComplianceStatus models.ComplianceStatus `json:"complianceStatus" validate:"omitempty,oneof=PASS FAIL ERROR"`
+
 	// Only include policies with or without auto-remediation enabled
 	HasRemediation *bool `json:"hasRemediation"`
 
 	// Only include policies which apply to one of these resource types
 	// should we change this to just type?
-	ResourceTypes []string `json:"resourceTypes" validate:"max=500,dive,required,max=500"`
+	// ResourceTypes []string `json:"resourceTypes" validate:"max=500,dive,required,max=500"`
 
 	// ONLY RULE
 	// Only include rules which apply to one of these log types
-	LogTypes []string `json:"logTypes" validate:"max=500,dive,required,max=500"`
+	// LogTypes []string `json:"logTypes" validate:"max=500,dive,required,max=500"`
+	Types []string `json:"types" validate:"max=500,dive,required,max=500"`
 
 	// BOTH
-	// Type string `json:"type" validate:`
+	// Only include detections with the following type
+	AnalysisTypes []DetectionType `json:"analysisTypes" validate:"omitempty,dive,oneof=RULE POLICY GLOBAL"`
+
 	// Only include policies whose ID or display name contains this case-insensitive substring
 	NameContains string `json:"nameContains" validate:"max=1000"`
 
@@ -86,24 +90,34 @@ type ListDetectionsOutput struct {
 // TODO include policy & shared stuff
 // Align this to also includue policy settings and type
 type Detection struct {
-	Body               string              `json:"body"`
-	CreatedAt          time.Time           `json:"createdAt"`
-	CreatedBy          string              `json:"createdBy"`
-	DedupPeriodMinutes int                 `json:"dedupPeriodMinutes"`
-	Description        string              `json:"description"`
-	DisplayName        string              `json:"displayName"`
-	Enabled            bool                `json:"enabled"`
-	ID                 string              `json:"id"`
-	LastModified       time.Time           `json:"lastModified"`
-	LastModifiedBy     string              `json:"lastModifiedBy"`
-	LogTypes           []string            `json:"logTypes"`
-	OutputIDs          []string            `json:"outputIds"`
-	Reference          string              `json:"reference"`
-	Reports            map[string][]string `json:"reports"`
-	Runbook            string              `json:"runbook"`
-	Severity           models.Severity     `json:"severity"`
-	Tags               []string            `json:"tags"`
-	Tests              []UnitTest          `json:"tests"`
-	Threshold          int                 `json:"threshold"`
-	VersionID          string              `json:"versionId"`
+	// Policy only
+	AutoRemediationID         string                  `json:"autoRemediationId" validate:"max=1000"`
+	AutoRemediationParameters map[string]string       `json:"autoRemediationParameters" validte:"max=500"`
+	ComplianceStatus          models.ComplianceStatus `json:"complianceStatus"`
+	Suppressions              []string                `json:"suppressions" validate:"max=500,dive,required,max=1000"`
+
+	// Rule only
+	DedupPeriodMinutes int `json:"dedupPeriodMinutes"`
+	Threshold          int `json:"threshold"`
+
+	// Shared
+	AnalysisType   DetectionType       `json:"analysisType"`
+	Types          []string            `json:"logTypes"`
+	Body           string              `json:"body" validate:"required,max=100000"`
+	CreatedAt      time.Time           `json:"createdAt"`
+	CreatedBy      string              `json:"createdBy"`
+	Description    string              `json:"description"`
+	DisplayName    string              `json:"displayName" validate:"max=1000,excludesall='<>&\""`
+	Enabled        bool                `json:"enabled"`
+	ID             string              `json:"id" validate:"required,max=1000,excludesall='<>&\""`
+	LastModified   time.Time           `json:"lastModified"`
+	LastModifiedBy string              `json:"lastModifiedBy"`
+	OutputIDs      []string            `json:"outputIds" validate:"max=500,dive,required,max=5000"`
+	Reference      string              `json:"reference" validate:"max=10000"`
+	Reports        map[string][]string `json:"reports" validate:"max=500"`
+	Runbook        string              `json:"runbook" validate:"max=10000"`
+	Severity       models.Severity     `json:"severity" validate:"oneof=INFO LOW MEDIUM HIGH CRITICAL"`
+	Tags           []string            `json:"tags" validate:"max=500,dive,required,max=1000"`
+	Tests          []UnitTest          `json:"tests" validate:"max=500,dive"`
+	VersionID      string              `json:"versionId"`
 }

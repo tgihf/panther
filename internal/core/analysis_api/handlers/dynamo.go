@@ -98,29 +98,36 @@ func (r *tableItem) normalize() {
 
 // TODO include policy & shared stuff
 // Rule converts a Dynamo row into a Rule external model.
-func (r *tableItem) Detection() *models.Detection {
+func (r *tableItem) Detection(status *compliancemodels.ComplianceStatus) *models.Detection {
 	r.normalize()
 	result := &models.Detection{
-		Body:               r.Body,
-		CreatedAt:          r.CreatedAt,
-		CreatedBy:          r.CreatedBy,
-		DedupPeriodMinutes: r.DedupPeriodMinutes,
-		Description:        r.Description,
-		DisplayName:        r.DisplayName,
-		Enabled:            r.Enabled,
-		ID:                 r.ID,
-		LastModified:       r.LastModified,
-		LastModifiedBy:     r.LastModifiedBy,
-		LogTypes:           r.ResourceTypes,
-		OutputIDs:          r.OutputIDs,
-		Reference:          r.Reference,
-		Reports:            r.Reports,
-		Runbook:            r.Runbook,
-		Severity:           r.Severity,
-		Tags:               r.Tags,
-		Tests:              r.Tests,
-		Threshold:          r.Threshold,
-		VersionID:          r.VersionID,
+		AutoRemediationID:         r.AutoRemediationID,
+		AutoRemediationParameters: r.AutoRemediationParameters,
+		Suppressions:              r.Suppressions,
+		DedupPeriodMinutes:        r.DedupPeriodMinutes,
+		Threshold:                 r.Threshold,
+		AnalysisType:              r.Type,
+		Types:                     r.ResourceTypes,
+		Body:                      r.Body,
+		CreatedAt:                 r.CreatedAt,
+		CreatedBy:                 r.CreatedBy,
+		Description:               r.Description,
+		DisplayName:               r.DisplayName,
+		Enabled:                   r.Enabled,
+		ID:                        r.ID,
+		LastModified:              r.LastModified,
+		LastModifiedBy:            r.LastModifiedBy,
+		OutputIDs:                 r.OutputIDs,
+		Reference:                 r.Reference,
+		Reports:                   r.Reports,
+		Runbook:                   r.Runbook,
+		Severity:                  r.Severity,
+		Tags:                      r.Tags,
+		Tests:                     r.Tests,
+		VersionID:                 r.VersionID,
+	}
+	if status != nil {
+		result.ComplianceStatus = *status
 	}
 	genericapi.ReplaceMapSliceNils(result)
 	return result
@@ -389,8 +396,18 @@ func scanPages(input *dynamodb.ScanInput, handler func(tableItem) error) error {
 }
 
 // Build dynamo scan input for list operations
-func buildScanInput(itemType models.DetectionType, fields []string, filters ...expression.ConditionBuilder) (*dynamodb.ScanInput, error) {
-	masterFilter := expression.Equal(expression.Name("type"), expression.Value(itemType))
+func buildScanInput(itemTypes []models.DetectionType, fields []string, filters ...expression.ConditionBuilder) (
+	*dynamodb.ScanInput, error) {
+
+	var masterFilter expression.ConditionBuilder
+	for i, itemType := range itemTypes {
+		if i == 0 {
+			masterFilter = expression.Equal(expression.Name("type"), expression.Value(itemType))
+			continue
+		}
+		masterFilter = expression.Or(masterFilter, expression.Equal(expression.Name("type"), expression.Value(itemType)))
+	}
+
 	for _, filter := range filters {
 		masterFilter = masterFilter.And(filter)
 	}

@@ -32,6 +32,7 @@ import (
 	"github.com/panther-labs/panther/pkg/gatewayapi"
 )
 
+// ListPolicies is being deprecated. Use ListDetections and specify AnalysisType POLICY instead
 func (API) ListPolicies(input *models.ListPoliciesInput) *events.APIGatewayProxyResponse {
 	stdPolicyListInput(input)
 
@@ -108,7 +109,7 @@ func stdPolicyListInput(input *models.ListPoliciesInput) {
 		input.PageSize = defaultPageSize
 	}
 	if input.SortBy == "" {
-		input.SortBy = "id"
+		input.SortBy = "displayName"
 	}
 	if input.SortDir == "" {
 		input.SortDir = defaultSortDir
@@ -154,5 +155,5 @@ func policyScanInput(input *models.ListPoliciesInput) (*dynamodb.ScanInput, erro
 		}
 	}
 
-	return buildScanInput(models.TypePolicy, input.Fields, filters...)
+	return buildScanInput([]models.DetectionType{models.TypePolicy}, input.Fields, filters...)
 }

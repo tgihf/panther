@@ -40,13 +40,13 @@ import { RuleFormValues } from 'Components/forms/RuleForm';
 import urls from 'Source/urls';
 import { Link as RRLink } from 'react-router-dom';
 import { useListAvailableLogTypes } from 'Source/graphql/queries';
-import useListAvailableDestinations from '../useListAvailableDestinations';
+import useListAvailableDestinations from 'Hooks/useListAvailableDestinations';
 
 const severityOptions = Object.values(SeverityEnum);
 const severityItemToString = (severity: string) => capitalize(severity.toLowerCase());
 const dedupPeriodMinutesOptions = [15, 30, 60, 180, 720, 1440];
 
-const BaseRuleFormCoreSection: React.FC = () => {
+const RuleFormCoreSection: React.FC = () => {
   // Read the values from the "parent" form. We expect a formik to be declared in the upper scope
   // since this is a "partial" form. If no Formik context is found this will error out intentionally
   const { values, initialValues } = useFormikContext<RuleFormValues>();
@@ -232,4 +232,4 @@ const BaseRuleFormCoreSection: React.FC = () => {
   );
 };
 
-export default React.memo(BaseRuleFormCoreSection);
+export default React.memo(RuleFormCoreSection);

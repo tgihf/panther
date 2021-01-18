@@ -26,11 +26,12 @@ import invert from 'lodash/invert';
 import ErrorBoundary from 'Components/ErrorBoundary';
 import Breadcrumbs from 'Components/Breadcrumbs';
 import SaveButton from 'Components/buttons/SaveButton';
-import { BaseRuleFormCoreSection, BaseRuleFormEditorSection } from 'Components/forms/BaseRuleForm';
+import { BaseDetectionFormEditorSection } from 'Components/forms/BaseDetectionForm';
 import { Form, Formik } from 'formik';
 import FormSessionRestoration from 'Components/utils/FormSessionRestoration';
 import useRouter from 'Hooks/useRouter';
-import RuleFormTestSection from 'Components/forms/RuleForm/RuleFormTestSection';
+import RuleFormTestSection from './RuleFormTestSection';
+import RuleFormCoreSection from './RuleFormCoreSection';
 
 // The validation checks that Formik will run
 const validationSchema = Yup.object().shape({
@@ -118,13 +119,13 @@ const RuleForm: React.FC<RuleFormProps> = ({ initialValues, onSubmit }) => {
                   <TabPanels>
                     <TabPanel data-testid="rule-settings-tabpanel" lazy>
                       <ErrorBoundary>
-                        <BaseRuleFormCoreSection />
+                        <RuleFormCoreSection />
                       </ErrorBoundary>
                     </TabPanel>
                     <TabPanel data-testid="function-settings-tabpanel" lazy>
                       <Flex spacing="6" direction="column">
                         <ErrorBoundary>
-                          <BaseRuleFormEditorSection type="rule" />
+                          <BaseDetectionFormEditorSection type="rule" />
                         </ErrorBoundary>
                         <ErrorBoundary>
                           <RuleFormTestSection />

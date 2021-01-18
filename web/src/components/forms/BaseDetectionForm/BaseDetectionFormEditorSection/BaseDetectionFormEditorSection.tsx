@@ -23,11 +23,13 @@ import FormikEditor from 'Components/fields/Editor';
 import { Link as RRLink } from 'react-router-dom';
 import urls from 'Source/urls';
 
-interface BaseRuleFormEditorSectionProps {
+interface BaseDetectionFormEditorSectionProps {
   type: 'rule' | 'policy';
 }
 
-const BaseRuleFormEditorSection: React.FC<BaseRuleFormEditorSectionProps> = ({ type }) => {
+const BaseDetectionFormEditorSection: React.FC<BaseDetectionFormEditorSectionProps> = ({
+  type,
+}) => {
   const [open, setOpen] = React.useState(true);
   const isPolicy = type === 'policy';
 
@@ -72,4 +74,4 @@ const BaseRuleFormEditorSection: React.FC<BaseRuleFormEditorSectionProps> = ({ t
   );
 };
 
-export default React.memo(BaseRuleFormEditorSection);
+export default React.memo(BaseDetectionFormEditorSection);

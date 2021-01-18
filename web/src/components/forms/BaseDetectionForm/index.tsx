@@ -16,5 +16,5 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-export { default } from './BasePolicyFormCoreSection';
-export * from './BasePolicyFormCoreSection';
+export { default as BaseDetectionFormTestSection } from './BaseDetectionFormTestSection';
+export { default as BaseDetectionFormEditorSection } from './BaseDetectionFormEditorSection';

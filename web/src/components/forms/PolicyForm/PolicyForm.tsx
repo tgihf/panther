@@ -27,14 +27,12 @@ import useUrlParams from 'Hooks/useUrlParams';
 import invert from 'lodash/invert';
 import Breadcrumbs from 'Components/Breadcrumbs';
 import SaveButton from 'Components/buttons/SaveButton';
-import {
-  BasePolicyFormCoreSection,
-  BaseRuleFormEditorSection,
-} from 'Components/forms/BaseRuleForm';
+import { BaseDetectionFormEditorSection } from 'Components/forms/BaseDetectionForm';
 import ErrorBoundary from 'Components/ErrorBoundary';
 import FormSessionRestoration from 'Components/utils/FormSessionRestoration';
 import PolicyFormAutoRemediationSection from './PolicyFormAutoRemediationSection';
 import PolicyFormTestSection from './PolicyFormTestSection';
+import PolicyFormCoreSection from './PolicyFormCoreSection';
 
 // The validation checks that Formik will run
 const validationSchema = Yup.object().shape({
@@ -125,13 +123,13 @@ const PolicyForm: React.FC<PolicyFormProps> = ({ initialValues, onSubmit }) => {
                   <TabPanels>
                     <TabPanel data-testid="policy-settings-tabpanel" lazy>
                       <ErrorBoundary>
-                        <BasePolicyFormCoreSection />
+                        <PolicyFormCoreSection />
                       </ErrorBoundary>
                     </TabPanel>
                     <TabPanel data-testid="policy-functions-tabpanel" lazy>
                       <Flex spacing="6" direction="column">
                         <ErrorBoundary>
-                          <BaseRuleFormEditorSection type="policy" />
+                          <BaseDetectionFormEditorSection type="policy" />
                         </ErrorBoundary>
                         <ErrorBoundary>
                           <PolicyFormTestSection />

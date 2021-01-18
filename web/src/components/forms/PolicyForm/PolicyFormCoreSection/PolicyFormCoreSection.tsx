@@ -32,12 +32,12 @@ import { RuleFormValues } from 'Components/forms/RuleForm';
 import { PolicyFormValues } from 'Components/forms/PolicyForm';
 import urls from 'Source/urls';
 import { Link as RRLink } from 'react-router-dom';
-import useListAvailableDestinations from '../useListAvailableDestinations';
+import useListAvailableDestinations from 'Hooks/useListAvailableDestinations';
 
 const severityOptions = Object.values(SeverityEnum);
 const severityItemToString = (severity: string) => capitalize(severity.toLowerCase());
 
-const BasePolicyFormCoreSection: React.FC = () => {
+const PolicyFormCoreSection: React.FC = () => {
   const { values, initialValues } = useFormikContext<RuleFormValues | PolicyFormValues>();
 
   const tagAdditionValidation = React.useMemo(() => (tag: string) => !values.tags.includes(tag), [
@@ -214,4 +214,4 @@ const BasePolicyFormCoreSection: React.FC = () => {
   );
 };
 
-export default React.memo(BasePolicyFormCoreSection);
+export default React.memo(PolicyFormCoreSection);

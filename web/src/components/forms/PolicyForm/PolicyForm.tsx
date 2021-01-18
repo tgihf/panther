@@ -89,9 +89,6 @@ const PolicyForm: React.FC<PolicyFormProps> = ({ initialValues, onSubmit }) => {
             <Form>
               <Breadcrumbs.Actions>
                 <Flex spacing={4} justify="flex-end">
-                  <SaveButton aria-label="Update Policy">
-                    {initialValues.id ? 'Update Policy' : 'Create Policy'}
-                  </SaveButton>
                   <Button
                     variantColor="darkgray"
                     icon="close-outline"
@@ -103,6 +100,7 @@ const PolicyForm: React.FC<PolicyFormProps> = ({ initialValues, onSubmit }) => {
                   >
                     Cancel
                   </Button>
+                  <SaveButton>{initialValues.id ? 'Update' : 'Save'}</SaveButton>
                 </Flex>
               </Breadcrumbs.Actions>
 

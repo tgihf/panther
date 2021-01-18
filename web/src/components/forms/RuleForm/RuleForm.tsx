@@ -87,9 +87,6 @@ const RuleForm: React.FC<RuleFormProps> = ({ initialValues, onSubmit }) => {
             <Form>
               <Breadcrumbs.Actions>
                 <Flex spacing={4} justify="flex-end">
-                  <SaveButton aria-label="Update Rule">
-                    {initialValues.id ? 'Update Rule' : 'Create Rule'}
-                  </SaveButton>
                   <Button
                     variantColor="darkgray"
                     icon="close-outline"
@@ -101,6 +98,7 @@ const RuleForm: React.FC<RuleFormProps> = ({ initialValues, onSubmit }) => {
                   >
                     Cancel
                   </Button>
+                  <SaveButton>{initialValues.id ? 'Update' : 'Save'}</SaveButton>
                 </Flex>
               </Breadcrumbs.Actions>
               <Tabs

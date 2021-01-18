@@ -90,7 +90,7 @@ describe('EditPolicy', () => {
     expect(getByText('Auto Remediation')).toBeInTheDocument();
 
     // Buttons
-    expect(getByAriaLabel('Update Policy')).toBeInTheDocument();
+    expect(getByText('Update')).toBeInTheDocument();
     expect(getByAriaLabel('Cancel Policy editing')).toBeInTheDocument();
   });
 
@@ -188,7 +188,7 @@ describe('EditPolicy', () => {
     // Fields
     fireEvent.click(getByText('Auto Remediation'));
 
-    const remediationLoading = getByTestId('remediation-loading');
+    const remediationLoading = getByAriaLabel('Loading Interface...');
     expect(remediationLoading).toBeTruthy();
     await waitForElementToBeRemoved(remediationLoading);
 

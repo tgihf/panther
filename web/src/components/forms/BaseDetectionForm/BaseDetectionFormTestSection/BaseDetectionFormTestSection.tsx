@@ -116,7 +116,7 @@ const BaseDetectionFormTestSection: React.FC<BaseDetectionFormTestSectionProps> 
 
         return (
           <Card variant="dark" p={4}>
-            <Flex spacing={6}>
+            <Flex spacing={4}>
               <Box mt={2}>
                 <IconButton
                   variant="ghost"

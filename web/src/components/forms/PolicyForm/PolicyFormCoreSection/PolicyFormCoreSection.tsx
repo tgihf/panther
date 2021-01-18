@@ -158,7 +158,6 @@ const PolicyFormCoreSection: React.FC = () => {
           label="Runbook"
           placeholder="Procedures and operations related to this Policy"
           name="runbook"
-          minRows={5}
         />
         <FastField
           as={FormikTextArea}

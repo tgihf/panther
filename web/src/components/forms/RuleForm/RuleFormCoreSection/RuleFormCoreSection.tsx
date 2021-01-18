@@ -124,12 +124,12 @@ const RuleFormCoreSection: React.FC = () => {
             name="severity"
             items={severityOptions}
             itemToString={severityItemToString}
-            label="* Severity"
+            label="Severity"
           />
           <Box flexGrow={1}>
             <FastField
               as={FormikTextInput}
-              label="* Rule ID"
+              label="Rule ID"
               placeholder={`The unique ID of this Rule`}
               name="id"
               disabled={!!initialValues.id}
@@ -140,7 +140,7 @@ const RuleFormCoreSection: React.FC = () => {
         <Field
           as={FormikMultiCombobox}
           searchable
-          label="* Log Types"
+          label="Log Types"
           name="logTypes"
           items={data?.listAvailableLogTypes.logTypes ?? []}
           placeholder="Where should the rule apply?"
@@ -160,7 +160,7 @@ const RuleFormCoreSection: React.FC = () => {
         <FastField
           as={FormikTextArea}
           label="Description"
-          placeholder={`Additional context about this Rule`}
+          placeholder="Additional context about this Rule"
           name="description"
         />
         <FastField
@@ -178,7 +178,7 @@ const RuleFormCoreSection: React.FC = () => {
           />
           <Field
             as={FormikNumberInput}
-            label="* Events Threshold"
+            label="Events Threshold"
             min={1}
             name="threshold"
             placeholder="Send an alert only after # events"
@@ -216,7 +216,7 @@ const RuleFormCoreSection: React.FC = () => {
           </SimpleGrid>
           <FastField
             as={FormikCombobox}
-            label="* Deduplication Period"
+            label="Deduplication Period"
             name="dedupPeriodMinutes"
             items={dedupPeriodMinutesOptions}
             itemToString={minutesToString}

@@ -66,21 +66,21 @@ describe('EditRule', () => {
     await waitForElementToBeRemoved(loadingInterfaceElement);
 
     // Fields
-    expect(getByText('Rule Enabled')).toBeInTheDocument();
-    expect(getByText('* Severity')).toBeInTheDocument();
+    expect(getByText('Enabled')).toBeInTheDocument();
+    expect(getByText('Severity')).toBeInTheDocument();
     expect(getByLabelText('Display Name')).toBeInTheDocument();
-    expect(getByLabelText('* Rule ID')).toBeInTheDocument();
+    expect(getByLabelText('Rule ID')).toBeInTheDocument();
     expect(getByLabelText('Description')).toBeInTheDocument();
     expect(getByLabelText('Runbook')).toBeInTheDocument();
     expect(getByLabelText('Reference')).toBeInTheDocument();
     expect(getByText('Custom Tags')).toBeInTheDocument();
     expect(getByText('Destination Overrides')).toBeInTheDocument();
-    expect(getByText('* Log Types')).toBeInTheDocument();
-    expect(getByText('* Deduplication Period')).toBeInTheDocument();
+    expect(getByText('Log Types')).toBeInTheDocument();
+    expect(getByText('Deduplication Period')).toBeInTheDocument();
 
     // Helper text
-    expect(getByText('Basic Information')).toBeInTheDocument();
-    expect(getByText('Additional Information')).toBeInTheDocument();
+    expect(getByText('Required')).toBeInTheDocument();
+    expect(getByText('Optional')).toBeInTheDocument();
 
     // Tabs
     expect(getByText('Policy Settings')).toBeInTheDocument();

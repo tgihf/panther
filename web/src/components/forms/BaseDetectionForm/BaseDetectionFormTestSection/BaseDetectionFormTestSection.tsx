@@ -215,17 +215,11 @@ const BaseDetectionFormTestSection: React.FC<BaseDetectionFormTestSectionProps> 
                   <Button
                     variantColor="orange"
                     icon="play"
-                    aria-label="Run Test"
                     onClick={() => runTests([tests[activeTabIndex]])}
                   >
                     Run Test
                   </Button>
-                  <Button
-                    aria-label="Run All"
-                    variantColor="orange"
-                    icon="play-all"
-                    onClick={() => runTests(tests)}
-                  >
+                  <Button variantColor="orange" icon="play-all" onClick={() => runTests(tests)}>
                     Run All
                   </Button>
                 </Flex>

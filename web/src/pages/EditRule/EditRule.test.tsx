@@ -127,9 +127,9 @@ describe('EditRule', () => {
     await waitFor(() => {
       expect(getByText('Rule Function')).toBeInTheDocument();
     });
+    expect(getByText('Run Test')).toBeInTheDocument();
+    expect(getByText('Run All')).toBeInTheDocument();
     expect(getByAriaLabel('Create test')).toBeInTheDocument();
-    expect(getByAriaLabel('Run Test')).toBeInTheDocument();
-    expect(getByAriaLabel('Run All')).toBeInTheDocument();
     expect(getByAriaLabel('Toggle Editor visibility')).toBeInTheDocument();
     expect(getByAriaLabel('Toggle Tests visibility')).toBeInTheDocument();
   });

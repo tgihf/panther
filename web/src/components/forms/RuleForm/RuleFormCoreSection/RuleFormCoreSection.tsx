@@ -23,11 +23,12 @@ import {
   Text,
   Flex,
   Box,
-  SimpleGrid,
+  Grid,
   FormHelperText,
   Link,
   FormError,
   useSnackbar,
+  SimpleGrid,
 } from 'pouncejs';
 import { SeverityEnum } from 'Generated/schema';
 import { capitalize, minutesToString } from 'Helpers/utils';
@@ -110,12 +111,14 @@ const RuleFormCoreSection: React.FC = () => {
 
   return (
     <React.Fragment>
-      <Flex spacing={5} mb={5} align="center">
-        <Box>
-          <Text color="navyblue-100">Basic Information</Text>
-        </Box>
-        <Flex spacing={6} ml="auto" mr={0} align="center" alignSelf="flex-end">
-          <FastField as={FormikSwitch} name="enabled" label="Rule Enabled" />
+      <Flex as="section" direction="column" spacing={4} mb={8}>
+        <Text as="h2" fontWeight="normal" color="navyblue-100">
+          Required
+        </Text>
+        <Flex width="50%" spacing={5}>
+          <Box mt={3}>
+            <FastField as={FormikSwitch} name="enabled" label="Enabled" />
+          </Box>
           <FastField
             as={FormikCombobox}
             name="severity"
@@ -123,95 +126,17 @@ const RuleFormCoreSection: React.FC = () => {
             itemToString={severityItemToString}
             label="* Severity"
           />
+          <Box flexGrow={1}>
+            <FastField
+              as={FormikTextInput}
+              label="* Rule ID"
+              placeholder={`The unique ID of this Rule`}
+              name="id"
+              disabled={!!initialValues.id}
+              required
+            />
+          </Box>
         </Flex>
-      </Flex>
-
-      <SimpleGrid columns={2} spacing={5} mb={5}>
-        <FastField
-          as={FormikTextInput}
-          label="Display Name"
-          placeholder="A human-friendly name for this Rule"
-          name="displayName"
-        />
-        <FastField
-          as={FormikTextInput}
-          label="* Rule ID"
-          placeholder={`The unique ID of this Rule`}
-          name="id"
-          disabled={!!initialValues.id}
-          required
-        />
-      </SimpleGrid>
-      <SimpleGrid columns={1} spacing={5} mb={5}>
-        <FastField
-          as={FormikTextArea}
-          label="Description"
-          placeholder={`Additional context about this Rule`}
-          name="description"
-        />
-        <SimpleGrid columns={1} spacing={5}>
-          <FastField
-            as={FormikTextArea}
-            label="Runbook"
-            placeholder={`Procedures and operations related to this Rule`}
-            name="runbook"
-          />
-        </SimpleGrid>
-      </SimpleGrid>
-      <Text color="navyblue-100" mb={5} mt={8}>
-        Additional Information
-      </Text>
-
-      <SimpleGrid columns={6} spacing={5} mb={5}>
-        <Box gridColumn="1/6">
-          <FastField
-            as={FormikTextArea}
-            label="Reference"
-            placeholder={`An external link to why this Rule exists`}
-            name="reference"
-          />
-        </Box>
-
-        <Box>
-          <Field
-            as={FormikNumberInput}
-            label="* Events Threshold"
-            min={1}
-            name="threshold"
-            placeholder="Send an alert only after # events"
-          />
-        </Box>
-      </SimpleGrid>
-
-      <SimpleGrid columns={4} spacing={5}>
-        <FastField
-          as={FormikMultiCombobox}
-          searchable
-          name="tags"
-          label="Custom Tags"
-          items={values.tags}
-          allowAdditions
-          validateAddition={tagAdditionValidation}
-          placeholder="i.e. HIPAA (separate with <Enter>)"
-        />
-
-        <Box as="fieldset">
-          {/* FIXME: We have an issue with FastField here. We shouldn't be setting props like that on FastField or Field elements */}
-          <Field
-            as={FormikMultiCombobox}
-            disabled={disableDestinationField}
-            searchable
-            label="Destination Overrides"
-            name="outputIds"
-            value={listValidOutputIds}
-            items={availableOutputIds}
-            itemToString={destIdToDisplayName}
-            placeholder="Select destinations"
-            aria-describedby="outputIds-description"
-          />
-          {destinationHelperText}
-        </Box>
-
         <Field
           as={FormikMultiCombobox}
           searchable
@@ -220,14 +145,84 @@ const RuleFormCoreSection: React.FC = () => {
           items={data?.listAvailableLogTypes.logTypes ?? []}
           placeholder="Where should the rule apply?"
         />
+      </Flex>
+      <Flex as="section" direction="column" spacing={5}>
+        <Text as="h2" fontWeight="normal" color="navyblue-100">
+          Optional
+        </Text>
+
         <FastField
-          as={FormikCombobox}
-          label="* Deduplication Period"
-          name="dedupPeriodMinutes"
-          items={dedupPeriodMinutesOptions}
-          itemToString={minutesToString}
+          as={FormikTextInput}
+          label="Display Name"
+          placeholder="A human-friendly name for this Rule"
+          name="displayName"
         />
-      </SimpleGrid>
+        <FastField
+          as={FormikTextArea}
+          label="Description"
+          placeholder={`Additional context about this Rule`}
+          name="description"
+        />
+        <FastField
+          as={FormikTextArea}
+          label="Runbook"
+          placeholder={`Procedures and operations related to this Rule`}
+          name="runbook"
+        />
+        <Grid templateColumns="3fr 1fr" columnGap={5}>
+          <FastField
+            as={FormikTextArea}
+            label="Reference"
+            placeholder={`An external link to why this Rule exists`}
+            name="reference"
+          />
+          <Field
+            as={FormikNumberInput}
+            label="* Events Threshold"
+            min={1}
+            name="threshold"
+            placeholder="Send an alert only after # events"
+          />
+        </Grid>
+        <Grid templateColumns="3fr 1fr" columnGap={5}>
+          <SimpleGrid columns={2} spacing={5}>
+            <FastField
+              as={FormikMultiCombobox}
+              searchable
+              name="tags"
+              label="Custom Tags"
+              items={values.tags}
+              allowAdditions
+              validateAddition={tagAdditionValidation}
+              placeholder="i.e. HIPAA (separate with <Enter>)"
+            />
+
+            <Box as="fieldset">
+              {/* FIXME: We have an issue with FastField here. We shouldn't be setting props like that on FastField or Field elements */}
+              <Field
+                as={FormikMultiCombobox}
+                disabled={disableDestinationField}
+                searchable
+                label="Destination Overrides"
+                name="outputIds"
+                value={listValidOutputIds}
+                items={availableOutputIds}
+                itemToString={destIdToDisplayName}
+                placeholder="Select destinations"
+                aria-describedby="outputIds-description"
+              />
+              {destinationHelperText}
+            </Box>
+          </SimpleGrid>
+          <FastField
+            as={FormikCombobox}
+            label="* Deduplication Period"
+            name="dedupPeriodMinutes"
+            items={dedupPeriodMinutesOptions}
+            itemToString={minutesToString}
+          />
+        </Grid>
+      </Flex>
     </React.Fragment>
   );
 };

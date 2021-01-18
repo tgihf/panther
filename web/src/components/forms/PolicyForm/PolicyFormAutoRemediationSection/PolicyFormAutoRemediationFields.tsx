@@ -17,9 +17,10 @@
  */
 
 import React from 'react';
-import { Flex, Box, Combobox, Card } from 'pouncejs';
+import { Flex, Box, Combobox, Img, Text, Card } from 'pouncejs';
 import { FastField } from 'formik';
 import FormikTextInput from 'Components/fields/TextInput';
+import MasonryIllustration from 'Assets/masonry.svg';
 import { formatJSON } from 'Helpers/utils';
 import FormikEditor from 'Components/fields/Editor';
 import { PolicyFormValues } from '../PolicyForm';
@@ -77,8 +78,9 @@ const PolicyFormAutoRemediationFields: React.FC<PolicyFormAutoRemediationFieldsP
   const autoRemediationSelected = !!autoRemediationSelection[0];
   return (
     <React.Fragment>
-      <Flex mb={6} data-testid="auto-remediation">
-        <Box ml="auto" minWidth={300}>
+      <Flex mb={6} direction="column" spacing={6} align="center" data-testid="auto-remediation">
+        <Text fontSize="medium">Please enter your remediation parameters below</Text>
+        <Box width={500}>
           <Combobox<RemediationTuple>
             searchable
             data-testid="dropdown-remediation"
@@ -91,22 +93,29 @@ const PolicyFormAutoRemediationFields: React.FC<PolicyFormAutoRemediationFieldsP
           />
         </Box>
       </Flex>
-      <Card variant="dark" p={4}>
-        {autoRemediationSelected && (
-          <React.Fragment>
-            <FastField as={FormikTextInput} name="autoRemediationId" hidden />
-            <FastField
-              as={FormikEditor}
-              placeholder="# Enter a JSON object describing the parameters of the remediation"
-              name="autoRemediationParameters"
-              aria-label="Auto Remediation Parameters"
-              width="100%"
-              minLines={9}
-              mode="json"
+      <FastField as={FormikTextInput} name="autoRemediationId" hidden />
+      {autoRemediationSelected ? (
+        <FastField
+          as={FormikEditor}
+          placeholder="# Enter a JSON object describing the parameters of the remediation"
+          name="autoRemediationParameters"
+          aria-label="Auto Remediation Parameters"
+          width="100%"
+          minLines={11}
+          mode="json"
+        />
+      ) : (
+        <Card variant="dark">
+          <Flex width="100%" height={197} justify="center" align="center">
+            <Img
+              src={MasonryIllustration}
+              nativeWidth={120}
+              nativeHeight={120}
+              alt="Masonry illustration"
             />
-          </React.Fragment>
-        )}
-      </Card>
+          </Flex>
+        </Card>
+      )}
     </React.Fragment>
   );
 };

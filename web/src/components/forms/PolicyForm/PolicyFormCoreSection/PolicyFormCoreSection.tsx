@@ -95,68 +95,32 @@ const PolicyFormCoreSection: React.FC = () => {
 
   return (
     <React.Fragment>
-      <Flex spacing={5} mb={5} align="center">
-        <Box>
-          <Text color="navyblue-100">Basic Information</Text>
-        </Box>
-        <Flex spacing={6} ml="auto" mr={0} align="center" alignSelf="flex-end">
-          <FastField as={FormikSwitch} name="enabled" label="Policy Enabled" />
+      <Flex as="section" direction="column" spacing={4} mb={8}>
+        <Text as="h2" fontWeight="normal" color="navyblue-100">
+          Required
+        </Text>
+        <Flex spacing={5} width="50%">
+          <Box mt={3}>
+            <FastField as={FormikSwitch} name="enabled" label="Enabled" />
+          </Box>
           <FastField
             as={FormikCombobox}
             name="severity"
             items={severityOptions}
             itemToString={severityItemToString}
-            label="* Severity"
+            label="Severity"
           />
+          <Box flexGrow={1}>
+            <FastField
+              as={FormikTextInput}
+              label="Policy ID"
+              placeholder="The unique ID of this Policy"
+              name="id"
+              disabled={!!initialValues.id}
+              required
+            />
+          </Box>
         </Flex>
-      </Flex>
-
-      <SimpleGrid columns={2} spacing={5} mb={5}>
-        <FastField
-          as={FormikTextInput}
-          label="Display Name"
-          placeholder="A human-friendly name for this Policy"
-          name="displayName"
-        />
-        <FastField
-          as={FormikTextInput}
-          label="* Policy ID"
-          placeholder="The unique ID of this Policy"
-          name="id"
-          disabled={!!initialValues.id}
-          required
-        />
-      </SimpleGrid>
-      <SimpleGrid columns={1} spacing={5} mb={5}>
-        <FastField
-          as={FormikTextArea}
-          label="Description"
-          placeholder="Additional context about this Policy"
-          name="description"
-        />
-        <SimpleGrid columns={1} spacing={5}>
-          <FastField
-            as={FormikTextArea}
-            label="Runbook"
-            placeholder="Procedures and operations related to this Policy"
-            name="runbook"
-          />
-        </SimpleGrid>
-
-        <SimpleGrid columns={1} spacing={5}>
-          <FastField
-            as={FormikTextArea}
-            label="Reference"
-            placeholder="An external link to why this Policy exists"
-            name="reference"
-          />
-        </SimpleGrid>
-      </SimpleGrid>
-      <Box mb={5} mt={8}>
-        <Text color="navyblue-100">Additional Information</Text>
-      </Box>
-
-      <SimpleGrid columns={2} spacing={5}>
         <Box as="fieldset">
           <FastField
             as={FormikMultiCombobox}
@@ -171,45 +135,75 @@ const PolicyFormCoreSection: React.FC = () => {
             Leave empty to apply to all resources
           </FormHelperText>
         </Box>
+      </Flex>
+      <Flex as="section" direction="column" spacing={5}>
+        <Text as="h2" fontWeight="normal" color="navyblue-100">
+          Optional
+        </Text>
 
         <FastField
-          as={FormikMultiCombobox}
-          searchable
-          name="tags"
-          label="Custom Tags"
-          items={values.tags}
-          allowAdditions
-          validateAddition={tagAdditionValidation}
-          placeholder="i.e. HIPAA (separate with <Enter>)"
+          as={FormikTextInput}
+          label="Display Name"
+          placeholder="A human-friendly name for this Policy"
+          name="displayName"
         />
-
         <FastField
-          as={FormikMultiCombobox}
-          searchable
-          name="suppressions"
-          label="Ignore Patterns"
-          items={(values as PolicyFormValues).suppressions}
-          allowAdditions
-          placeholder="i.e. aws::s3::* (separate with <Enter>)"
+          as={FormikTextArea}
+          label="Description"
+          placeholder="Additional context about this Policy"
+          name="description"
         />
-
-        <Box as="fieldset">
-          {/* FIXME: We have an issue with FastField here. We shouldn't be setting props like that on FastField or Field elements */}
-          <Field
+        <FastField
+          as={FormikTextArea}
+          label="Runbook"
+          placeholder="Procedures and operations related to this Policy"
+          name="runbook"
+          minRows={5}
+        />
+        <FastField
+          as={FormikTextArea}
+          label="Reference"
+          placeholder="An external link to why this Policy exists"
+          name="reference"
+        />
+        <SimpleGrid columns={3} spacing={5}>
+          <FastField
             as={FormikMultiCombobox}
-            disabled={disableDestinationField}
             searchable
-            label="Destination Overrides"
-            name="outputIds"
-            value={listValidOutputIds}
-            items={availableOutputIds}
-            itemToString={destIdToDisplayName}
-            placeholder="Select destinations"
-            aria-describedby="outputIds-description"
+            name="suppressions"
+            label="Ignore Patterns"
+            items={(values as PolicyFormValues).suppressions}
+            allowAdditions
+            placeholder="i.e. aws::s3::* (separate with <Enter>)"
           />
-          {destinationHelperText}
-        </Box>
-      </SimpleGrid>
+          <FastField
+            as={FormikMultiCombobox}
+            searchable
+            name="tags"
+            label="Custom Tags"
+            items={values.tags}
+            allowAdditions
+            validateAddition={tagAdditionValidation}
+            placeholder="i.e. HIPAA (separate with <Enter>)"
+          />
+          <Box as="fieldset">
+            {/* FIXME: We have an issue with FastField here. We shouldn't be setting props like that on FastField or Field elements */}
+            <Field
+              as={FormikMultiCombobox}
+              disabled={disableDestinationField}
+              searchable
+              label="Destination Overrides"
+              name="outputIds"
+              value={listValidOutputIds}
+              items={availableOutputIds}
+              itemToString={destIdToDisplayName}
+              placeholder="Select destinations"
+              aria-describedby="outputIds-description"
+            />
+            {destinationHelperText}
+          </Box>
+        </SimpleGrid>
+      </Flex>
     </React.Fragment>
   );
 };

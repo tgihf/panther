@@ -21,6 +21,9 @@ import { formatDatetime } from 'Helpers/utils';
 
 export interface ChartTooltipProps {
   params: any[];
+  /**
+   * The content formatter used to format the series values
+   */
   formatter?: (value: number) => string;
 }
 

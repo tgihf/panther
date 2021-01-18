@@ -89,7 +89,7 @@ interface TimeSeriesChartProps {
   hideLegend?: boolean;
 
   /**
-   * This is parameter determines if we need to display the values
+   * This parameter determines if we need to display the values as time spans
    */
   useTimeSpanUnits?: boolean;
 

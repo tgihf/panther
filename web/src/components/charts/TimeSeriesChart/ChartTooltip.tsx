@@ -21,10 +21,10 @@ import { formatDatetime } from 'Helpers/utils';
 
 export interface ChartTooltipProps {
   params: any[];
-  units?: string;
+  formatter?: (value: number) => string;
 }
 
-const ChartTooltip: React.FC<ChartTooltipProps> = ({ params, units }) => {
+const ChartTooltip: React.FC<ChartTooltipProps> = ({ params, formatter }) => {
   return (
     <Box
       font="primary"
@@ -47,8 +47,9 @@ const ChartTooltip: React.FC<ChartTooltipProps> = ({ params, units }) => {
                   {seriesInfo.seriesName}
                 </Box>
                 <Box as="dd" font="mono" fontWeight="bold">
-                  {seriesInfo.value[1].toLocaleString('en')}
-                  {units ? ` ${units}` : ''}
+                  {formatter
+                    ? formatter(seriesInfo.value[1])
+                    : seriesInfo.value[1].toLocaleString('en')}
                 </Box>
               </Flex>
             </Flex>

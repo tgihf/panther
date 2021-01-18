@@ -89,9 +89,9 @@ interface TimeSeriesChartProps {
   hideLegend?: boolean;
 
   /**
-   * This is parameter determines if we need to display the values with an appropriate suffix
+   * This is parameter determines if we need to display the values
    */
-  units?: string;
+  useTimeSpanUnits?: boolean;
 
   /**
    * This is an optional parameter that will render the text provided above legend if defined
@@ -119,6 +119,22 @@ function formatDateString(timestamp: Scalars['AWSDateTime'], useUTC: boolean) {
     .toUpperCase()}`;
 }
 
+const formatTimeSpan = (value: number) => {
+  if (value > 60 * 60 * 24 * 30) {
+    return `${(value / (60 * 60 * 24 * 30)).toLocaleString()} months`;
+  }
+  if (value > 60 * 60 * 24) {
+    return `${(value / (60 * 60 * 24)).toLocaleString()} days`;
+  }
+  if (value > 60 * 60) {
+    return `${(value / (60 * 60)).toLocaleString()} hours`;
+  }
+  if (value > 60) {
+    return `${(value / 60).toLocaleString()} min`;
+  }
+  return `${value.toLocaleString()} sec`;
+};
+
 const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   data,
   zoomable = false,
@@ -128,7 +144,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   chartType = 'line',
   hideLegend = false,
   hideSeriesLabels = true,
-  units,
+  useTimeSpanUnits,
   title,
   tooltipComponent = ChartTooltip,
   useUTC = false,
@@ -250,7 +266,10 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
           const TooltipComponent = tooltipComponent;
           ReactDOM.render(
             <ThemeProvider>
-              <TooltipComponent params={params} units={units} />
+              <TooltipComponent
+                params={params}
+                formatter={useTimeSpanUnits ? formatTimeSpan : null}
+              />
             </ThemeProvider>,
             tooltip.current
           );
@@ -293,7 +312,9 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
           fontWeight: theme.fontWeights.medium as any,
           fontFamily: theme.fonts.primary,
           color: theme.colors['gray-50'],
-          formatter: `{value}${units ? ` ${units}` : ''}`,
+          ...(useTimeSpanUnits && {
+            formatter: formatTimeSpan,
+          }),
         },
         splitLine: {
           lineStyle: {

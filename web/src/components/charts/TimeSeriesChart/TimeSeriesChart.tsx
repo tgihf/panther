@@ -120,6 +120,9 @@ function formatDateString(timestamp: Scalars['AWSDateTime'], useUTC: boolean) {
 }
 
 export const formatTimeSpan = (seconds: number) => {
+  if (seconds > 60 * 60 * 24 * 30 * 12) {
+    return `${(seconds / (60 * 60 * 24 * 30 * 12)).toLocaleString()} years`;
+  }
   if (seconds > 60 * 60 * 24 * 30) {
     return `${(seconds / (60 * 60 * 24 * 30)).toLocaleString()} months`;
   }

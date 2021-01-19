@@ -89,9 +89,9 @@ interface TimeSeriesChartProps {
   hideLegend?: boolean;
 
   /**
-   * This parameter determines if we need to display the values as time spans
+   * This parameter determines if we need to display the values with an appropriate suffix
    */
-  useTimeSpanUnits?: boolean;
+  units?: string;
 
   /**
    * This is an optional parameter that will render the text provided above legend if defined
@@ -119,20 +119,20 @@ function formatDateString(timestamp: Scalars['AWSDateTime'], useUTC: boolean) {
     .toUpperCase()}`;
 }
 
-const formatTimeSpan = (value: number) => {
-  if (value > 60 * 60 * 24 * 30) {
-    return `${(value / (60 * 60 * 24 * 30)).toLocaleString()} months`;
+export const formatTimeSpan = (seconds: number) => {
+  if (seconds > 60 * 60 * 24 * 30) {
+    return `${(seconds / (60 * 60 * 24 * 30)).toLocaleString()} months`;
   }
-  if (value > 60 * 60 * 24) {
-    return `${(value / (60 * 60 * 24)).toLocaleString()} days`;
+  if (seconds > 60 * 60 * 24) {
+    return `${(seconds / (60 * 60 * 24)).toLocaleString()} days`;
   }
-  if (value > 60 * 60) {
-    return `${(value / (60 * 60)).toLocaleString()} hours`;
+  if (seconds > 60 * 60) {
+    return `${(seconds / (60 * 60)).toLocaleString()} hours`;
   }
-  if (value > 60) {
-    return `${(value / 60).toLocaleString()} min`;
+  if (seconds > 60) {
+    return `${(seconds / 60).toLocaleString()} min`;
   }
-  return `${value.toLocaleString()} sec`;
+  return `${seconds.toLocaleString()} sec`;
 };
 
 const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
@@ -144,7 +144,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   chartType = 'line',
   hideLegend = false,
   hideSeriesLabels = true,
-  useTimeSpanUnits,
+  units,
   title,
   tooltipComponent = ChartTooltip,
   useUTC = false,
@@ -266,10 +266,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
           const TooltipComponent = tooltipComponent;
           ReactDOM.render(
             <ThemeProvider>
-              <TooltipComponent
-                params={params}
-                formatter={useTimeSpanUnits ? formatTimeSpan : null}
-              />
+              <TooltipComponent params={params} units={units} />
             </ThemeProvider>,
             tooltip.current
           );
@@ -312,9 +309,8 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
           fontWeight: theme.fontWeights.medium as any,
           fontFamily: theme.fonts.primary,
           color: theme.colors['gray-50'],
-          ...(useTimeSpanUnits && {
-            formatter: formatTimeSpan,
-          }),
+          formatter: value =>
+            units === 'sec' ? formatTimeSpan(value) : `${value}${units ? ` ${units}` : ''}`,
         },
         splitLine: {
           lineStyle: {

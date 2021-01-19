@@ -42,7 +42,7 @@ const EventsByLatency: React.FC<EventsByLatencyProps> = ({ events: { timestamps,
 
   return (
     <Flex data-testid="events-by-latency" height="100%" position="relative">
-      <TimeSeriesChart data={timeseriesData} useTimeSpanUnits zoomable />
+      <TimeSeriesChart data={timeseriesData} units="sec" zoomable />
     </Flex>
   );
 };

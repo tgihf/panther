@@ -20,7 +20,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Box, Flex, theme as Theme, ThemeProvider, useTheme } from 'pouncejs';
 import dayjs from 'dayjs';
-import { remToPx, capitalize } from 'Helpers/utils';
+import { remToPx, capitalize, secondsToString } from 'Helpers/utils';
 import { FloatSeries, LongSeries, Scalars } from 'Generated/schema';
 import type { EChartOption, ECharts } from 'echarts';
 import mapKeys from 'lodash/mapKeys';
@@ -118,25 +118,6 @@ function formatDateString(timestamp: Scalars['AWSDateTime'], useUTC: boolean) {
     .format('MMM DD')
     .toUpperCase()}`;
 }
-
-export const formatTimeSpan = (seconds: number) => {
-  if (seconds > 60 * 60 * 24 * 30 * 12) {
-    return `${(seconds / (60 * 60 * 24 * 30 * 12)).toLocaleString()} years`;
-  }
-  if (seconds > 60 * 60 * 24 * 30) {
-    return `${(seconds / (60 * 60 * 24 * 30)).toLocaleString()} months`;
-  }
-  if (seconds > 60 * 60 * 24) {
-    return `${(seconds / (60 * 60 * 24)).toLocaleString()} days`;
-  }
-  if (seconds > 60 * 60) {
-    return `${(seconds / (60 * 60)).toLocaleString()} hours`;
-  }
-  if (seconds > 60) {
-    return `${(seconds / 60).toLocaleString()} min`;
-  }
-  return `${seconds.toLocaleString()} sec`;
-};
 
 const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
   data,
@@ -313,7 +294,7 @@ const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
           fontFamily: theme.fonts.primary,
           color: theme.colors['gray-50'],
           formatter: value =>
-            units === 'sec' ? formatTimeSpan(value) : `${value}${units ? ` ${units}` : ''}`,
+            units === 'sec' ? secondsToString(value) : `${value}${units ? ` ${units}` : ''}`,
         },
         splitLine: {
           lineStyle: {
